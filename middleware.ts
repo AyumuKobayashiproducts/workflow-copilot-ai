@@ -12,7 +12,7 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/inbox/:path*", "/breakdown/:path*", "/weekly/:path*"]
+  matcher: ["/inbox/:path*", "/breakdown/:path*", "/weekly/:path*", "/settings/:path*"]
 };
 
 

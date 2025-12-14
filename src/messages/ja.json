@@ -151,6 +151,13 @@
   "slack.weekly.inProgress": "進行中",
   "slack.weekly.blocked": "停滞",
 
+  "settings.title": "設定",
+  "settings.subtitle": "設定やツールを管理します。",
+  "settings.demoTools.title": "デモ用ツール",
+  "settings.demoTools.clearCta": "デモデータを削除",
+  "settings.demoTools.cleared": "デモデータを削除しました。",
+  "settings.demoTools.disabled": "この環境ではデモ用ツールが無効です。",
+
   "empty.title": "まだ何もありません",
   "empty.description": "最初のアイテムを追加して始めましょう。",
   "empty.cta.primary": "作成",

@@ -151,6 +151,13 @@
   "slack.weekly.inProgress": "In progress",
   "slack.weekly.blocked": "Blocked",
 
+  "settings.title": "Settings",
+  "settings.subtitle": "Manage your preferences and tools.",
+  "settings.demoTools.title": "Demo tools",
+  "settings.demoTools.clearCta": "Clear my demo data",
+  "settings.demoTools.cleared": "Your demo data was cleared.",
+  "settings.demoTools.disabled": "Demo tools are disabled in this environment.",
+
   "empty.title": "Nothing here yet",
   "empty.description": "Add your first item to get started.",
   "empty.cta.primary": "Create",
