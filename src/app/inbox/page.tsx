@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { createTaskAction, deleteTaskAction, toggleTaskDoneAction } from "@/app/actions/tasks";
-import { auth } from "@/auth";
+import { getUserIdOrNull } from "@/lib/auth/user";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { listTasks } from "@/lib/tasks/store";
 
@@ -11,8 +11,7 @@ export default async function InboxPage() {
   const locale = await getLocale();
   const messages = await getMessages(locale);
   const t = createT(messages);
-  const session = await auth();
-  const userId = session?.user?.id;
+  const userId = await getUserIdOrNull();
   if (!userId) redirect("/login");
 
   const tasks = await listTasks(userId);
@@ -41,9 +40,10 @@ export default async function InboxPage() {
             <input
               name="title"
               placeholder={t("inbox.newTask.placeholder")}
+              data-testid="new-task-input"
               className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
             />
-            <Button type="submit" className="shrink-0">
+            <Button type="submit" className="shrink-0" data-testid="new-task-submit">
               {t("inbox.newTask.submit")}
             </Button>
           </form>
@@ -62,6 +62,7 @@ export default async function InboxPage() {
               return (
                 <li
                   key={task.id}
+                  data-testid="task-item"
                   className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2"
                 >
                   <div className="min-w-0">

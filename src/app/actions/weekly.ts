@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { setWeeklyNote } from "@/lib/weekly/store";
-import { auth } from "@/auth";
+import { requireUserId } from "@/lib/auth/user";
 import { listTasks } from "@/lib/tasks/store";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 
@@ -12,9 +12,7 @@ export async function saveWeeklyNoteAction(formData: FormData) {
   const weekStart = String(formData.get("weekStart") ?? "");
   const note = String(formData.get("note") ?? "");
   if (!weekStart) return;
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) throw new Error("Unauthorized");
+  const userId = await requireUserId();
   await setWeeklyNote({ userId, weekStartIso: weekStart, note });
   revalidatePath("/weekly");
 }
@@ -23,9 +21,7 @@ export async function postWeeklyToSlackAction(formData: FormData) {
   const weekStartIso = String(formData.get("weekStart") ?? "");
   if (!weekStartIso) return;
 
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) throw new Error("Unauthorized");
+  const userId = await requireUserId();
 
   const locale = await getLocale();
   const messages = await getMessages(locale);
@@ -34,6 +30,9 @@ export async function postWeeklyToSlackAction(formData: FormData) {
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
   if (!webhookUrl) {
     redirect(`/weekly?slack=not_configured`);
+  }
+  if (webhookUrl === "mock") {
+    redirect(`/weekly?slack=posted`);
   }
 
   const weekStart = new Date(weekStartIso);

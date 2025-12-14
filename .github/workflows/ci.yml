@@ -7,6 +7,29 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+      PRISMA_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+      AUTH_URL: http://localhost:3000
+      AUTH_SECRET: ci-secret
+      AUTH_GITHUB_ID: dummy
+      AUTH_GITHUB_SECRET: dummy
+      AUTH_BYPASS: "1"
+      SLACK_WEBHOOK_URL: mock
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -15,9 +38,17 @@ jobs:
           cache: npm
       - name: Install
         run: npm install
+      - name: Prisma generate
+        run: npm run db:generate
+      - name: Prisma migrate
+        run: npm run db:deploy
       - name: Lint
         run: npm run lint
       - name: i18n keys
         run: npm run check:i18n
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      - name: E2E
+        run: npm run test:e2e
 
 

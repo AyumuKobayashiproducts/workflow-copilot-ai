@@ -3,14 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createTask, createTasksBulk, deleteTask, toggleTaskDone } from "@/lib/tasks/store";
-import { auth } from "@/auth";
-
-async function requireUserId() {
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) throw new Error("Unauthorized");
-  return userId;
-}
+import { requireUserId } from "@/lib/auth/user";
 
 export async function createTaskAction(formData: FormData) {
   const title = String(formData.get("title") ?? "");

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { postWeeklyToSlackAction, saveWeeklyNoteAction } from "@/app/actions/weekly";
-import { auth } from "@/auth";
+import { getUserIdOrNull } from "@/lib/auth/user";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { listTasks } from "@/lib/tasks/store";
 import { getWeeklyNote } from "@/lib/weekly/store";
@@ -13,8 +13,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   const messages = await getMessages(locale);
   const t = createT(messages);
 
-  const session = await auth();
-  const userId = session?.user?.id;
+  const userId = await getUserIdOrNull();
   if (!userId) redirect("/login");
 
   const tasks = await listTasks(userId);
@@ -89,15 +88,21 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
       <section className="grid gap-3 rounded-lg border border-neutral-300 bg-white p-6 shadow-sm sm:grid-cols-3">
         <div className="space-y-1">
           <div className="text-xs text-neutral-700">{t("weekly.metrics.completed")}</div>
-          <div className="text-2xl font-semibold">{doneCount}</div>
+          <div className="text-2xl font-semibold" data-testid="weekly-count-completed">
+            {doneCount}
+          </div>
         </div>
         <div className="space-y-1">
           <div className="text-xs text-neutral-700">{t("weekly.metrics.inProgress")}</div>
-          <div className="text-2xl font-semibold">{todoCount}</div>
+          <div className="text-2xl font-semibold" data-testid="weekly-count-inprogress">
+            {todoCount}
+          </div>
         </div>
         <div className="space-y-1">
           <div className="text-xs text-neutral-700">{t("weekly.metrics.blocked")}</div>
-          <div className="text-2xl font-semibold">{blockedCount}</div>
+          <div className="text-2xl font-semibold" data-testid="weekly-count-blocked">
+            {blockedCount}
+          </div>
         </div>
       </section>
 
@@ -121,7 +126,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
         <h2 className="text-sm font-medium">{t("weekly.slack.title")}</h2>
         <form action={postWeeklyToSlackAction} className="flex justify-end">
           <input type="hidden" name="weekStart" value={weekStartIso} />
-          <Button type="submit" variant="secondary">
+          <Button type="submit" variant="secondary" data-testid="weekly-post-to-slack">
             {t("weekly.cta.postToSlack")}
           </Button>
         </form>
