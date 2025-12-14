@@ -10,7 +10,7 @@ import { auth, signOut } from "@/auth";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const locale = getLocale();
+  const locale = await getLocale();
   const messages = await getMessages(locale);
   const t = createT(messages);
   const session = await auth();

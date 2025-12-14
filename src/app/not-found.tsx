@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 
 export default async function NotFoundPage() {
-  const locale = getLocale();
+  const locale = await getLocale();
   const messages = await getMessages(locale);
   const t = createT(messages);
 

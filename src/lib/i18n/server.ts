@@ -4,8 +4,9 @@ import path from "node:path";
 
 import { defaultLocale, localeCookieName, type Locale, type Messages } from "./config";
 
-export function getLocale(): Locale {
-  const raw = cookies().get(localeCookieName)?.value;
+export async function getLocale(): Promise<Locale> {
+  const cookieStore = await cookies();
+  const raw = cookieStore.get(localeCookieName)?.value;
   if (raw === "en" || raw === "ja") return raw;
   return defaultLocale;
 }

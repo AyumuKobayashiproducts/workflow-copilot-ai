@@ -8,7 +8,7 @@ import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { listTasks } from "@/lib/tasks/store";
 
 export default async function InboxPage() {
-  const locale = getLocale();
+  const locale = await getLocale();
   const messages = await getMessages(locale);
   const t = createT(messages);
   const session = await auth();

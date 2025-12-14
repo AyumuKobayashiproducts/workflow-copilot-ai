@@ -9,7 +9,7 @@ function interpolate(template: string, vars: Record<string, string>) {
 }
 
 export default async function BreakdownPage(props: { searchParams?: Promise<Record<string, string | string[]>> }) {
-  const locale = getLocale();
+  const locale = await getLocale();
   const messages = await getMessages(locale);
   const t = createT(messages);
 

@@ -9,7 +9,7 @@ import { listTasks } from "@/lib/tasks/store";
 import { getWeeklyNote } from "@/lib/weekly/store";
 
 export default async function WeeklyPage() {
-  const locale = getLocale();
+  const locale = await getLocale();
   const messages = await getMessages(locale);
   const t = createT(messages);
 
