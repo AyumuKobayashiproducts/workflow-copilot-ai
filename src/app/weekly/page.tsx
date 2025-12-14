@@ -47,6 +47,8 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   const searchParams = (await props.searchParams) ?? {};
   const slackRaw = searchParams.slack;
   const slack = (Array.isArray(slackRaw) ? slackRaw[0] : slackRaw) ?? "";
+  const slackReasonRaw = searchParams.slackReason;
+  const slackReason = (Array.isArray(slackReasonRaw) ? slackReasonRaw[0] : slackReasonRaw) ?? "";
   const noteRaw = searchParams.note;
   const noteStatus = (Array.isArray(noteRaw) ? noteRaw[0] : noteRaw) ?? "";
   const slackMessageKey =
@@ -55,7 +57,15 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
       : slack === "not_configured"
         ? "weekly.slack.notConfigured"
         : slack === "failed"
-          ? "weekly.slack.failed"
+          ? slackReason === "rateLimited"
+            ? "weekly.slack.failed.rateLimited"
+            : slackReason === "invalidPayload"
+              ? "weekly.slack.failed.invalidPayload"
+              : slackReason === "invalidToken"
+                ? "weekly.slack.failed.invalidToken"
+                : slackReason === "invalidWebhook"
+                  ? "weekly.slack.failed.invalidWebhook"
+                  : "weekly.slack.failed"
           : null;
   const noteMessageKey =
     noteStatus === "saved"

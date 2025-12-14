@@ -322,7 +322,23 @@ export async function postWeeklyToSlackAction(formData: FormData) {
       body: JSON.stringify({ text: fallbackText, blocks })
     });
     if (!res.ok) {
-      redirect(`/weekly?slack=failed`);
+      const body = await res.text().catch(() => "");
+      const bodyTrimmed = body.trim();
+      const lower = bodyTrimmed.toLowerCase();
+
+      let slackReason: "rateLimited" | "invalidPayload" | "invalidToken" | "invalidWebhook" | "unknown" = "unknown";
+      if (res.status === 429 || lower.includes("rate_limited")) slackReason = "rateLimited";
+      else if (lower.includes("invalid_payload")) slackReason = "invalidPayload";
+      else if (lower.includes("invalid_token") || lower.includes("invalid_auth")) slackReason = "invalidToken";
+      else if (res.status === 404 || res.status === 410 || lower.includes("no_service")) slackReason = "invalidWebhook";
+
+      // eslint-disable-next-line no-console
+      console.error("Slack webhook failed", {
+        status: res.status,
+        body: bodyTrimmed.slice(0, 200),
+        slackReason
+      });
+      redirect(`/weekly?slack=failed&slackReason=${slackReason}`);
     }
   } catch {
     redirect(`/weekly?slack=failed`);
