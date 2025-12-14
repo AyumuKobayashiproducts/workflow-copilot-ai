@@ -56,6 +56,17 @@ Optional:
 - `OPENAI_API_KEY` (enables AI step generation in Breakdown)
 - `OPENAI_MODEL` (default: gpt-4o-mini)
 - `AI_DAILY_LIMIT` (default: 20, per user per day)
+- `SENTRY_DSN` (enables Sentry error reporting)
+- `SENTRY_TRACES_SAMPLE_RATE` (default: 0.0)
+- `E2E_TOKEN` (used by Playwright reset API; see E2E section)
+
+## Ops checklist (production-minded)
+
+- **AUTH_BYPASS**: This app supports `AUTH_BYPASS=1` to bypass OAuth for E2E tests.
+  - Never enable in production.
+- **Sentry**: Set `SENTRY_DSN` (and optionally `SENTRY_TRACES_SAMPLE_RATE`) in Vercel to capture errors.
+- **Slack**: Set `SLACK_WEBHOOK_URL` to enable Slack posting.
+- **OpenAI**: Set `OPENAI_API_KEY` to enable AI generation in Breakdown/Weekly. Keep `AI_DAILY_LIMIT` conservative.
 
 ## Local development
 
@@ -81,6 +92,19 @@ npm run db:migrate
 ```bash
 npm run dev
 ```
+
+## E2E (Playwright)
+
+CI runs Playwright with a Postgres service. For local E2E you need:
+
+- A running Postgres and valid `DATABASE_URL` / `PRISMA_DATABASE_URL` in `.env.local`
+- Browsers installed: `npx playwright install --with-deps chromium`
+
+Notes:
+
+- Playwright starts the dev server with `AUTH_BYPASS=1` by default (set `AUTH_BYPASS=0` to test real OAuth).
+- E2E tests reset the DB state via `POST /api/e2e/reset` (enabled only when `AUTH_BYPASS=1`).
+  - Protect it with `E2E_TOKEN` (default: `e2e`).
 
 ## Deploy (Vercel)
 

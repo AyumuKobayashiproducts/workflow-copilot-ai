@@ -1,5 +1,7 @@
 "use server";
 
+import * as Sentry from "@sentry/nextjs";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -26,6 +28,10 @@ export async function saveWeeklyNoteAction(formData: FormData) {
   const weekStart = String(formData.get("weekStart") ?? "");
   const noteRaw = String(formData.get("note") ?? "");
   if (!weekStart || Number.isNaN(new Date(weekStart).getTime())) {
+    Sentry.captureMessage("Invalid weekStart for saveWeeklyNoteAction", {
+      level: "warning",
+      tags: { feature: "weekly", action: "saveNote" }
+    });
     redirect(weeklyUrl(weekStart, { note: "failed" }));
   }
   const userId = await requireUserId();
@@ -42,6 +48,10 @@ export async function saveWeeklyReportAction(formData: FormData) {
   const weekStartIso = String(formData.get("weekStart") ?? "");
   const reportRaw = String(formData.get("report") ?? "");
   if (!weekStartIso || Number.isNaN(new Date(weekStartIso).getTime())) {
+    Sentry.captureMessage("Invalid weekStart for saveWeeklyReportAction", {
+      level: "warning",
+      tags: { feature: "weekly", action: "saveReport" }
+    });
     redirect(weeklyUrl(weekStartIso, { report: "failed" }));
   }
   const userId = await requireUserId();
@@ -229,6 +239,11 @@ export async function generateWeeklyReportText(
         const body = await res.text().catch(() => "");
         // eslint-disable-next-line no-console
         console.error("OpenAI weekly failed", { status: res.status, body: body.slice(0, 400) });
+        Sentry.captureMessage("OpenAI weekly failed", {
+          level: "error",
+          tags: { feature: "weekly", provider: "openai" },
+          extra: { status: res.status }
+        });
         return null;
       }
       const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
@@ -257,9 +272,10 @@ export async function generateWeeklyReportText(
       return { ok: true, text: second };
     }
     return { ok: false, reason: "failed" };
-  } catch {
+  } catch (err) {
     // eslint-disable-next-line no-console
     console.error("OpenAI weekly exception");
+    Sentry.captureException(err);
     return { ok: false, reason: "failed" };
   }
 }
@@ -276,6 +292,10 @@ export async function postWeeklyToSlackAction(formData: FormData) {
 
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
   if (!webhookUrl) {
+    Sentry.captureMessage("Slack webhook not configured", {
+      level: "warning",
+      tags: { feature: "weekly", provider: "slack" }
+    });
     redirect(weeklyUrl(weekStartIso, { slack: "not_configured" }));
   }
   if (webhookUrl === "mock") {
@@ -374,9 +394,15 @@ export async function postWeeklyToSlackAction(formData: FormData) {
         body: bodyTrimmed.slice(0, 200),
         slackReason
       });
+      Sentry.captureMessage("Slack webhook failed", {
+        level: "error",
+        tags: { feature: "weekly", provider: "slack" },
+        extra: { status: res.status, slackReason }
+      });
       redirect(weeklyUrl(weekStartIso, { slack: "failed", slackReason }));
     }
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     redirect(weeklyUrl(weekStartIso, { slack: "failed" }));
   }
 

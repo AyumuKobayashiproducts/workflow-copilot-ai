@@ -79,6 +79,9 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                   ? "weekly.slack.failed.invalidWebhook"
                   : "weekly.slack.failed"
           : null;
+  const showSettingsCta =
+    slack === "not_configured" ||
+    (slack === "failed" && (slackReason === "invalidToken" || slackReason === "invalidWebhook"));
   const noteMessageKey =
     noteStatus === "saved"
       ? "weekly.notes.saved"
@@ -128,7 +131,14 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
 
       {slackMessageKey ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
-          {t(slackMessageKey)}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>{t(slackMessageKey)}</div>
+            {showSettingsCta ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/settings">{t("common.goToSettings")}</Link>
+              </Button>
+            ) : null}
+          </div>
         </section>
       ) : null}
 

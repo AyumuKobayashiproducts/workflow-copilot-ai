@@ -1,5 +1,7 @@
 "use server";
 
+import * as Sentry from "@sentry/nextjs";
+
 import { getLocale } from "@/lib/i18n/server";
 import { requireUserId } from "@/lib/auth/user";
 import { consumeAiUsage } from "@/lib/ai/usage";
@@ -80,6 +82,11 @@ export async function generateBreakdownSteps(goal: string): Promise<Result> {
         const body = await res.text().catch(() => "");
         // eslint-disable-next-line no-console
         console.error("OpenAI breakdown failed", { status: res.status, body: body.slice(0, 400) });
+        Sentry.captureMessage("OpenAI breakdown failed", {
+          level: "error",
+          tags: { feature: "breakdown", provider: "openai" },
+          extra: { status: res.status }
+        });
         return null;
       }
 
@@ -92,6 +99,10 @@ export async function generateBreakdownSteps(goal: string): Promise<Result> {
       } catch {
         // eslint-disable-next-line no-console
         console.error("OpenAI breakdown parse failed", { content: content.slice(0, 400) });
+        Sentry.captureMessage("OpenAI breakdown parse failed", {
+          level: "error",
+          tags: { feature: "breakdown", provider: "openai" }
+        });
         return null;
       }
     }
@@ -104,9 +115,10 @@ export async function generateBreakdownSteps(goal: string): Promise<Result> {
     if (second) return { ok: true, steps: second };
 
     return { ok: false, reason: "failed" };
-  } catch {
+  } catch (err) {
     // eslint-disable-next-line no-console
     console.error("OpenAI breakdown exception");
+    Sentry.captureException(err);
     return { ok: false, reason: "failed" };
   }
 }
