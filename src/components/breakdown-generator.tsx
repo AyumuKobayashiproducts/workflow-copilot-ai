@@ -93,6 +93,7 @@ export function BreakdownGenerator(props: {
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
             placeholder={props.goalPlaceholder}
+            data-testid="breakdown-goal-input"
             className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
           />
         </div>
@@ -104,7 +105,7 @@ export function BreakdownGenerator(props: {
         ) : null}
 
         <div className="flex flex-wrap gap-2">
-          <Button type="button" onClick={onGenerate} disabled={isPending}>
+          <Button type="button" onClick={onGenerate} disabled={isPending} data-testid="breakdown-generate">
             {isPending ? props.generatingLabel : props.generateLabel}
           </Button>
           <Button type="button" variant="secondary" onClick={onClear}>
@@ -118,7 +119,12 @@ export function BreakdownGenerator(props: {
           <h2 className="text-sm font-medium">{props.stepsTitle}</h2>
           <form action={createTasksFromBreakdownAction}>
             <input type="hidden" name="steps" value={stepsValue} />
-            <Button type="submit" variant="secondary" disabled={stepsForSave.length === 0}>
+            <Button
+              type="submit"
+              variant="secondary"
+              disabled={stepsForSave.length === 0}
+              data-testid="breakdown-save-to-inbox"
+            >
               {props.saveToInboxLabel}
             </Button>
           </form>
@@ -135,6 +141,7 @@ export function BreakdownGenerator(props: {
                   value={s}
                   onChange={(e) => updateStep(i, e.target.value)}
                   placeholder={props.stepPlaceholder}
+                  data-testid="breakdown-step-input"
                   className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
                 />
                 <div className="flex shrink-0 flex-col gap-2 sm:flex-row">

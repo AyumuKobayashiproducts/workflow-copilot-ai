@@ -18,7 +18,7 @@ function SlackPostButton(props: { label: string; pendingLabel: string }) {
 function ReportSaveButton(props: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" variant="secondary" disabled={pending}>
+    <Button type="submit" variant="secondary" disabled={pending} data-testid="weekly-report-save">
       {pending ? props.pendingLabel : props.label}
     </Button>
   );
@@ -81,7 +81,13 @@ export function WeeklyShare(props: {
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-medium">{props.reportTitle}</h2>
           <div className="flex gap-2">
-            <Button type="button" variant="secondary" onClick={onGenerate} disabled={isPending}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onGenerate}
+              disabled={isPending}
+              data-testid="weekly-report-generate"
+            >
               {isPending ? props.reportGenerating : props.reportGenerate}
             </Button>
             <form action={saveWeeklyReportAction} className="flex">
@@ -106,6 +112,7 @@ export function WeeklyShare(props: {
           onChange={(e) => setReport(e.target.value)}
           placeholder={props.reportPlaceholder}
           maxLength={2000}
+          data-testid="weekly-report-textarea"
           className="min-h-32 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
         />
       </section>

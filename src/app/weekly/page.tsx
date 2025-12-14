@@ -105,12 +105,18 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="secondary" size="sm">
-            <Link href={`/weekly?weekStart=${encodeURIComponent(prevWeekStart.toISOString())}`}>
+            <Link
+              href={`/weekly?weekStart=${encodeURIComponent(prevWeekStart.toISOString())}`}
+              data-testid="weekly-prev-week"
+            >
               {t("weekly.cta.previousWeek")}
             </Link>
           </Button>
           <Button asChild variant="secondary" size="sm">
-            <Link href={`/weekly?weekStart=${encodeURIComponent(nextWeekStart.toISOString())}`}>
+            <Link
+              href={`/weekly?weekStart=${encodeURIComponent(nextWeekStart.toISOString())}`}
+              data-testid="weekly-next-week"
+            >
               {t("weekly.cta.nextWeek")}
             </Link>
           </Button>

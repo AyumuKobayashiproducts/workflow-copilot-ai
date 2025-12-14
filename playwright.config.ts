@@ -13,11 +13,15 @@ export default defineConfig({
     : {
         command: "npm run dev -- --port 3000",
         url: "http://localhost:3000",
-        reuseExistingServer: !process.env.CI,
+        // Default to a fresh server to ensure env vars (AUTH_BYPASS etc.) are applied reliably.
+        // Set E2E_REUSE_SERVER=1 to speed up local iteration.
+        reuseExistingServer: !process.env.CI && process.env.E2E_REUSE_SERVER === "1",
         timeout: 120_000,
         env: {
           ...process.env,
-          AUTH_BYPASS: process.env.AUTH_BYPASS ?? (process.env.CI ? "1" : "0"),
+          // E2E focuses on product flows; real OAuth is out of scope for Playwright here.
+          // Set AUTH_BYPASS=0 explicitly if you want to test the real login flow.
+          AUTH_BYPASS: process.env.AUTH_BYPASS ?? "1",
           SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL ?? "mock",
           AUTH_URL: process.env.AUTH_URL ?? "http://localhost:3000",
           AUTH_SECRET: process.env.AUTH_SECRET ?? "e2e-secret",
