@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { setWeeklyNote } from "@/lib/weekly/store";
+import { getWeeklyNote, setWeeklyNote } from "@/lib/weekly/store";
 import { requireUserId } from "@/lib/auth/user";
 import { listTasks } from "@/lib/tasks/store";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
@@ -15,6 +15,93 @@ export async function saveWeeklyNoteAction(formData: FormData) {
   const userId = await requireUserId();
   await setWeeklyNote({ userId, weekStartIso: weekStart, note });
   revalidatePath("/weekly");
+}
+
+export async function generateWeeklyReportText(
+  weekStartIso: string
+): Promise<{ ok: true; text: string } | { ok: false }> {
+  const userId = await requireUserId();
+  const locale = await getLocale();
+
+  const weekStart = new Date(weekStartIso);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  const startLabel = weekStart.toLocaleDateString(locale);
+  const endLabel = weekEnd.toLocaleDateString(locale);
+
+  const tasks = await listTasks(userId);
+  const inWeek = tasks.filter((task) => {
+    const created = task.createdAt.getTime();
+    return created >= weekStart.getTime() && created <= weekEnd.getTime();
+  });
+  const doneCount = inWeek.filter((x) => x.status === "done").length;
+  const todoCount = inWeek.filter((x) => x.status === "todo").length;
+  const blockedCount = 0;
+
+  const note = await getWeeklyNote({ userId, weekStartIso });
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+
+  // If AI is not configured, return a deterministic text (still useful).
+  if (!apiKey) {
+    const text = [
+      `Weekly report (${startLabel} - ${endLabel})`,
+      `Completed: ${doneCount}`,
+      `In progress: ${todoCount}`,
+      `Blocked: ${blockedCount}`,
+      "",
+      note ? `Notes: ${note}` : ""
+    ]
+      .filter(Boolean)
+      .join("\n");
+    return { ok: true, text };
+  }
+
+  const language = locale === "ja" ? "Japanese" : "English";
+  const system = [
+    `Write a concise weekly report in ${language}.`,
+    "Format:",
+    "- 1 title line",
+    "- 3 bullet points: Highlights, Challenges, Next week",
+    "Keep it short (max 8 lines).",
+    "No markdown code blocks."
+  ].join(" ");
+
+  const user = [
+    `Range: ${startLabel} - ${endLabel}`,
+    `Completed: ${doneCount}`,
+    `In progress: ${todoCount}`,
+    `Blocked: ${blockedCount}`,
+    `Notes: ${note || "(none)"}`
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.2,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user }
+        ]
+      })
+    });
+    if (!res.ok) return { ok: false };
+    const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const content = (data.choices?.[0]?.message?.content ?? "").trim();
+    if (!content) return { ok: false };
+    return { ok: true, text: content.slice(0, 2000) };
+  } catch {
+    return { ok: false };
+  }
 }
 
 export async function postWeeklyToSlackAction(formData: FormData) {
@@ -52,12 +139,25 @@ export async function postWeeklyToSlackAction(formData: FormData) {
   const startLabel = weekStart.toLocaleDateString(locale);
   const endLabel = weekEnd.toLocaleDateString(locale);
 
+  const note = await getWeeklyNote({ userId, weekStartIso });
+  const reportFromClient = String(formData.get("report") ?? "").trim();
+  const report =
+    reportFromClient ||
+    (await (async () => {
+      const gen = await generateWeeklyReportText(weekStartIso);
+      return gen.ok ? gen.text : "";
+    })());
+
   const text = [
     `*${t("slack.weekly.title")}*`,
     `${t("slack.weekly.range")}: ${startLabel} - ${endLabel}`,
     `${t("slack.weekly.completed")}: ${doneCount}`,
     `${t("slack.weekly.inProgress")}: ${todoCount}`,
     `${t("slack.weekly.blocked")}: ${blockedCount}`,
+    report ? "" : "",
+    report ? report : "",
+    note ? "" : "",
+    note ? `Notes: ${note}` : "",
     ""
   ].join("\n");
 

@@ -150,6 +150,12 @@
   "weekly.slack.posted": "Slackに投稿しました。",
   "weekly.slack.notConfigured": "Slack Webhookが設定されていません。",
   "weekly.slack.failed": "Slackに投稿できませんでした。もう一度お試しください。",
+  "weekly.report.title": "週報",
+  "weekly.report.generate": "週報を生成",
+  "weekly.report.generating": "生成中…",
+  "weekly.report.placeholder": "共有用の週報を生成します。",
+  "weekly.report.copy": "コピー",
+  "weekly.report.copied": "コピーしました。",
 
   "slack.weekly.title": "週報",
   "slack.weekly.range": "期間",

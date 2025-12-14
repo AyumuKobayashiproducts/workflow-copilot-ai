@@ -2,11 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { postWeeklyToSlackAction, saveWeeklyNoteAction } from "@/app/actions/weekly";
 import { getUserIdOrNull } from "@/lib/auth/user";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { listTasks } from "@/lib/tasks/store";
 import { getWeeklyNote } from "@/lib/weekly/store";
+import { saveWeeklyNoteAction } from "@/app/actions/weekly";
+import { WeeklyShare } from "@/components/weekly-share";
 
 export default async function WeeklyPage(props: { searchParams?: Promise<Record<string, string | string[]>> }) {
   const locale = await getLocale();
@@ -122,15 +123,18 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
         </form>
       </section>
 
-      <section className="space-y-3 rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-medium">{t("weekly.slack.title")}</h2>
-        <form action={postWeeklyToSlackAction} className="flex justify-end">
-          <input type="hidden" name="weekStart" value={weekStartIso} />
-          <Button type="submit" variant="secondary" data-testid="weekly-post-to-slack">
-            {t("weekly.cta.postToSlack")}
-          </Button>
-        </form>
-      </section>
+      <WeeklyShare
+        weekStartIso={weekStartIso}
+        note={note}
+        reportTitle={t("weekly.report.title")}
+        reportGenerate={t("weekly.report.generate")}
+        reportGenerating={t("weekly.report.generating")}
+        reportCopy={t("weekly.report.copy")}
+        reportCopied={t("weekly.report.copied")}
+        reportPlaceholder={t("weekly.report.placeholder")}
+        slackTitle={t("weekly.slack.title")}
+        slackPost={t("weekly.cta.postToSlack")}
+      />
     </div>
   );
 }

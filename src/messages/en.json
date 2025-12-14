@@ -150,6 +150,12 @@
   "weekly.slack.posted": "Posted to Slack.",
   "weekly.slack.notConfigured": "Slack webhook is not configured.",
   "weekly.slack.failed": "Could not post to Slack. Try again.",
+  "weekly.report.title": "Weekly report",
+  "weekly.report.generate": "Generate report",
+  "weekly.report.generating": "Generating…",
+  "weekly.report.placeholder": "Generate a weekly report to share.",
+  "weekly.report.copy": "Copy",
+  "weekly.report.copied": "Copied.",
 
   "slack.weekly.title": "Weekly report",
   "slack.weekly.range": "Range",
