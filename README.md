@@ -58,6 +58,7 @@ Optional:
 - `AI_DAILY_LIMIT` (default: 20, per user per day)
 - `SENTRY_DSN` (enables Sentry error reporting)
 - `SENTRY_TRACES_SAMPLE_RATE` (default: 0.0)
+- `SENTRY_TEST_ENABLED` (optional; enables /sentry-test in production for verification)
 - `E2E_TOKEN` (used by Playwright reset API; see E2E section)
 
 ## Ops checklist (production-minded)
