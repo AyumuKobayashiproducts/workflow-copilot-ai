@@ -30,6 +30,11 @@ export default async function BreakdownPage() {
         stepsTitle={t("breakdown.steps.title")}
         emptyDescription={t("empty.description")}
         saveToInboxLabel={t("breakdown.steps.saveToInbox")}
+        addStepLabel={t("breakdown.steps.add")}
+        deleteStepLabel={t("breakdown.steps.delete")}
+        moveUpLabel={t("breakdown.steps.moveUp")}
+        moveDownLabel={t("breakdown.steps.moveDown")}
+        stepPlaceholder={t("breakdown.steps.placeholder")}
         errorEmptyGoal={t("breakdown.error.emptyGoal")}
         errorNotConfigured={t("breakdown.ai.notConfigured")}
         errorFailed={t("breakdown.ai.failed")}

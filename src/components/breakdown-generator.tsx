@@ -15,6 +15,11 @@ export function BreakdownGenerator(props: {
   stepsTitle: string;
   emptyDescription: string;
   saveToInboxLabel: string;
+  addStepLabel: string;
+  deleteStepLabel: string;
+  moveUpLabel: string;
+  moveDownLabel: string;
+  stepPlaceholder: string;
   errorEmptyGoal: string;
   errorNotConfigured: string;
   errorFailed: string;
@@ -24,7 +29,8 @@ export function BreakdownGenerator(props: {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const stepsValue = useMemo(() => steps.join("\n"), [steps]);
+  const stepsForSave = useMemo(() => steps.map((s) => s.trim()).filter(Boolean), [steps]);
+  const stepsValue = useMemo(() => stepsForSave.join("\n"), [stepsForSave]);
 
   function onClear() {
     setGoal("");
@@ -43,6 +49,30 @@ export function BreakdownGenerator(props: {
       if (res.reason === "empty_goal") setError(props.errorEmptyGoal);
       else if (res.reason === "not_configured") setError(props.errorNotConfigured);
       else setError(props.errorFailed);
+    });
+  }
+
+  function updateStep(index: number, value: string) {
+    setSteps((prev) => prev.map((s, i) => (i === index ? value : s)));
+  }
+
+  function addStep() {
+    setSteps((prev) => [...prev, ""]);
+  }
+
+  function deleteStep(index: number) {
+    setSteps((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function moveStep(index: number, dir: -1 | 1) {
+    setSteps((prev) => {
+      const next = prev.slice();
+      const to = index + dir;
+      if (to < 0 || to >= next.length) return prev;
+      const tmp = next[index]!;
+      next[index] = next[to]!;
+      next[to] = tmp;
+      return next;
     });
   }
 
@@ -84,7 +114,7 @@ export function BreakdownGenerator(props: {
           <h2 className="text-sm font-medium">{props.stepsTitle}</h2>
           <form action={createTasksFromBreakdownAction}>
             <input type="hidden" name="steps" value={stepsValue} />
-            <Button type="submit" variant="secondary" disabled={steps.length === 0}>
+            <Button type="submit" variant="secondary" disabled={stepsForSave.length === 0}>
               {props.saveToInboxLabel}
             </Button>
           </form>
@@ -93,14 +123,49 @@ export function BreakdownGenerator(props: {
         {steps.length === 0 ? (
           <p className="text-sm text-neutral-700">{props.emptyDescription}</p>
         ) : (
-          <ol className="list-decimal space-y-2 pl-5 text-sm">
+          <ol className="space-y-2">
             {steps.map((s, i) => (
-              <li key={`${i}-${s}`} className="text-neutral-900">
-                {s}
+              <li key={`${i}`} className="flex items-start gap-2">
+                <div className="mt-2 w-6 shrink-0 text-right text-xs text-neutral-500">{i + 1}.</div>
+                <input
+                  value={s}
+                  onChange={(e) => updateStep(i, e.target.value)}
+                  placeholder={props.stepPlaceholder}
+                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                />
+                <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => moveStep(i, -1)}
+                    disabled={i === 0}
+                  >
+                    {props.moveUpLabel}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => moveStep(i, 1)}
+                    disabled={i === steps.length - 1}
+                  >
+                    {props.moveDownLabel}
+                  </Button>
+                  <Button type="button" size="sm" variant="secondary" onClick={() => deleteStep(i)}>
+                    {props.deleteStepLabel}
+                  </Button>
+                </div>
               </li>
             ))}
           </ol>
         )}
+
+        <div className="flex justify-end">
+          <Button type="button" variant="secondary" onClick={addStep}>
+            {props.addStepLabel}
+          </Button>
+        </div>
       </section>
     </div>
   );
