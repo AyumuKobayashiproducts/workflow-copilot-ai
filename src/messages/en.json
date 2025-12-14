@@ -112,6 +112,8 @@
   "breakdown.tips.title": "Tips",
   "breakdown.tips.item1": "Keep steps small.",
   "breakdown.tips.item2": "Start with the next 10 minutes.",
+  "breakdown.ai.notConfigured": "AI is not configured.",
+  "breakdown.ai.failed": "Could not generate steps. Try again.",
   "breakdown.generated.step1": "Define the goal: {goal}",
   "breakdown.generated.step2": "List what you need (info, tools, people)",
   "breakdown.generated.step3": "Do the smallest next step (10 minutes)",

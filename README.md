@@ -53,6 +53,8 @@ Required:
 Optional:
 
 - `SLACK_WEBHOOK_URL` (Slack Incoming Webhook URL)
+- `OPENAI_API_KEY` (enables AI step generation in Breakdown)
+- `OPENAI_MODEL` (default: gpt-4o-mini)
 
 ## Local development
 

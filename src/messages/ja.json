@@ -112,6 +112,8 @@
   "breakdown.tips.title": "ヒント",
   "breakdown.tips.item1": "ステップは小さく。",
   "breakdown.tips.item2": "まず次の10分から。",
+  "breakdown.ai.notConfigured": "AIが設定されていません。",
+  "breakdown.ai.failed": "ステップを生成できませんでした。もう一度お試しください。",
   "breakdown.generated.step1": "目標を定義する：{goal}",
   "breakdown.generated.step2": "必要なものを洗い出す（情報・道具・人）",
   "breakdown.generated.step3": "最小の次の一歩（10分）をやる",
