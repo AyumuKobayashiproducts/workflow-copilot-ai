@@ -135,9 +135,8 @@ npm run db:deploy
 
 ## Screenshots
 
-Add screenshots/GIFs here for recruiters:
+![Login](docs/screenshots/login.png)
 
-- Login
-- Weekly → Slack post (message in Slack)
+![Weekly report in Slack](docs/screenshots/slack-weekly.png)
 
 
