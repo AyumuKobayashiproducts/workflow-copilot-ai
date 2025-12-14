@@ -35,6 +35,10 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {t("settings.demoTools.cleared")}
         </section>
+      ) : demo === "seeded" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.demoTools.seeded")}
+        </section>
       ) : null}
 
       <section className="space-y-3 rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">

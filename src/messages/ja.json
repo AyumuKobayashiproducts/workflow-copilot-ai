@@ -193,8 +193,9 @@
   "settings.integrations.sentry": "Sentry",
   "settings.integrations.aiDailyLimit": "AIの1日上限",
   "settings.demoTools.title": "デモ用ツール",
-  "settings.demoTools.clearCta": "デモデータを削除",
+  "settings.demoTools.clearCta": "デモデータをリセット",
   "settings.demoTools.cleared": "デモデータを削除しました。",
+  "settings.demoTools.seeded": "デモデータを用意しました。",
   "settings.demoTools.disabled": "この環境ではデモ用ツールが無効です。",
 
   "empty.title": "まだ何もありません",

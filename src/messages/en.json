@@ -193,8 +193,9 @@
   "settings.integrations.sentry": "Sentry",
   "settings.integrations.aiDailyLimit": "AI daily limit",
   "settings.demoTools.title": "Demo tools",
-  "settings.demoTools.clearCta": "Clear my demo data",
+  "settings.demoTools.clearCta": "Reset demo data",
   "settings.demoTools.cleared": "Your demo data was cleared.",
+  "settings.demoTools.seeded": "Demo data is ready.",
   "settings.demoTools.disabled": "Demo tools are disabled in this environment.",
 
   "empty.title": "Nothing here yet",
