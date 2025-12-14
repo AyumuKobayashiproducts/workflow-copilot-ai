@@ -1,13 +1,60 @@
-# workflow-copilot-ai
+# Workflow Copilot AI
 
-Next.js (App Router) MVP with:
+A small but production-minded Next.js app for an end-to-end personal workflow:
+**Inbox → Breakdown → Weekly review → (optional) post to Slack**.
 
-- i18n via `src/messages/{en,ja}.json` (keys must match; missing keys throw)
-- Locale switching via cookie (`locale=en|ja`)
-- Tasks (Inbox) + Breakdown + Weekly
-- **Production-like setup**: Auth (GitHub) + Postgres (Prisma) for persistence
+## Live demo
 
-## Local setup
+- App: `https://workflow-copilot-ai.vercel.app`
+- Login: GitHub OAuth
+
+## 30-second demo flow
+
+1. Login with GitHub
+2. Go to **Breakdown** → type a goal → generate steps → **Save to Inbox**
+3. Go to **Inbox** → add / complete / delete tasks
+4. Go to **Weekly** → verify counts and notes persistence
+5. (Optional) Click **Post to Slack** → see the weekly report in Slack
+
+## Features
+
+- **Auth**: GitHub OAuth (Auth.js / NextAuth v5) + middleware route protection
+- **DB persistence**: Prisma + Postgres (migrations included)
+- **Inbox**: create / toggle done / delete
+- **Breakdown**: goal → steps (MVP generator) → bulk save to Inbox
+- **Weekly**: counts + weekly note persistence
+- **Slack (optional)**: weekly report via Incoming Webhook
+- **i18n (no library)**:
+  - Messages are fully separated into `src/messages/en.json` and `src/messages/ja.json`
+  - Keys must match (CI check)
+  - Missing keys throw (translation omissions are detected immediately)
+  - Locale is derived from cookie: `locale=en|ja`
+
+## Architecture notes (what I’m intentionally showing)
+
+- **App Router + Server Actions** for writes
+- **JWT session strategy** so auth checks can run in **Vercel Edge middleware**
+- **Prisma migrations committed** so `prisma migrate deploy` can run in CI/CD
+- **Typed routes disabled** because this app intentionally uses dynamic back URLs in `redirect()`
+
+## Environment variables
+
+See `docs/env.example`.
+
+Required:
+
+- `DATABASE_URL`
+- `PRISMA_DATABASE_URL` (non-pooled URL; used for migrations)
+- `AUTH_URL`
+- `AUTH_SECRET`
+- `AUTH_GITHUB_ID`
+- `AUTH_GITHUB_SECRET`
+
+Optional:
+
+- `SLACK_WEBHOOK_URL` (Slack Incoming Webhook URL)
+
+## Local development
 
 ### 1) Install
 
@@ -17,22 +64,9 @@ npm install
 
 ### 2) Configure env
 
-Copy values from `docs/env.example` into your local env (e.g. `.env.local`).
+Create `.env.local` based on `docs/env.example`.
 
-Required:
-
-- `DATABASE_URL` (Postgres)
-- `PRISMA_DATABASE_URL` (Postgres, for migrations)
-- `AUTH_SECRET`
-- `AUTH_URL` (local: `http://localhost:3000`)
-- `AUTH_GITHUB_ID`
-- `AUTH_GITHUB_SECRET`
-
-Optional:
-
-- `SLACK_WEBHOOK_URL` (Incoming Webhook, for posting weekly report)
-
-### 3) Setup DB
+### 3) DB setup
 
 ```bash
 npm run db:generate
@@ -45,24 +79,65 @@ npm run db:migrate
 npm run dev
 ```
 
-## Vercel deploy (high level)
+## Deploy (Vercel)
 
-1. Create a Vercel project
-2. Add Vercel Postgres (set `DATABASE_URL`)
-3. Add env vars (`AUTH_*`)
-4. Deploy
+### 1) Import repo
 
-Notes:
+Import this repository into Vercel.
 
-- Set `AUTH_URL` to your Vercel URL (e.g. `https://your-app.vercel.app`)
-- Configure GitHub OAuth callback URL:
-  - `https://your-app.vercel.app/api/auth/callback/github`
-  - (local) `http://localhost:3000/api/auth/callback/github`
+### 2) Create Postgres
 
-## Useful scripts
+Create a **Prisma Postgres** database for the Vercel project.
+Vercel will populate `DATABASE_URL` and `PRISMA_DATABASE_URL`.
+
+### 3) Configure GitHub OAuth App
+
+GitHub → Settings → Developer settings → OAuth Apps → New OAuth App
+
+- Homepage URL: `https://workflow-copilot-ai.vercel.app`
+- Authorization callback URL:
+  - `https://workflow-copilot-ai.vercel.app/api/auth/callback/github`
+
+Then set env vars in Vercel:
+
+- `AUTH_URL` = `https://workflow-copilot-ai.vercel.app`
+- `AUTH_SECRET`
+- `AUTH_GITHUB_ID`
+- `AUTH_GITHUB_SECRET`
+
+### 4) Build command
+
+This repo provides:
+
+- `npm run vercel-build` → `prisma generate && prisma migrate deploy && next build`
+
+## Slack (optional)
+
+1. Create an **Incoming Webhook** in Slack
+2. Set `SLACK_WEBHOOK_URL` in Vercel (and redeploy)
+3. Open `/weekly` → click **Post to Slack**
+
+## CI
+
+GitHub Actions runs:
+
+- `npm run lint`
+- `npm run check:i18n` (en/ja keys must match)
+
+## Scripts
 
 ```bash
 npm run check:i18n
+npm run db:generate
+npm run db:migrate
+npm run db:deploy
 ```
+
+## Screenshots
+
+Add screenshots/GIFs here for recruiters:
+
+- Login
+- Weekly → Slack post (message in Slack)
 
 
