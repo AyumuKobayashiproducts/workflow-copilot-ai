@@ -173,7 +173,7 @@ export function BreakdownGenerator(props: {
         )}
 
         <div className="flex justify-end">
-          <Button type="button" variant="secondary" onClick={addStep}>
+          <Button type="button" variant="secondary" onClick={addStep} data-testid="breakdown-add-step">
             {props.addStepLabel}
           </Button>
         </div>

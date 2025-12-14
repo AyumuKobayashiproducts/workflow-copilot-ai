@@ -22,6 +22,7 @@ export default defineConfig({
           // E2E focuses on product flows; real OAuth is out of scope for Playwright here.
           // Set AUTH_BYPASS=0 explicitly if you want to test the real login flow.
           AUTH_BYPASS: process.env.AUTH_BYPASS ?? "1",
+          E2E_TOKEN: process.env.E2E_TOKEN ?? "e2e",
           SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL ?? "mock",
           AUTH_URL: process.env.AUTH_URL ?? "http://localhost:3000",
           AUTH_SECRET: process.env.AUTH_SECRET ?? "e2e-secret",

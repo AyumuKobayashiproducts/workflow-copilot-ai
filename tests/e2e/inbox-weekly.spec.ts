@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/test";
 
 test("login bypass: can add task in Inbox and see Weekly reflect it", async ({ page }) => {
+  await page.request.post("/api/e2e/reset", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
+  });
+
   const title = `e2e-task-${Date.now()}`;
 
   await page.goto("/inbox");
