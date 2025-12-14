@@ -16,6 +16,13 @@ A small but production-minded Next.js app for an end-to-end personal workflow:
 - App: `https://workflow-copilot-ai.vercel.app`
 - Login: GitHub OAuth
 
+## 日本語：デモ手順（最短）
+
+1. `/settings` → **Reset demo data**（デモ用データを準備）
+2. `/breakdown` → 目標入力 → **Generate steps** → **Save to Inbox**
+3. `/inbox` → タスクを1つ完了にする
+4. `/weekly` → **Generate report** →（必要なら編集）→ **Save** → **Post to Slack**
+
 ## 30-second demo flow
 
 1. Login with GitHub
