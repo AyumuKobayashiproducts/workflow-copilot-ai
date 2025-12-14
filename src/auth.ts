@@ -6,7 +6,15 @@ import { prisma } from "@/lib/db";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  providers: [GitHub],
+  // Vercel runs behind proxies; trustHost avoids "Untrusted Host" issues.
+  trustHost: true,
+  secret: process.env.AUTH_SECRET,
+  providers: [
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID ?? process.env.GITHUB_ID ?? "",
+      clientSecret: process.env.AUTH_GITHUB_SECRET ?? process.env.GITHUB_SECRET ?? ""
+    })
+  ],
   session: { strategy: "jwt" },
   callbacks: {
     session({ session, token }) {
