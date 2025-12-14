@@ -3,6 +3,14 @@
 A small but production-minded Next.js app for an end-to-end personal workflow:
 **Inbox → Breakdown → Weekly review → (optional) post to Slack**.
 
+## What I built (outcomes)
+
+- **End-to-end workflow**: Goal → steps → tasks → weekly review → share
+- **AI with guardrails**: daily usage limit, input validation, retry + server-side logging
+- **Weekly report persistence**: saved per week (upsert) and editable (manual save)
+- **Slack sharing**: Block Kit formatting, clear error reasons, double-submit prevention
+- **Production ergonomics**: Sentry integration + integration status on Settings + E2E coverage
+
 ## Live demo
 
 - App: `https://workflow-copilot-ai.vercel.app`
@@ -22,7 +30,7 @@ A small but production-minded Next.js app for an end-to-end personal workflow:
 - **DB persistence**: Prisma + Postgres (migrations included)
 - **Inbox**: create / toggle done / delete
 - **Breakdown**: goal → steps (MVP generator) → bulk save to Inbox
-- **Weekly**: counts + weekly note persistence
+- **Weekly**: counts + weekly note/report persistence (saved per week)
 - **Slack (optional)**: weekly report via Incoming Webhook
 - **i18n (no library)**:
   - Messages are fully separated into `src/messages/en.json` and `src/messages/ja.json`
