@@ -279,6 +279,8 @@ export async function postWeeklyToSlackAction(formData: FormData) {
     redirect(weeklyUrl(weekStartIso, { slack: "not_configured" }));
   }
   if (webhookUrl === "mock") {
+    // Give the client a moment to enter a pending state (prevents flaky E2E around double-submit).
+    await new Promise((r) => setTimeout(r, 400));
     redirect(weeklyUrl(weekStartIso, { slack: "posted" }));
   }
 
