@@ -277,7 +277,9 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                   >
                     <div className="min-w-0">
                       <div className="truncate text-neutral-600 line-through">{task.title}</div>
-                      <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
+                      <div className="mt-0.5 text-xs text-neutral-500">
+                        {(task.completedAt ?? task.createdAt).toLocaleString(locale)}
+                      </div>
                     </div>
                     <form action={toggleTaskDoneAction} className="shrink-0">
                       <input type="hidden" name="id" value={task.id} />
@@ -302,7 +304,9 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                       >
                         <div className="min-w-0">
                           <div className="truncate text-neutral-600 line-through">{task.title}</div>
-                          <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
+                          <div className="mt-0.5 text-xs text-neutral-500">
+                            {(task.completedAt ?? task.createdAt).toLocaleString(locale)}
+                          </div>
                         </div>
                         <form action={toggleTaskDoneAction} className="shrink-0">
                           <input type="hidden" name="id" value={task.id} />
