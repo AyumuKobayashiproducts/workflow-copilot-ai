@@ -22,6 +22,7 @@ model User {
 
   tasks         Task[]
   weeklyNotes   WeeklyNote[]
+  weeklyReports WeeklyReport[]
   aiUsage       AiUsage[]
 
   createdAt     DateTime  @default(now())
@@ -96,6 +97,21 @@ model WeeklyNote {
   userId    String
   weekStart DateTime
   note      String   @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStart])
+  @@index([userId, weekStart])
+}
+
+model WeeklyReport {
+  id        String   @id @default(cuid())
+  userId    String
+  weekStart DateTime
+  text      String   @default("")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

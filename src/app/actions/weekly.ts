@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { getWeeklyNote, setWeeklyNote } from "@/lib/weekly/store";
+import { getWeeklyNote, setWeeklyNote, setWeeklyReport } from "@/lib/weekly/store";
 import { requireUserId } from "@/lib/auth/user";
 import { listTasks } from "@/lib/tasks/store";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
@@ -144,18 +144,20 @@ export async function generateWeeklyReportText(
     ]
       .filter(Boolean)
       .join("\n");
+    const formatted = formatWeeklyReport({
+      locale,
+      startLabel,
+      endLabel,
+      doneCount,
+      todoCount,
+      blockedCount,
+      note,
+      raw: text
+    });
+    await setWeeklyReport({ userId, weekStartIso, text: formatted });
     return {
       ok: true,
-      text: formatWeeklyReport({
-        locale,
-        startLabel,
-        endLabel,
-        doneCount,
-        todoCount,
-        blockedCount,
-        note,
-        raw: text
-      })
+      text: formatted
     };
   }
 
@@ -219,9 +221,15 @@ export async function generateWeeklyReportText(
     }
 
     const first = await callOnce();
-    if (first) return { ok: true, text: first };
+    if (first) {
+      await setWeeklyReport({ userId, weekStartIso, text: first });
+      return { ok: true, text: first };
+    }
     const second = await callOnce();
-    if (second) return { ok: true, text: second };
+    if (second) {
+      await setWeeklyReport({ userId, weekStartIso, text: second });
+      return { ok: true, text: second };
+    }
     return { ok: false, reason: "failed" };
   } catch {
     // eslint-disable-next-line no-console

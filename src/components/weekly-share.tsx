@@ -18,6 +18,7 @@ function SlackPostButton(props: { label: string; pendingLabel: string }) {
 export function WeeklyShare(props: {
   weekStartIso: string;
   note: string;
+  initialReport: string;
   reportTitle: string;
   reportGenerate: string;
   reportGenerating: string;
@@ -30,7 +31,7 @@ export function WeeklyShare(props: {
   reportErrorFailed: string;
   reportErrorRateLimited: string;
 }) {
-  const [report, setReport] = useState("");
+  const [report, setReport] = useState(() => props.initialReport ?? "");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();

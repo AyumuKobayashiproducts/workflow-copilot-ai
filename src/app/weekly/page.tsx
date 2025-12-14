@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { getUserIdOrNull } from "@/lib/auth/user";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { listTasks } from "@/lib/tasks/store";
-import { getWeeklyNote } from "@/lib/weekly/store";
+import { getWeeklyNote, getWeeklyReport } from "@/lib/weekly/store";
 import { saveWeeklyNoteAction } from "@/app/actions/weekly";
 import { WeeklyShare } from "@/components/weekly-share";
 
@@ -31,6 +31,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
 
   const weekStartIso = weekStart.toISOString();
   const note = await getWeeklyNote({ userId, weekStartIso });
+  const savedReport = await getWeeklyReport({ userId, weekStartIso });
 
   const inWeek = tasks.filter((task) => {
     const created = task.createdAt.getTime();
@@ -153,6 +154,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
       <WeeklyShare
         weekStartIso={weekStartIso}
         note={note}
+        initialReport={savedReport}
         reportTitle={t("weekly.report.title")}
         reportGenerate={t("weekly.report.generate")}
         reportGenerating={t("weekly.report.generating")}
