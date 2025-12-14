@@ -14,4 +14,8 @@ pnpm-debug.log*
 
 .DS_Store
 
+# Playwright artifacts
+test-results/
+playwright-report/
+
 
