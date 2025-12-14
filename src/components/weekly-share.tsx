@@ -1,9 +1,19 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { useFormStatus } from "react-dom";
 
 import { Button } from "@/components/ui/button";
 import { generateWeeklyReportText, postWeeklyToSlackAction } from "@/app/actions/weekly";
+
+function SlackPostButton(props: { label: string; pendingLabel: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" variant="secondary" disabled={pending} data-testid="weekly-post-to-slack">
+      {pending ? props.pendingLabel : props.label}
+    </Button>
+  );
+}
 
 export function WeeklyShare(props: {
   weekStartIso: string;
@@ -15,6 +25,7 @@ export function WeeklyShare(props: {
   reportCopied: string;
   slackTitle: string;
   slackPost: string;
+  slackPosting: string;
   reportPlaceholder: string;
   reportErrorFailed: string;
   reportErrorRateLimited: string;
@@ -87,9 +98,7 @@ export function WeeklyShare(props: {
           <input type="hidden" name="weekStart" value={props.weekStartIso} />
           <input type="hidden" name="report" value={reportValue} />
           <input type="hidden" name="note" value={props.note} />
-          <Button type="submit" variant="secondary" data-testid="weekly-post-to-slack">
-            {props.slackPost}
-          </Button>
+          <SlackPostButton label={props.slackPost} pendingLabel={props.slackPosting} />
         </form>
       </section>
     </>

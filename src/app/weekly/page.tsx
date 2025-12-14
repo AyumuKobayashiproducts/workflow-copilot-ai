@@ -163,6 +163,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
         reportErrorRateLimited={t("weekly.report.rateLimited")}
         slackTitle={t("weekly.slack.title")}
         slackPost={t("weekly.cta.postToSlack")}
+        slackPosting={t("weekly.cta.postingToSlack")}
       />
     </div>
   );

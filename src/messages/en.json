@@ -151,6 +151,7 @@
   "weekly.error.generic": "Could not load weekly data. Try again.",
   "weekly.meta.weekStart": "Week start",
   "weekly.cta.postToSlack": "Post to Slack",
+  "weekly.cta.postingToSlack": "Posting…",
   "weekly.slack.title": "Slack",
   "weekly.slack.posted": "Posted to Slack.",
   "weekly.slack.notConfigured": "Slack webhook is not configured.",

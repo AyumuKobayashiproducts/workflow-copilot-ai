@@ -151,6 +151,7 @@
   "weekly.error.generic": "週間データを読み込めませんでした。もう一度お試しください。",
   "weekly.meta.weekStart": "週の開始日",
   "weekly.cta.postToSlack": "Slackに投稿",
+  "weekly.cta.postingToSlack": "投稿中…",
   "weekly.slack.title": "Slack",
   "weekly.slack.posted": "Slackに投稿しました。",
   "weekly.slack.notConfigured": "Slack Webhookが設定されていません。",
