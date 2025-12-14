@@ -22,7 +22,7 @@ Copy values from `docs/env.example` into your local env (e.g. `.env.local`).
 Required:
 
 - `DATABASE_URL` (Postgres)
-- `DIRECT_URL` (Postgres, for migrations)
+- `PRISMA_DATABASE_URL` (Postgres, for migrations)
 - `AUTH_SECRET`
 - `AUTH_URL` (local: `http://localhost:3000`)
 - `AUTH_GITHUB_ID`
