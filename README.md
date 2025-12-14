@@ -28,6 +28,10 @@ Required:
 - `AUTH_GITHUB_ID`
 - `AUTH_GITHUB_SECRET`
 
+Optional:
+
+- `SLACK_WEBHOOK_URL` (Incoming Webhook, for posting weekly report)
+
 ### 3) Setup DB
 
 ```bash

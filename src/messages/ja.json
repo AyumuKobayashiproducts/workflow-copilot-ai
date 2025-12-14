@@ -139,6 +139,17 @@
   "weekly.cta.savingNotes": "保存中…",
   "weekly.error.generic": "週間データを読み込めませんでした。もう一度お試しください。",
   "weekly.meta.weekStart": "週の開始日",
+  "weekly.cta.postToSlack": "Slackに投稿",
+  "weekly.slack.title": "Slack",
+  "weekly.slack.posted": "Slackに投稿しました。",
+  "weekly.slack.notConfigured": "Slack Webhookが設定されていません。",
+  "weekly.slack.failed": "Slackに投稿できませんでした。もう一度お試しください。",
+
+  "slack.weekly.title": "週報",
+  "slack.weekly.range": "期間",
+  "slack.weekly.completed": "完了",
+  "slack.weekly.inProgress": "進行中",
+  "slack.weekly.blocked": "停滞",
 
   "empty.title": "まだ何もありません",
   "empty.description": "最初のアイテムを追加して始めましょう。",

@@ -2,13 +2,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { saveWeeklyNoteAction } from "@/app/actions/weekly";
+import { postWeeklyToSlackAction, saveWeeklyNoteAction } from "@/app/actions/weekly";
 import { auth } from "@/auth";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { listTasks } from "@/lib/tasks/store";
 import { getWeeklyNote } from "@/lib/weekly/store";
 
-export default async function WeeklyPage() {
+export default async function WeeklyPage(props: { searchParams?: Promise<Record<string, string | string[]>> }) {
   const locale = await getLocale();
   const messages = await getMessages(locale);
   const t = createT(messages);
@@ -44,6 +44,18 @@ export default async function WeeklyPage() {
   const startLabel = weekStart.toLocaleDateString(locale);
   const endLabel = weekEnd.toLocaleDateString(locale);
 
+  const searchParams = (await props.searchParams) ?? {};
+  const slackRaw = searchParams.slack;
+  const slack = (Array.isArray(slackRaw) ? slackRaw[0] : slackRaw) ?? "";
+  const slackMessageKey =
+    slack === "posted"
+      ? "weekly.slack.posted"
+      : slack === "not_configured"
+        ? "weekly.slack.notConfigured"
+        : slack === "failed"
+          ? "weekly.slack.failed"
+          : null;
+
   return (
     <div className="space-y-6">
       <header className="flex items-start justify-between gap-4">
@@ -55,6 +67,12 @@ export default async function WeeklyPage() {
           <Link href="/inbox">{t("nav.inbox")}</Link>
         </Button>
       </header>
+
+      {slackMessageKey ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t(slackMessageKey)}
+        </section>
+      ) : null}
 
       <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-700 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -96,6 +114,16 @@ export default async function WeeklyPage() {
           <div className="flex justify-end">
             <Button type="submit">{t("weekly.cta.saveNotes")}</Button>
           </div>
+        </form>
+      </section>
+
+      <section className="space-y-3 rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
+        <h2 className="text-sm font-medium">{t("weekly.slack.title")}</h2>
+        <form action={postWeeklyToSlackAction} className="flex justify-end">
+          <input type="hidden" name="weekStart" value={weekStartIso} />
+          <Button type="submit" variant="secondary">
+            {t("weekly.cta.postToSlack")}
+          </Button>
         </form>
       </section>
     </div>
