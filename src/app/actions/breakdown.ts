@@ -6,7 +6,10 @@ import { consumeAiUsage } from "@/lib/ai/usage";
 
 type Result =
   | { ok: true; steps: string[] }
-  | { ok: false; reason: "empty_goal" | "not_configured" | "rate_limited" | "failed" };
+  | {
+      ok: false;
+      reason: "empty_goal" | "goal_too_long" | "not_configured" | "rate_limited" | "failed";
+    };
 
 function pickJsonArray(text: string): string | null {
   const start = text.indexOf("[");
@@ -29,6 +32,7 @@ function parseSteps(text: string): string[] {
 export async function generateBreakdownSteps(goal: string): Promise<Result> {
   const trimmed = (goal ?? "").trim();
   if (!trimmed) return { ok: false, reason: "empty_goal" };
+  if (trimmed.length > 300) return { ok: false, reason: "goal_too_long" };
 
   // Require auth in prod; in CI we can bypass with AUTH_BYPASS.
   const userId = await requireUserId();
@@ -55,32 +59,54 @@ export async function generateBreakdownSteps(goal: string): Promise<Result> {
   const user = `Goal: ${trimmed}`;
 
   try {
-    // Chat Completions (simple and widely supported)
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${apiKey}`,
-        "content-type": "application/json"
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.2,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user }
-        ]
-      })
-    });
+    async function callOnce() {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${apiKey}`,
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0.2,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: user }
+          ]
+        })
+      });
 
-    if (!res.ok) return { ok: false, reason: "failed" };
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        // eslint-disable-next-line no-console
+        console.error("OpenAI breakdown failed", { status: res.status, body: body.slice(0, 400) });
+        return null;
+      }
 
-    const data = (await res.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const content = data.choices?.[0]?.message?.content ?? "";
-    const steps = parseSteps(content);
-    return { ok: true, steps };
+      const data = (await res.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
+      };
+      const content = data.choices?.[0]?.message?.content ?? "";
+      try {
+        return parseSteps(content);
+      } catch {
+        // eslint-disable-next-line no-console
+        console.error("OpenAI breakdown parse failed", { content: content.slice(0, 400) });
+        return null;
+      }
+    }
+
+    const first = await callOnce();
+    if (first) return { ok: true, steps: first };
+
+    // One retry for transient errors / formatting issues
+    const second = await callOnce();
+    if (second) return { ok: true, steps: second };
+
+    return { ok: false, reason: "failed" };
   } catch {
+    // eslint-disable-next-line no-console
+    console.error("OpenAI breakdown exception");
     return { ok: false, reason: "failed" };
   }
 }

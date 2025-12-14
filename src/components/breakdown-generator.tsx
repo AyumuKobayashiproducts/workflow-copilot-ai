@@ -21,6 +21,7 @@ export function BreakdownGenerator(props: {
   moveDownLabel: string;
   stepPlaceholder: string;
   errorEmptyGoal: string;
+  errorGoalTooLong: string;
   errorNotConfigured: string;
   errorRateLimited: string;
   errorFailed: string;
@@ -48,6 +49,7 @@ export function BreakdownGenerator(props: {
         return;
       }
       if (res.reason === "empty_goal") setError(props.errorEmptyGoal);
+      else if (res.reason === "goal_too_long") setError(props.errorGoalTooLong);
       else if (res.reason === "not_configured") setError(props.errorNotConfigured);
       else if (res.reason === "rate_limited") setError(props.errorRateLimited);
       else setError(props.errorFailed);

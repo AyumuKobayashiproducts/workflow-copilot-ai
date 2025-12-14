@@ -125,6 +125,7 @@
   "breakdown.generated.step4": "Review the result and adjust",
   "breakdown.generated.step5": "Finish and mark it done",
   "breakdown.error.emptyGoal": "Enter a goal first.",
+  "breakdown.error.goalTooLong": "Goal is too long.",
   "breakdown.error.generic": "Could not generate steps. Try again.",
 
   "weekly.title": "Weekly",

@@ -24,6 +24,10 @@ export async function generateWeeklyReportText(
   const userId = await requireUserId();
   const locale = await getLocale();
 
+  if (!weekStartIso || Number.isNaN(new Date(weekStartIso).getTime())) {
+    return { ok: false, reason: "failed" };
+  }
+
   const weekStart = new Date(weekStartIso);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekEnd.getDate() + 6);
@@ -83,27 +87,42 @@ export async function generateWeeklyReportText(
   ].join("\n");
 
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${apiKey}`,
-        "content-type": "application/json"
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.2,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user }
-        ]
-      })
-    });
-    if (!res.ok) return { ok: false, reason: "failed" };
-    const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const content = (data.choices?.[0]?.message?.content ?? "").trim();
-    if (!content) return { ok: false, reason: "failed" };
-    return { ok: true, text: content.slice(0, 2000) };
+    async function callOnce() {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${apiKey}`,
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          model,
+          temperature: 0.2,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: user }
+          ]
+        })
+      });
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        // eslint-disable-next-line no-console
+        console.error("OpenAI weekly failed", { status: res.status, body: body.slice(0, 400) });
+        return null;
+      }
+      const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+      const content = (data.choices?.[0]?.message?.content ?? "").trim();
+      if (!content) return null;
+      return content.slice(0, 2000);
+    }
+
+    const first = await callOnce();
+    if (first) return { ok: true, text: first };
+    const second = await callOnce();
+    if (second) return { ok: true, text: second };
+    return { ok: false, reason: "failed" };
   } catch {
+    // eslint-disable-next-line no-console
+    console.error("OpenAI weekly exception");
     return { ok: false, reason: "failed" };
   }
 }

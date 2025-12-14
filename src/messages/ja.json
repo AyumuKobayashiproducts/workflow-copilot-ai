@@ -125,6 +125,7 @@
   "breakdown.generated.step4": "結果を見て調整する",
   "breakdown.generated.step5": "仕上げて完了にする",
   "breakdown.error.emptyGoal": "先に目標を入力してください。",
+  "breakdown.error.goalTooLong": "目標が長すぎます。",
   "breakdown.error.generic": "ステップを生成できませんでした。もう一度お試しください。",
 
   "weekly.title": "週間",

@@ -36,6 +36,7 @@ export default async function BreakdownPage() {
         moveDownLabel={t("breakdown.steps.moveDown")}
         stepPlaceholder={t("breakdown.steps.placeholder")}
         errorEmptyGoal={t("breakdown.error.emptyGoal")}
+        errorGoalTooLong={t("breakdown.error.goalTooLong")}
         errorNotConfigured={t("breakdown.ai.notConfigured")}
         errorRateLimited={t("breakdown.ai.rateLimited")}
         errorFailed={t("breakdown.ai.failed")}
