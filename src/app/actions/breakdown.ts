@@ -2,7 +2,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-import { getLocale } from "@/lib/i18n/server";
+import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { requireUserId } from "@/lib/auth/user";
 import { consumeAiUsage } from "@/lib/ai/usage";
 
@@ -39,9 +39,23 @@ export async function generateBreakdownSteps(goal: string): Promise<Result> {
   // Require auth in prod; in CI we can bypass with AUTH_BYPASS.
   const userId = await requireUserId();
   const locale = await getLocale();
+  const messages = await getMessages(locale);
+  const t = createT(messages);
 
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return { ok: false, reason: "not_configured" };
+  if (!apiKey) {
+    // Fallback steps so the feature remains useful without AI configured.
+    return {
+      ok: true,
+      steps: [
+        t("breakdown.generated.step1").replace("{goal}", trimmed),
+        t("breakdown.generated.step2"),
+        t("breakdown.generated.step3"),
+        t("breakdown.generated.step4"),
+        t("breakdown.generated.step5")
+      ]
+    };
+  }
 
   const quota = await consumeAiUsage({ userId, kind: "breakdown" });
   if (!quota.ok) return { ok: false, reason: "rate_limited" };

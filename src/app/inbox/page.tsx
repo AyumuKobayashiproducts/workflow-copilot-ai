@@ -54,7 +54,15 @@ export default async function InboxPage() {
         <h2 className="text-sm font-medium">{t("inbox.tasks.title")}</h2>
 
         {tasks.length === 0 ? (
-          <p className="mt-2 text-sm text-neutral-700">{t("inbox.tasks.empty")}</p>
+          <div className="mt-2 space-y-3">
+            <p className="text-sm text-neutral-700">{t("inbox.tasks.empty")}</p>
+            <p className="text-sm text-neutral-700">{t("inbox.empty.help")}</p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/breakdown">{t("inbox.empty.ctaBreakdown")}</Link>
+              </Button>
+            </div>
+          </div>
         ) : (
           <ul className="mt-3 space-y-2">
             {tasks.map((task) => {

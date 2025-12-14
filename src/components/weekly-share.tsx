@@ -29,6 +29,10 @@ export function WeeklyShare(props: {
   note: string;
   initialReport: string;
   reportTitle: string;
+  reportTemplateLabel: string;
+  reportTemplateStandard: string;
+  reportTemplateShort: string;
+  reportTemplateDetailed: string;
   reportGenerate: string;
   reportGenerating: string;
   reportSave: string;
@@ -46,6 +50,7 @@ export function WeeklyShare(props: {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [template, setTemplate] = useState<"standard" | "short" | "detailed">("standard");
 
   const reportValue = useMemo(() => report.trim(), [report]);
 
@@ -53,7 +58,7 @@ export function WeeklyShare(props: {
     setCopied(false);
     setError(null);
     startTransition(async () => {
-      const res = await generateWeeklyReportText(props.weekStartIso);
+      const res = await generateWeeklyReportText(props.weekStartIso, template);
       if (res.ok) {
         setReport(res.text);
         return;
@@ -106,6 +111,22 @@ export function WeeklyShare(props: {
             {error}
           </div>
         ) : null}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="text-xs font-medium text-neutral-700" htmlFor="weekly-report-template">
+            {props.reportTemplateLabel}
+          </label>
+          <select
+            id="weekly-report-template"
+            value={template}
+            onChange={(e) => setTemplate(e.target.value as "standard" | "short" | "detailed")}
+            className="h-9 rounded-md border border-neutral-300 bg-white px-2 text-sm"
+          >
+            <option value="standard">{props.reportTemplateStandard}</option>
+            <option value="short">{props.reportTemplateShort}</option>
+            <option value="detailed">{props.reportTemplateDetailed}</option>
+          </select>
+        </div>
 
         <textarea
           value={report}

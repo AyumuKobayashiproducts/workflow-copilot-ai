@@ -137,7 +137,8 @@ function formatWeeklyReport(params: {
 }
 
 export async function generateWeeklyReportText(
-  weekStartIso: string
+  weekStartIso: string,
+  template: "standard" | "short" | "detailed" = "standard"
 ): Promise<{ ok: true; text: string } | { ok: false; reason: "rate_limited" | "failed" }> {
   const userId = await requireUserId();
   const locale = await getLocale();
@@ -201,12 +202,18 @@ export async function generateWeeklyReportText(
   if (!quota.ok) return { ok: false, reason: "rate_limited" };
 
   const language = locale === "ja" ? "Japanese" : "English";
+  const styleHint =
+    template === "short"
+      ? "Make it very short (max 5 lines)."
+      : template === "detailed"
+        ? "Add a bit more detail (max 12 lines)."
+        : "Keep it short (max 8 lines).";
   const system = [
-    `Write a concise weekly report in ${language}.`,
+    `Write a weekly report in ${language}.`,
     "Format:",
     "- 1 title line",
     "- 3 bullet points: Highlights, Challenges, Next week",
-    "Keep it short (max 8 lines).",
+    styleHint,
     "No markdown code blocks."
   ].join(" ");
 
