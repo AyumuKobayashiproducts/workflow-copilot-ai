@@ -53,8 +53,16 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   // - tasks completed this week (even if created earlier)
   const inWeek = tasks.filter((task) => createdInWeek(task.createdAt) || completedInWeek(task.completedAt));
 
-  const doneTasks = inWeek.filter((t) => t.status === "done");
-  const todoTasks = inWeek.filter((t) => t.status === "todo");
+  const doneTasks = inWeek
+    .filter((t) => t.status === "done")
+    .sort((a, b) => {
+      const at = (a.completedAt ?? a.createdAt).getTime();
+      const bt = (b.completedAt ?? b.createdAt).getTime();
+      return bt - at;
+    });
+  const todoTasks = inWeek
+    .filter((t) => t.status === "todo")
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   const doneCount = inWeek.filter((t) => t.status === "done").length;
   const todoCount = inWeek.filter((t) => t.status === "todo").length;
