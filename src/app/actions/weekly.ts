@@ -171,24 +171,52 @@ export async function postWeeklyToSlackAction(formData: FormData) {
       return gen.ok ? gen.text : "";
     })());
 
-  const text = [
-    `*${t("slack.weekly.title")}*`,
-    `${t("slack.weekly.range")}: ${startLabel} - ${endLabel}`,
+  const fallbackText = [
+    `${t("slack.weekly.title")} (${startLabel} - ${endLabel})`,
     `${t("slack.weekly.completed")}: ${doneCount}`,
     `${t("slack.weekly.inProgress")}: ${todoCount}`,
-    `${t("slack.weekly.blocked")}: ${blockedCount}`,
-    report ? "" : "",
-    report ? report : "",
-    note ? "" : "",
-    note ? `Notes: ${note}` : "",
-    ""
-  ].join("\n");
+    `${t("slack.weekly.blocked")}: ${blockedCount}`
+  ].join(" | ");
+
+  const blocks = [
+    {
+      type: "header",
+      text: { type: "plain_text", text: t("slack.weekly.title") }
+    },
+    {
+      type: "section",
+      fields: [
+        { type: "mrkdwn", text: `*${t("slack.weekly.range")}*\n${startLabel} - ${endLabel}` },
+        { type: "mrkdwn", text: `*${t("slack.weekly.completed")}*\n${doneCount}` },
+        { type: "mrkdwn", text: `*${t("slack.weekly.inProgress")}*\n${todoCount}` },
+        { type: "mrkdwn", text: `*${t("slack.weekly.blocked")}*\n${blockedCount}` }
+      ]
+    },
+    ...(report
+      ? [
+          { type: "divider" },
+          {
+            type: "section",
+            text: { type: "mrkdwn", text: `*Report*\n${report}` }
+          }
+        ]
+      : []),
+    ...(note
+      ? [
+          { type: "divider" },
+          {
+            type: "section",
+            text: { type: "mrkdwn", text: `*Notes*\n${note}` }
+          }
+        ]
+      : [])
+  ];
 
   try {
     const res = await fetch(webhookUrl, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text })
+      body: JSON.stringify({ text: fallbackText, blocks })
     });
     if (!res.ok) {
       redirect(`/weekly?slack=failed`);
