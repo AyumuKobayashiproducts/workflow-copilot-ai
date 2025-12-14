@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-neutral-50 text-neutral-900 antialiased;
+  }
+
+  a {
+    @apply text-neutral-900 underline-offset-4 hover:underline;
+  }
+
+  :where(input, textarea, select) {
+    @apply bg-white text-neutral-900 placeholder:text-neutral-500;
+  }
+
+  :where(input, textarea, select):focus {
+    @apply outline-none;
+  }
+
+  :where(input, textarea, select):focus-visible {
+    @apply ring-2 ring-sky-500 ring-offset-2 ring-offset-neutral-50;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+
