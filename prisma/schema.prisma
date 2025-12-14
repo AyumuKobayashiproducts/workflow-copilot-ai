@@ -22,6 +22,7 @@ model User {
 
   tasks         Task[]
   weeklyNotes   WeeklyNote[]
+  aiUsage       AiUsage[]
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -68,6 +69,11 @@ enum TaskStatus {
   done
 }
 
+enum AiUsageKind {
+  breakdown
+  weekly
+}
+
 model Task {
   id          String     @id @default(cuid())
   userId      String
@@ -98,6 +104,19 @@ model WeeklyNote {
 
   @@unique([userId, weekStart])
   @@index([userId, weekStart])
+}
+
+model AiUsage {
+  id     String      @id @default(cuid())
+  userId String
+  date   String      // YYYY-MM-DD (UTC)
+  kind   AiUsageKind
+  count  Int         @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date, kind])
+  @@index([userId, date])
 }
 
 

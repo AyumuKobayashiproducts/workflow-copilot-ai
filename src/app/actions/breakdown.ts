@@ -1,10 +1,12 @@
 "use server";
 
 import { getLocale } from "@/lib/i18n/server";
+import { requireUserId } from "@/lib/auth/user";
+import { consumeAiUsage } from "@/lib/ai/usage";
 
 type Result =
   | { ok: true; steps: string[] }
-  | { ok: false; reason: "empty_goal" | "not_configured" | "failed" };
+  | { ok: false; reason: "empty_goal" | "not_configured" | "rate_limited" | "failed" };
 
 function pickJsonArray(text: string): string | null {
   const start = text.indexOf("[");
@@ -29,10 +31,14 @@ export async function generateBreakdownSteps(goal: string): Promise<Result> {
   if (!trimmed) return { ok: false, reason: "empty_goal" };
 
   // Require auth in prod; in CI we can bypass with AUTH_BYPASS.
+  const userId = await requireUserId();
   const locale = await getLocale();
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return { ok: false, reason: "not_configured" };
+
+  const quota = await consumeAiUsage({ userId, kind: "breakdown" });
+  if (!quota.ok) return { ok: false, reason: "rate_limited" };
 
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
   const language = locale === "ja" ? "Japanese" : "English";

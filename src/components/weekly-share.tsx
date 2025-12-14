@@ -16,19 +16,28 @@ export function WeeklyShare(props: {
   slackTitle: string;
   slackPost: string;
   reportPlaceholder: string;
+  reportErrorFailed: string;
+  reportErrorRateLimited: string;
 }) {
   const [report, setReport] = useState("");
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const reportValue = useMemo(() => report.trim(), [report]);
 
   function onGenerate() {
     setCopied(false);
+    setError(null);
     startTransition(async () => {
       const res = await generateWeeklyReportText(props.weekStartIso);
-      if (res.ok) setReport(res.text);
-      else setReport("");
+      if (res.ok) {
+        setReport(res.text);
+        return;
+      }
+      setReport("");
+      if (res.reason === "rate_limited") setError(props.reportErrorRateLimited);
+      else setError(props.reportErrorFailed);
     });
   }
 
@@ -57,6 +66,12 @@ export function WeeklyShare(props: {
             </Button>
           </div>
         </div>
+
+        {error ? (
+          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+            {error}
+          </div>
+        ) : null}
 
         <textarea
           value={report}

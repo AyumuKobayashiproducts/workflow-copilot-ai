@@ -7,6 +7,7 @@ import { getWeeklyNote, setWeeklyNote } from "@/lib/weekly/store";
 import { requireUserId } from "@/lib/auth/user";
 import { listTasks } from "@/lib/tasks/store";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
+import { consumeAiUsage } from "@/lib/ai/usage";
 
 export async function saveWeeklyNoteAction(formData: FormData) {
   const weekStart = String(formData.get("weekStart") ?? "");
@@ -19,7 +20,7 @@ export async function saveWeeklyNoteAction(formData: FormData) {
 
 export async function generateWeeklyReportText(
   weekStartIso: string
-): Promise<{ ok: true; text: string } | { ok: false }> {
+): Promise<{ ok: true; text: string } | { ok: false; reason: "rate_limited" | "failed" }> {
   const userId = await requireUserId();
   const locale = await getLocale();
 
@@ -60,6 +61,9 @@ export async function generateWeeklyReportText(
     return { ok: true, text };
   }
 
+  const quota = await consumeAiUsage({ userId, kind: "weekly" });
+  if (!quota.ok) return { ok: false, reason: "rate_limited" };
+
   const language = locale === "ja" ? "Japanese" : "English";
   const system = [
     `Write a concise weekly report in ${language}.`,
@@ -94,13 +98,13 @@ export async function generateWeeklyReportText(
         ]
       })
     });
-    if (!res.ok) return { ok: false };
+    if (!res.ok) return { ok: false, reason: "failed" };
     const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
     const content = (data.choices?.[0]?.message?.content ?? "").trim();
-    if (!content) return { ok: false };
+    if (!content) return { ok: false, reason: "failed" };
     return { ok: true, text: content.slice(0, 2000) };
   } catch {
-    return { ok: false };
+    return { ok: false, reason: "failed" };
   }
 }
 

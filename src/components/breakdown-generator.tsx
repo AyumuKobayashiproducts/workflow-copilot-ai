@@ -22,6 +22,7 @@ export function BreakdownGenerator(props: {
   stepPlaceholder: string;
   errorEmptyGoal: string;
   errorNotConfigured: string;
+  errorRateLimited: string;
   errorFailed: string;
 }) {
   const [goal, setGoal] = useState("");
@@ -48,6 +49,7 @@ export function BreakdownGenerator(props: {
       }
       if (res.reason === "empty_goal") setError(props.errorEmptyGoal);
       else if (res.reason === "not_configured") setError(props.errorNotConfigured);
+      else if (res.reason === "rate_limited") setError(props.errorRateLimited);
       else setError(props.errorFailed);
     });
   }

@@ -37,6 +37,7 @@ export default async function BreakdownPage() {
         stepPlaceholder={t("breakdown.steps.placeholder")}
         errorEmptyGoal={t("breakdown.error.emptyGoal")}
         errorNotConfigured={t("breakdown.ai.notConfigured")}
+        errorRateLimited={t("breakdown.ai.rateLimited")}
         errorFailed={t("breakdown.ai.failed")}
       />
     </div>

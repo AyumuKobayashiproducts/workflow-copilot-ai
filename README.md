@@ -55,6 +55,7 @@ Optional:
 - `SLACK_WEBHOOK_URL` (Slack Incoming Webhook URL)
 - `OPENAI_API_KEY` (enables AI step generation in Breakdown)
 - `OPENAI_MODEL` (default: gpt-4o-mini)
+- `AI_DAILY_LIMIT` (default: 20, per user per day)
 
 ## Local development
 

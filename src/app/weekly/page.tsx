@@ -132,6 +132,8 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
         reportCopy={t("weekly.report.copy")}
         reportCopied={t("weekly.report.copied")}
         reportPlaceholder={t("weekly.report.placeholder")}
+        reportErrorFailed={t("weekly.report.failed")}
+        reportErrorRateLimited={t("weekly.report.rateLimited")}
         slackTitle={t("weekly.slack.title")}
         slackPost={t("weekly.cta.postToSlack")}
       />
