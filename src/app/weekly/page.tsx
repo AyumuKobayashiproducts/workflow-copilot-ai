@@ -6,6 +6,7 @@ import { getUserIdOrNull } from "@/lib/auth/user";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { listTasks } from "@/lib/tasks/store";
 import { getWeeklyNote, getWeeklyReport } from "@/lib/weekly/store";
+import { toggleTaskDoneAction } from "@/app/actions/tasks";
 import { saveWeeklyNoteAction } from "@/app/actions/weekly";
 import { WeeklyShare } from "@/components/weekly-share";
 
@@ -208,10 +209,18 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                 {todoTasks.slice(0, 8).map((task) => (
                   <li
                     key={task.id}
-                    className="rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm"
+                    className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm"
                   >
-                    <div className="truncate text-neutral-900">{task.title}</div>
-                    <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
+                    <div className="min-w-0">
+                      <div className="truncate text-neutral-900">{task.title}</div>
+                      <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
+                    </div>
+                    <form action={toggleTaskDoneAction} className="shrink-0">
+                      <input type="hidden" name="id" value={task.id} />
+                      <Button type="submit" size="sm" variant="secondary">
+                        {t("inbox.task.markDone")}
+                      </Button>
+                    </form>
                   </li>
                 ))}
               </ul>
@@ -223,10 +232,18 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                 {doneTasks.slice(0, 8).map((task) => (
                   <li
                     key={task.id}
-                    className="rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm"
+                    className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm"
                   >
-                    <div className="truncate text-neutral-600 line-through">{task.title}</div>
-                    <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
+                    <div className="min-w-0">
+                      <div className="truncate text-neutral-600 line-through">{task.title}</div>
+                      <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
+                    </div>
+                    <form action={toggleTaskDoneAction} className="shrink-0">
+                      <input type="hidden" name="id" value={task.id} />
+                      <Button type="submit" size="sm" variant="secondary">
+                        {t("inbox.task.markTodo")}
+                      </Button>
+                    </form>
                   </li>
                 ))}
               </ul>
