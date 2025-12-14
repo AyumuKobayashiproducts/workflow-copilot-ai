@@ -9,13 +9,22 @@ import { listTasks } from "@/lib/tasks/store";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { consumeAiUsage } from "@/lib/ai/usage";
 
+const WEEKLY_NOTE_MAX_CHARS = 500;
+
 export async function saveWeeklyNoteAction(formData: FormData) {
   const weekStart = String(formData.get("weekStart") ?? "");
-  const note = String(formData.get("note") ?? "");
-  if (!weekStart) return;
+  const noteRaw = String(formData.get("note") ?? "");
+  if (!weekStart || Number.isNaN(new Date(weekStart).getTime())) {
+    redirect("/weekly?note=failed");
+  }
   const userId = await requireUserId();
+  const note = noteRaw.trim().slice(0, WEEKLY_NOTE_MAX_CHARS + 1);
+  if (note.length > WEEKLY_NOTE_MAX_CHARS) {
+    redirect("/weekly?note=too_long");
+  }
   await setWeeklyNote({ userId, weekStartIso: weekStart, note });
   revalidatePath("/weekly");
+  redirect("/weekly?note=saved");
 }
 
 export async function generateWeeklyReportText(

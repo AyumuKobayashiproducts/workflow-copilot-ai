@@ -47,6 +47,8 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   const searchParams = (await props.searchParams) ?? {};
   const slackRaw = searchParams.slack;
   const slack = (Array.isArray(slackRaw) ? slackRaw[0] : slackRaw) ?? "";
+  const noteRaw = searchParams.note;
+  const noteStatus = (Array.isArray(noteRaw) ? noteRaw[0] : noteRaw) ?? "";
   const slackMessageKey =
     slack === "posted"
       ? "weekly.slack.posted"
@@ -54,6 +56,14 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
         ? "weekly.slack.notConfigured"
         : slack === "failed"
           ? "weekly.slack.failed"
+          : null;
+  const noteMessageKey =
+    noteStatus === "saved"
+      ? "weekly.notes.saved"
+      : noteStatus === "too_long"
+        ? "weekly.notes.tooLong"
+        : noteStatus === "failed"
+          ? "weekly.notes.failed"
           : null;
 
   return (
@@ -71,6 +81,12 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
       {slackMessageKey ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {t(slackMessageKey)}
+        </section>
+      ) : null}
+
+      {noteMessageKey ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t(noteMessageKey)}
         </section>
       ) : null}
 
@@ -115,6 +131,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
             name="note"
             defaultValue={note}
             placeholder={t("weekly.notes.placeholder")}
+            maxLength={500}
             className="min-h-28 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
           />
           <div className="flex justify-end">
