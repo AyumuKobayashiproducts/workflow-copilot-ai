@@ -53,6 +53,8 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   // - tasks completed this week (even if created earlier)
   const inWeek = tasks.filter((task) => createdInWeek(task.createdAt) || completedInWeek(task.completedAt));
 
+  const SHOW_TASKS = 8;
+
   const doneTasks = inWeek
     .filter((t) => t.status === "done")
     .sort((a, b) => {
@@ -218,7 +220,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
             <div className="space-y-2">
               <div className="text-xs font-medium text-neutral-700">{t("weekly.section.inProgress")}</div>
               <ul className="space-y-2">
-                {todoTasks.slice(0, 8).map((task) => (
+                {todoTasks.slice(0, SHOW_TASKS).map((task) => (
                   <li
                     key={task.id}
                     className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm"
@@ -236,12 +238,39 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                   </li>
                 ))}
               </ul>
+              {todoTasks.length > SHOW_TASKS ? (
+                <details className="group mt-2">
+                  <summary className="cursor-pointer select-none text-xs text-neutral-700 underline-offset-4 hover:underline">
+                    <span className="group-open:hidden">{t("common.viewAll")}</span>
+                    <span className="hidden group-open:inline">{t("common.viewLess")}</span>
+                  </summary>
+                  <ul className="mt-2 space-y-2">
+                    {todoTasks.slice(SHOW_TASKS).map((task) => (
+                      <li
+                        key={task.id}
+                        className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate text-neutral-900">{task.title}</div>
+                          <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
+                        </div>
+                        <form action={toggleTaskDoneAction} className="shrink-0">
+                          <input type="hidden" name="id" value={task.id} />
+                          <Button type="submit" size="sm" variant="secondary">
+                            {t("inbox.task.markDone")}
+                          </Button>
+                        </form>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              ) : null}
             </div>
 
             <div className="space-y-2">
               <div className="text-xs font-medium text-neutral-700">{t("weekly.section.completed")}</div>
               <ul className="space-y-2">
-                {doneTasks.slice(0, 8).map((task) => (
+                {doneTasks.slice(0, SHOW_TASKS).map((task) => (
                   <li
                     key={task.id}
                     className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm"
@@ -259,6 +288,33 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                   </li>
                 ))}
               </ul>
+              {doneTasks.length > SHOW_TASKS ? (
+                <details className="group mt-2">
+                  <summary className="cursor-pointer select-none text-xs text-neutral-700 underline-offset-4 hover:underline">
+                    <span className="group-open:hidden">{t("common.viewAll")}</span>
+                    <span className="hidden group-open:inline">{t("common.viewLess")}</span>
+                  </summary>
+                  <ul className="mt-2 space-y-2">
+                    {doneTasks.slice(SHOW_TASKS).map((task) => (
+                      <li
+                        key={task.id}
+                        className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate text-neutral-600 line-through">{task.title}</div>
+                          <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
+                        </div>
+                        <form action={toggleTaskDoneAction} className="shrink-0">
+                          <input type="hidden" name="id" value={task.id} />
+                          <Button type="submit" size="sm" variant="secondary">
+                            {t("inbox.task.markTodo")}
+                          </Button>
+                        </form>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              ) : null}
             </div>
           </div>
         )}
