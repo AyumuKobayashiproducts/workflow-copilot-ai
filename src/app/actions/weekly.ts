@@ -10,6 +10,7 @@ import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { consumeAiUsage } from "@/lib/ai/usage";
 
 const WEEKLY_NOTE_MAX_CHARS = 500;
+const WEEKLY_REPORT_MAX_CHARS = 2000;
 
 export async function saveWeeklyNoteAction(formData: FormData) {
   const weekStart = String(formData.get("weekStart") ?? "");
@@ -25,6 +26,78 @@ export async function saveWeeklyNoteAction(formData: FormData) {
   await setWeeklyNote({ userId, weekStartIso: weekStart, note });
   revalidatePath("/weekly");
   redirect("/weekly?note=saved");
+}
+
+function formatWeeklyReport(params: {
+  locale: string;
+  startLabel: string;
+  endLabel: string;
+  doneCount: number;
+  todoCount: number;
+  blockedCount: number;
+  note: string;
+  raw: string;
+}): string {
+  const isJa = params.locale === "ja";
+  const defaultTitle = isJa
+    ? `週報（${params.startLabel} - ${params.endLabel}）`
+    : `Weekly report (${params.startLabel} - ${params.endLabel})`;
+
+  const labelHighlights = isJa ? "ハイライト" : "Highlights";
+  const labelChallenges = isJa ? "課題" : "Challenges";
+  const labelNext = isJa ? "来週" : "Next week";
+
+  const raw = (params.raw ?? "").replace(/\r\n/g, "\n").trim();
+  if (!raw) {
+    const notePart = params.note?.trim() ? (isJa ? `メモ: ${params.note.trim()}` : `Notes: ${params.note.trim()}`) : "";
+    return [
+      defaultTitle,
+      `- ${labelHighlights}: ${isJa ? "完了" : "Completed"} ${params.doneCount}`,
+      `- ${labelChallenges}: ${isJa ? "進行中" : "In progress"} ${params.todoCount}`,
+      `- ${labelNext}: ${notePart || (isJa ? "次の一歩を1つ決める" : "Pick 1 next step")}`
+    ]
+      .filter(Boolean)
+      .join("\n")
+      .slice(0, WEEKLY_REPORT_MAX_CHARS);
+  }
+
+  const lines = raw
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => l.replace(/^#+\s*/, "")); // strip markdown headers
+
+  const titleCandidate = lines[0] ?? "";
+  const title =
+    titleCandidate.length >= 2 && titleCandidate.length <= 80 ? titleCandidate : defaultTitle;
+
+  const bulletCandidates = lines
+    .slice(1)
+    .map((l) => l.replace(/^[-*•]\s*/, "").trim())
+    .filter(Boolean);
+
+  // Prefer labeled lines when present (e.g. "Highlights: ...")
+  function pickByLabel(label: string) {
+    const found = bulletCandidates.find((b) => b.toLowerCase().startsWith(label.toLowerCase()));
+    if (!found) return null;
+    const idx = found.indexOf(":");
+    return (idx >= 0 ? found.slice(idx + 1) : found).trim() || null;
+  }
+
+  const hl = pickByLabel(labelHighlights) ?? bulletCandidates[0] ?? "";
+  const ch = pickByLabel(labelChallenges) ?? bulletCandidates[1] ?? "";
+  const nx = pickByLabel(labelNext) ?? bulletCandidates[2] ?? "";
+
+  const safe = (s: string) => s.replace(/\s+/g, " ").trim().slice(0, 220);
+
+  const bullets = [
+    `- ${labelHighlights}: ${safe(hl) || (isJa ? `完了 ${params.doneCount}` : `Completed ${params.doneCount}`)}`,
+    `- ${labelChallenges}: ${safe(ch) || (isJa ? `進行中 ${params.todoCount}` : `In progress ${params.todoCount}`)}`,
+    `- ${labelNext}: ${safe(nx) || (isJa ? "次の一歩を1つ決める" : "Pick 1 next step")}`
+  ];
+
+  const out = [title, ...bullets].join("\n");
+  return out.slice(0, WEEKLY_REPORT_MAX_CHARS);
 }
 
 export async function generateWeeklyReportText(
@@ -71,7 +144,19 @@ export async function generateWeeklyReportText(
     ]
       .filter(Boolean)
       .join("\n");
-    return { ok: true, text };
+    return {
+      ok: true,
+      text: formatWeeklyReport({
+        locale,
+        startLabel,
+        endLabel,
+        doneCount,
+        todoCount,
+        blockedCount,
+        note,
+        raw: text
+      })
+    };
   }
 
   const quota = await consumeAiUsage({ userId, kind: "weekly" });
@@ -121,7 +206,16 @@ export async function generateWeeklyReportText(
       const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
       const content = (data.choices?.[0]?.message?.content ?? "").trim();
       if (!content) return null;
-      return content.slice(0, 2000);
+      return formatWeeklyReport({
+        locale,
+        startLabel,
+        endLabel,
+        doneCount,
+        todoCount,
+        blockedCount,
+        note,
+        raw: content
+      });
     }
 
     const first = await callOnce();
@@ -206,7 +300,7 @@ export async function postWeeklyToSlackAction(formData: FormData) {
           { type: "divider" },
           {
             type: "section",
-            text: { type: "mrkdwn", text: `*Report*\n${report}` }
+            text: { type: "mrkdwn", text: `*${t("slack.weekly.report")}*\n${report}` }
           }
         ]
       : []),
@@ -215,7 +309,7 @@ export async function postWeeklyToSlackAction(formData: FormData) {
           { type: "divider" },
           {
             type: "section",
-            text: { type: "mrkdwn", text: `*Notes*\n${note}` }
+            text: { type: "mrkdwn", text: `*${t("slack.weekly.notes")}*\n${note}` }
           }
         ]
       : [])

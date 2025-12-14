@@ -169,6 +169,8 @@
   "slack.weekly.completed": "完了",
   "slack.weekly.inProgress": "進行中",
   "slack.weekly.blocked": "停滞",
+  "slack.weekly.report": "週報",
+  "slack.weekly.notes": "メモ",
 
   "settings.title": "設定",
   "settings.subtitle": "設定やツールを管理します。",

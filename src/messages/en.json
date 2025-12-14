@@ -169,6 +169,8 @@
   "slack.weekly.completed": "Completed",
   "slack.weekly.inProgress": "In progress",
   "slack.weekly.blocked": "Blocked",
+  "slack.weekly.report": "Report",
+  "slack.weekly.notes": "Notes",
 
   "settings.title": "Settings",
   "settings.subtitle": "Manage your preferences and tools.",
