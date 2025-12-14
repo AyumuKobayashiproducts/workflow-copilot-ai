@@ -12,20 +12,46 @@ import { consumeAiUsage } from "@/lib/ai/usage";
 const WEEKLY_NOTE_MAX_CHARS = 500;
 const WEEKLY_REPORT_MAX_CHARS = 2000;
 
+function weeklyUrl(weekStartIso: string, params?: Record<string, string | undefined>) {
+  const sp = new URLSearchParams();
+  if (weekStartIso) sp.set("weekStart", weekStartIso);
+  for (const [k, v] of Object.entries(params ?? {})) {
+    if (v) sp.set(k, v);
+  }
+  const qs = sp.toString();
+  return qs ? `/weekly?${qs}` : "/weekly";
+}
+
 export async function saveWeeklyNoteAction(formData: FormData) {
   const weekStart = String(formData.get("weekStart") ?? "");
   const noteRaw = String(formData.get("note") ?? "");
   if (!weekStart || Number.isNaN(new Date(weekStart).getTime())) {
-    redirect("/weekly?note=failed");
+    redirect(weeklyUrl(weekStart, { note: "failed" }));
   }
   const userId = await requireUserId();
   const note = noteRaw.trim().slice(0, WEEKLY_NOTE_MAX_CHARS + 1);
   if (note.length > WEEKLY_NOTE_MAX_CHARS) {
-    redirect("/weekly?note=too_long");
+    redirect(weeklyUrl(weekStart, { note: "too_long" }));
   }
   await setWeeklyNote({ userId, weekStartIso: weekStart, note });
   revalidatePath("/weekly");
-  redirect("/weekly?note=saved");
+  redirect(weeklyUrl(weekStart, { note: "saved" }));
+}
+
+export async function saveWeeklyReportAction(formData: FormData) {
+  const weekStartIso = String(formData.get("weekStart") ?? "");
+  const reportRaw = String(formData.get("report") ?? "");
+  if (!weekStartIso || Number.isNaN(new Date(weekStartIso).getTime())) {
+    redirect(weeklyUrl(weekStartIso, { report: "failed" }));
+  }
+  const userId = await requireUserId();
+  const text = reportRaw.trim().slice(0, WEEKLY_REPORT_MAX_CHARS + 1);
+  if (text.length > WEEKLY_REPORT_MAX_CHARS) {
+    redirect(weeklyUrl(weekStartIso, { report: "too_long" }));
+  }
+  await setWeeklyReport({ userId, weekStartIso, text });
+  revalidatePath("/weekly");
+  redirect(weeklyUrl(weekStartIso, { report: "saved" }));
 }
 
 function formatWeeklyReport(params: {
@@ -250,10 +276,10 @@ export async function postWeeklyToSlackAction(formData: FormData) {
 
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
   if (!webhookUrl) {
-    redirect(`/weekly?slack=not_configured`);
+    redirect(weeklyUrl(weekStartIso, { slack: "not_configured" }));
   }
   if (webhookUrl === "mock") {
-    redirect(`/weekly?slack=posted`);
+    redirect(weeklyUrl(weekStartIso, { slack: "posted" }));
   }
 
   const weekStart = new Date(weekStartIso);
@@ -346,13 +372,13 @@ export async function postWeeklyToSlackAction(formData: FormData) {
         body: bodyTrimmed.slice(0, 200),
         slackReason
       });
-      redirect(`/weekly?slack=failed&slackReason=${slackReason}`);
+      redirect(weeklyUrl(weekStartIso, { slack: "failed", slackReason }));
     }
   } catch {
-    redirect(`/weekly?slack=failed`);
+    redirect(weeklyUrl(weekStartIso, { slack: "failed" }));
   }
 
-  redirect(`/weekly?slack=posted`);
+  redirect(weeklyUrl(weekStartIso, { slack: "posted" }));
 }
 
 

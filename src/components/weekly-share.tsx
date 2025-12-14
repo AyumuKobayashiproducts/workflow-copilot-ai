@@ -4,12 +4,21 @@ import { useMemo, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 
 import { Button } from "@/components/ui/button";
-import { generateWeeklyReportText, postWeeklyToSlackAction } from "@/app/actions/weekly";
+import { generateWeeklyReportText, postWeeklyToSlackAction, saveWeeklyReportAction } from "@/app/actions/weekly";
 
 function SlackPostButton(props: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" variant="secondary" disabled={pending} data-testid="weekly-post-to-slack">
+      {pending ? props.pendingLabel : props.label}
+    </Button>
+  );
+}
+
+function ReportSaveButton(props: { label: string; pendingLabel: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" variant="secondary" disabled={pending}>
       {pending ? props.pendingLabel : props.label}
     </Button>
   );
@@ -22,6 +31,8 @@ export function WeeklyShare(props: {
   reportTitle: string;
   reportGenerate: string;
   reportGenerating: string;
+  reportSave: string;
+  reportSaving: string;
   reportCopy: string;
   reportCopied: string;
   slackTitle: string;
@@ -73,6 +84,11 @@ export function WeeklyShare(props: {
             <Button type="button" variant="secondary" onClick={onGenerate} disabled={isPending}>
               {isPending ? props.reportGenerating : props.reportGenerate}
             </Button>
+            <form action={saveWeeklyReportAction} className="flex">
+              <input type="hidden" name="weekStart" value={props.weekStartIso} />
+              <input type="hidden" name="report" value={reportValue} />
+              <ReportSaveButton label={props.reportSave} pendingLabel={props.reportSaving} />
+            </form>
             <Button type="button" variant="secondary" onClick={onCopy} disabled={!reportValue}>
               {copied ? props.reportCopied : props.reportCopy}
             </Button>
@@ -89,6 +105,7 @@ export function WeeklyShare(props: {
           value={report}
           onChange={(e) => setReport(e.target.value)}
           placeholder={props.reportPlaceholder}
+          maxLength={2000}
           className="min-h-32 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
         />
       </section>

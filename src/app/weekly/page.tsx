@@ -14,15 +14,20 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   const messages = await getMessages(locale);
   const t = createT(messages);
 
+  const searchParams = (await props.searchParams) ?? {};
+  const weekStartRaw = searchParams.weekStart;
+  const weekStartParam = (Array.isArray(weekStartRaw) ? weekStartRaw[0] : weekStartRaw) ?? "";
+
   const userId = await getUserIdOrNull();
   if (!userId) redirect("/login");
 
   const tasks = await listTasks(userId);
 
-  const today = new Date();
-  const day = today.getDay(); // 0 Sun ... 6 Sat
+  const base = weekStartParam && !Number.isNaN(new Date(weekStartParam).getTime()) ? new Date(weekStartParam) : new Date();
+  const day = base.getDay(); // 0 Sun ... 6 Sat
   const diffToMonday = (day + 6) % 7;
-  const weekStart = new Date(today);
+  const weekStart = new Date(base);
+  // Normalize to Monday 00:00 local time (consistent with existing storage)
   weekStart.setHours(0, 0, 0, 0);
   weekStart.setDate(weekStart.getDate() - diffToMonday);
   const weekEnd = new Date(weekStart);
@@ -32,6 +37,11 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   const weekStartIso = weekStart.toISOString();
   const note = await getWeeklyNote({ userId, weekStartIso });
   const savedReport = await getWeeklyReport({ userId, weekStartIso });
+
+  const prevWeekStart = new Date(weekStart);
+  prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+  const nextWeekStart = new Date(weekStart);
+  nextWeekStart.setDate(nextWeekStart.getDate() + 7);
 
   const inWeek = tasks.filter((task) => {
     const created = task.createdAt.getTime();
@@ -45,13 +55,14 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   const startLabel = weekStart.toLocaleDateString(locale);
   const endLabel = weekEnd.toLocaleDateString(locale);
 
-  const searchParams = (await props.searchParams) ?? {};
   const slackRaw = searchParams.slack;
   const slack = (Array.isArray(slackRaw) ? slackRaw[0] : slackRaw) ?? "";
   const slackReasonRaw = searchParams.slackReason;
   const slackReason = (Array.isArray(slackReasonRaw) ? slackReasonRaw[0] : slackReasonRaw) ?? "";
   const noteRaw = searchParams.note;
   const noteStatus = (Array.isArray(noteRaw) ? noteRaw[0] : noteRaw) ?? "";
+  const reportRaw = searchParams.report;
+  const reportStatus = (Array.isArray(reportRaw) ? reportRaw[0] : reportRaw) ?? "";
   const slackMessageKey =
     slack === "posted"
       ? "weekly.slack.posted"
@@ -76,6 +87,14 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
         : noteStatus === "failed"
           ? "weekly.notes.failed"
           : null;
+  const reportMessageKey =
+    reportStatus === "saved"
+      ? "weekly.report.saved"
+      : reportStatus === "too_long"
+        ? "weekly.report.tooLong"
+        : reportStatus === "failed"
+          ? "weekly.report.saveFailed"
+          : null;
 
   return (
     <div className="space-y-6">
@@ -84,9 +103,21 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
           <h1 className="text-2xl font-semibold">{t("weekly.title")}</h1>
           <p className="text-sm text-neutral-700">{t("weekly.subtitle")}</p>
         </div>
-        <Button asChild variant="secondary" size="sm">
-          <Link href="/inbox">{t("nav.inbox")}</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="secondary" size="sm">
+            <Link href={`/weekly?weekStart=${encodeURIComponent(prevWeekStart.toISOString())}`}>
+              {t("weekly.cta.previousWeek")}
+            </Link>
+          </Button>
+          <Button asChild variant="secondary" size="sm">
+            <Link href={`/weekly?weekStart=${encodeURIComponent(nextWeekStart.toISOString())}`}>
+              {t("weekly.cta.nextWeek")}
+            </Link>
+          </Button>
+          <Button asChild variant="secondary" size="sm">
+            <Link href="/inbox">{t("nav.inbox")}</Link>
+          </Button>
+        </div>
       </header>
 
       {slackMessageKey ? (
@@ -98,6 +129,12 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
       {noteMessageKey ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {t(noteMessageKey)}
+        </section>
+      ) : null}
+
+      {reportMessageKey ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t(reportMessageKey)}
         </section>
       ) : null}
 
@@ -158,6 +195,8 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
         reportTitle={t("weekly.report.title")}
         reportGenerate={t("weekly.report.generate")}
         reportGenerating={t("weekly.report.generating")}
+        reportSave={t("weekly.report.save")}
+        reportSaving={t("weekly.report.saving")}
         reportCopy={t("weekly.report.copy")}
         reportCopied={t("weekly.report.copied")}
         reportPlaceholder={t("weekly.report.placeholder")}
