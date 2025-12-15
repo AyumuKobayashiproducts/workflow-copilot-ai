@@ -46,4 +46,62 @@ test("rbac+audit: member cannot toggle someone else's task; forbidden is logged"
   await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
 });
 
+test("rbac+audit: member cannot delete someone else's task; forbidden is logged", async ({ page }) => {
+  await page.request.post("/api/e2e/reset", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
+  });
+
+  // Owner creates a task.
+  await page.goto("/inbox?scope=all");
+  await setE2EUser(page, OWNER_ID);
+  const title = `e2e-rbac-delete-${Date.now()}`;
+  await page.goto("/inbox?scope=all");
+  await page.getByTestId("new-task-input").fill(title);
+  await page.getByTestId("new-task-submit").click();
+  await expect(page.getByTestId("task-item").filter({ hasText: title })).toBeVisible();
+
+  // Member tries to delete owner's task -> forbidden.
+  await setE2EUser(page, MEMBER_ID);
+  await page.goto("/inbox?scope=all");
+  const row = page.getByTestId("task-item").filter({ hasText: title });
+  await expect(row).toBeVisible();
+  await row.getByRole("button", { name: /delete|削除/i }).click();
+  await expect(page).toHaveURL(/toast=forbidden/);
+
+  // Activity feed should show a Forbidden event.
+  await page.goto("/settings");
+  await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+});
+
+test("rbac+audit: member cannot edit someone else's task title; forbidden is logged", async ({ page }) => {
+  await page.request.post("/api/e2e/reset", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
+  });
+
+  // Owner creates a task.
+  await page.goto("/inbox?scope=all");
+  await setE2EUser(page, OWNER_ID);
+  const title = `e2e-rbac-title-${Date.now()}`;
+  await page.goto("/inbox?scope=all");
+  await page.getByTestId("new-task-input").fill(title);
+  await page.getByTestId("new-task-submit").click();
+  await expect(page.getByTestId("task-item").filter({ hasText: title })).toBeVisible();
+
+  // Member tries to edit owner's task title -> forbidden.
+  await setE2EUser(page, MEMBER_ID);
+  await page.goto("/inbox?scope=all");
+  const row = page.getByTestId("task-item").filter({ hasText: title });
+  await expect(row).toBeVisible();
+
+  await row.getByRole("button", { name: /edit|編集/i }).click();
+  const updated = `${title}-x`;
+  await row.getByRole("textbox").fill(updated);
+  await row.getByRole("button", { name: /save|保存/i }).click();
+  await expect(page).toHaveURL(/toast=forbidden/);
+
+  // Activity feed should show a Forbidden event.
+  await page.goto("/settings");
+  await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+});
+
 
