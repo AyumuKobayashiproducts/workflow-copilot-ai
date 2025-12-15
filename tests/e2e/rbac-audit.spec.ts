@@ -225,4 +225,37 @@ test("rbac+audit: owner can revoke invite; event is logged", async ({ page }) =>
   await expect(page.locator("text=/Invite revoked|招待リンク失効/")).toBeVisible();
 });
 
+test("rbac+audit: member cannot revoke invite; forbidden is logged (workspace event)", async ({ page }) => {
+  await page.request.post("/api/e2e/reset", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
+  });
+
+  // Owner creates an invite.
+  await page.goto("/settings");
+  await setE2EUser(page, OWNER_ID);
+  const created = await page.request.post("/api/e2e/workspace/invite", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" },
+    data: { role: "member", maxUses: 5 }
+  });
+  expect(created.status()).toBe(200);
+  const createdJson = (await created.json()) as { ok: boolean; token?: string };
+  expect(createdJson.ok).toBe(true);
+  const inviteToken = String(createdJson.token ?? "");
+  expect(inviteToken.length).toBeGreaterThan(10);
+
+  // Member attempts to revoke -> forbidden.
+  await setE2EUser(page, MEMBER_ID);
+  const res = await page.request.post("/api/e2e/workspace/invite-revoke", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" },
+    data: { inviteToken }
+  });
+  expect(res.status()).toBe(403);
+  const json = (await res.json()) as { ok: boolean; error?: string };
+  expect(json.ok).toBe(false);
+  expect(json.error).toBe("forbidden");
+
+  await page.goto("/settings");
+  await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+});
+
 
