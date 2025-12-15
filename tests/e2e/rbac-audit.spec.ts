@@ -287,4 +287,32 @@ test("invite: outsider can accept invite; join events are logged", async ({ page
   await expect(page.locator("text=/Member joined|メンバー参加/")).toBeVisible();
 });
 
+test("invite: usage is audited and used-up is logged when maxUses=1", async ({ page }) => {
+  await page.request.post("/api/e2e/reset", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
+  });
+
+  // Owner creates an invite with maxUses=1.
+  await page.goto("/settings");
+  await setE2EUser(page, OWNER_ID);
+  const created = await page.request.post("/api/e2e/workspace/invite", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" },
+    data: { role: "member", maxUses: 1 }
+  });
+  expect(created.status()).toBe(200);
+  const createdJson = (await created.json()) as { ok: boolean; token?: string };
+  expect(createdJson.ok).toBe(true);
+  const token = String(createdJson.token ?? "");
+  expect(token.length).toBeGreaterThan(10);
+
+  // Outsider accepts invite.
+  await setE2EUser(page, OUTSIDER_ID);
+  await page.goto(`/invite/${token}`);
+  await expect(page).toHaveURL(/\/settings\?invite=accepted/);
+
+  // Activity feed should show usage + used up.
+  await expect(page.locator("text=/Invite used|招待リンク使用/")).toBeVisible();
+  await expect(page.locator("text=/Invite used up|招待リンク上限到達/")).toBeVisible();
+});
+
 

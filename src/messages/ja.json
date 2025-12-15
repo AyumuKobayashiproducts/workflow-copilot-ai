@@ -393,6 +393,8 @@
   "task.activity.kind.workspaceMemberRoleUpdated": "メンバー権限変更",
   "task.activity.kind.workspaceInviteAccepted": "招待リンク受諾",
   "task.activity.kind.workspaceMemberJoined": "メンバー参加",
+  "task.activity.kind.workspaceInviteUsed": "招待リンク使用",
+  "task.activity.kind.workspaceInviteUsedUp": "招待リンク上限到達",
 
   "task.source.inbox": "受信箱",
   "task.source.breakdown": "分解",

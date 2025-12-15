@@ -76,9 +76,10 @@ export default async function InviteAcceptPage(props: { params: Promise<{ token:
       await tx.workspaceMembership.create({
         data: { workspaceId: invite.workspaceId, userId, role: invite.role }
       });
-      await tx.workspaceInvite.update({
+      const updatedInvite = await tx.workspaceInvite.update({
         where: { id: invite.id },
-        data: { usedCount: { increment: 1 } }
+        data: { usedCount: { increment: 1 } },
+        select: { id: true, usedCount: true, maxUses: true, role: true }
       });
 
       // Audit (workspace event): invite accepted / member joined.
@@ -102,6 +103,40 @@ export default async function InviteAcceptPage(props: { params: Promise<{ token:
           metadata: { action: "workspace_member_joined", inviteId: invite.id, role: invite.role }
         }
       });
+
+      // Audit: invite usage count.
+      await tx.taskActivity.create({
+        data: {
+          workspaceId: invite.workspaceId,
+          taskId: null,
+          actorUserId: userId,
+          kind: "workspace_invite_used",
+          message: `Invite used (${updatedInvite.usedCount}/${updatedInvite.maxUses})`,
+          metadata: {
+            action: "workspace_invite_used",
+            inviteId: updatedInvite.id,
+            usedCount: updatedInvite.usedCount,
+            maxUses: updatedInvite.maxUses
+          }
+        }
+      });
+      if (updatedInvite.usedCount >= updatedInvite.maxUses) {
+        await tx.taskActivity.create({
+          data: {
+            workspaceId: invite.workspaceId,
+            taskId: null,
+            actorUserId: userId,
+            kind: "workspace_invite_used_up",
+            message: "Invite used up",
+            metadata: {
+              action: "workspace_invite_used_up",
+              inviteId: updatedInvite.id,
+              usedCount: updatedInvite.usedCount,
+              maxUses: updatedInvite.maxUses
+            }
+          }
+        });
+      }
     }
 
     // If the user has no default workspace yet, set it to this one.

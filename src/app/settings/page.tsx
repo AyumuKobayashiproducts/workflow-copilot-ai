@@ -314,6 +314,10 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                             return t("task.activity.kind.workspaceInviteAccepted");
                           case "workspace_member_joined":
                             return t("task.activity.kind.workspaceMemberJoined");
+                          case "workspace_invite_used":
+                            return t("task.activity.kind.workspaceInviteUsed");
+                          case "workspace_invite_used_up":
+                            return t("task.activity.kind.workspaceInviteUsedUp");
                   default:
                     return kind;
                 }

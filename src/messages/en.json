@@ -393,6 +393,8 @@
   "task.activity.kind.workspaceMemberRoleUpdated": "Member role updated",
   "task.activity.kind.workspaceInviteAccepted": "Invite accepted",
   "task.activity.kind.workspaceMemberJoined": "Member joined",
+  "task.activity.kind.workspaceInviteUsed": "Invite used",
+  "task.activity.kind.workspaceInviteUsedUp": "Invite used up",
 
   "task.source.inbox": "Inbox",
   "task.source.breakdown": "Breakdown",
