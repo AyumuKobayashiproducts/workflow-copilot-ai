@@ -142,4 +142,25 @@ test("rbac+audit: member cannot create invite; forbidden is logged (workspace ev
   await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
 });
 
+test("rbac+audit: member cannot change member roles; forbidden is logged (workspace event)", async ({ page }) => {
+  await page.request.post("/api/e2e/reset", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
+  });
+
+  await page.goto("/settings");
+  await setE2EUser(page, MEMBER_ID);
+
+  const res = await page.request.post("/api/e2e/workspace/member-role", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" },
+    data: { userId: MEMBER_ID, role: "owner" }
+  });
+  expect(res.status()).toBe(403);
+  const json = (await res.json()) as { ok: boolean; error?: string };
+  expect(json.ok).toBe(false);
+  expect(json.error).toBe("forbidden");
+
+  await page.goto("/settings");
+  await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+});
+
 
