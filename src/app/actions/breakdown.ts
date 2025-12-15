@@ -3,7 +3,7 @@
 import * as Sentry from "@sentry/nextjs";
 
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
-import { requireUserId } from "@/lib/auth/user";
+import { requireWorkspaceContext } from "@/lib/workspaces/context";
 import { consumeAiUsage } from "@/lib/ai/usage";
 
 type Result =
@@ -37,7 +37,7 @@ export async function generateBreakdownSteps(goal: string): Promise<Result> {
   if (trimmed.length > 300) return { ok: false, reason: "goal_too_long" };
 
   // Require auth in prod; in CI we can bypass with AUTH_BYPASS.
-  const userId = await requireUserId();
+  const ctx = await requireWorkspaceContext();
   const locale = await getLocale();
   const messages = await getMessages(locale);
   const t = createT(messages);
@@ -57,7 +57,7 @@ export async function generateBreakdownSteps(goal: string): Promise<Result> {
     };
   }
 
-  const quota = await consumeAiUsage({ userId, kind: "breakdown" });
+  const quota = await consumeAiUsage({ workspaceId: ctx.workspaceId, userId: ctx.userId, kind: "breakdown" });
   if (!quota.ok) return { ok: false, reason: "rate_limited" };
 
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";

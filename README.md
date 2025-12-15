@@ -21,6 +21,7 @@ Japanese README: `README.ja.md`
 - **AI with guardrails**: daily usage limit, input validation, retry + server-side logging
 - **Weekly report persistence**: saved per week (upsert) and editable (manual save)
 - **Slack sharing**: Block Kit formatting, clear error reasons, double-submit prevention
+- **B2B-ready primitives**: workspace membership + invite links (foundation for team mode)
 - **Production ergonomics**: Sentry integration + integration status on Settings + E2E coverage
 
 ## Positioning (how this becomes a “sellable” product)

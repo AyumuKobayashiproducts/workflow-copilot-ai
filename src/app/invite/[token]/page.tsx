@@ -1,0 +1,95 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { prisma } from "@/lib/db";
+import { getUserIdOrNull } from "@/lib/auth/user";
+import { createT, getLocale, getMessages } from "@/lib/i18n/server";
+
+export default async function InviteAcceptPage(props: { params: Promise<{ token: string }> }) {
+  const locale = await getLocale();
+  const messages = await getMessages(locale);
+  const t = createT(messages);
+
+  const { token } = await props.params;
+  const tokenSafe = (token ?? "").trim();
+  if (!tokenSafe) redirect("/login");
+
+  const userId = await getUserIdOrNull();
+  if (!userId) {
+    redirect(`/login?callbackUrl=${encodeURIComponent(`/invite/${tokenSafe}`)}`);
+  }
+
+  const invite = await prisma.workspaceInvite.findUnique({
+    where: { token: tokenSafe },
+    include: { workspace: { select: { id: true, name: true } } }
+  });
+
+  if (!invite || invite.revokedAt) {
+    return (
+      <div className="space-y-6">
+        <header className="space-y-1">
+          <h1 className="text-2xl font-semibold">{t("invite.title")}</h1>
+          <p className="text-sm text-neutral-700">{t("invite.invalid")}</p>
+        </header>
+        <Link className="text-sm underline underline-offset-4" href="/settings">
+          {t("invite.goToSettings")}
+        </Link>
+      </div>
+    );
+  }
+
+  const now = Date.now();
+  if (invite.expiresAt && invite.expiresAt.getTime() < now) {
+    return (
+      <div className="space-y-6">
+        <header className="space-y-1">
+          <h1 className="text-2xl font-semibold">{t("invite.title")}</h1>
+          <p className="text-sm text-neutral-700">{t("invite.expired")}</p>
+        </header>
+        <Link className="text-sm underline underline-offset-4" href="/settings">
+          {t("invite.goToSettings")}
+        </Link>
+      </div>
+    );
+  }
+  if (invite.usedCount >= invite.maxUses) {
+    return (
+      <div className="space-y-6">
+        <header className="space-y-1">
+          <h1 className="text-2xl font-semibold">{t("invite.title")}</h1>
+          <p className="text-sm text-neutral-700">{t("invite.usedUp")}</p>
+        </header>
+        <Link className="text-sm underline underline-offset-4" href="/settings">
+          {t("invite.goToSettings")}
+        </Link>
+      </div>
+    );
+  }
+
+  // Accept: create membership if missing and increment used count.
+  await prisma.$transaction(async (tx) => {
+    const existing = await tx.workspaceMembership.findUnique({
+      where: { workspaceId_userId: { workspaceId: invite.workspaceId, userId } },
+      select: { id: true }
+    });
+    if (!existing) {
+      await tx.workspaceMembership.create({
+        data: { workspaceId: invite.workspaceId, userId, role: invite.role }
+      });
+      await tx.workspaceInvite.update({
+        where: { id: invite.id },
+        data: { usedCount: { increment: 1 } }
+      });
+    }
+
+    // If the user has no default workspace yet, set it to this one.
+    const u = await tx.user.findUnique({ where: { id: userId }, select: { defaultWorkspaceId: true } });
+    if (!u?.defaultWorkspaceId) {
+      await tx.user.update({ where: { id: userId }, data: { defaultWorkspaceId: invite.workspaceId } });
+    }
+  });
+
+  redirect("/settings?invite=accepted");
+}
+
+

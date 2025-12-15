@@ -24,6 +24,7 @@ Workflow Copilot は、**忙しい個人（IC）** と **小規模チーム**を
 
 - **プロダクト思考**: 「振り返り→実行」への断絶を **Next step 1つ**で埋める設計
 - **フルスタック実装**: Next.js App Router + Server Actions、Auth、DB、E2E、i18n
+- **B2Bの土台**: ワークスペース（Membership）＋招待リンク（Invite）のプリミティブ
 - **運用のリアリティ**: Prisma migrations、CIでの migrate、Sentryフック、危険フラグの本番封じ（preflight）
 
 ## ドキュメント

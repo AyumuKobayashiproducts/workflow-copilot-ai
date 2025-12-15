@@ -20,6 +20,11 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
+  defaultWorkspaceId String?
+  defaultWorkspace   Workspace? @relation("UserDefaultWorkspace", fields: [defaultWorkspaceId], references: [id], onDelete: SetNull)
+  workspaceMemberships WorkspaceMembership[]
+  workspaceInvitesCreated WorkspaceInvite[] @relation("WorkspaceInviteCreatedBy")
+
   tasks         Task[]
   weeklyNotes   WeeklyNote[]
   weeklyReports WeeklyReport[]
@@ -75,9 +80,66 @@ enum AiUsageKind {
   weekly
 }
 
+enum WorkspaceRole {
+  owner
+  member
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+
+  memberships WorkspaceMembership[]
+  invites     WorkspaceInvite[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  defaultForUsers User[] @relation("UserDefaultWorkspace")
+}
+
+model WorkspaceMembership {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole @default(member)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@index([workspaceId])
+}
+
+model WorkspaceInvite {
+  id              String        @id @default(cuid())
+  workspaceId      String
+  token            String        @unique
+  role             WorkspaceRole @default(member)
+  createdByUserId  String
+  expiresAt        DateTime?
+  maxUses          Int           @default(5)
+  usedCount        Int           @default(0)
+  revokedAt        DateTime?
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User @relation("WorkspaceInviteCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([workspaceId])
+  @@index([expiresAt])
+}
+
 model Task {
   id          String     @id @default(cuid())
   userId      String
+  workspaceId String
   title       String
   status      TaskStatus @default(todo)
   source      String?
@@ -88,15 +150,17 @@ model Task {
   updatedAt   DateTime   @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@index([userId, status])
-  @@index([userId, createdAt])
-  @@index([userId, focusAt])
+  @@index([workspaceId, userId, status])
+  @@index([workspaceId, userId, createdAt])
+  @@index([workspaceId, userId, focusAt])
 }
 
 model WeeklyNote {
   id        String   @id @default(cuid())
   userId    String
+  workspaceId String
   weekStart DateTime
   note      String   @default("")
 
@@ -104,14 +168,16 @@ model WeeklyNote {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, weekStart])
-  @@index([userId, weekStart])
+  @@unique([workspaceId, userId, weekStart])
+  @@index([workspaceId, userId, weekStart])
 }
 
 model WeeklyReport {
   id        String   @id @default(cuid())
   userId    String
+  workspaceId String
   weekStart DateTime
   text      String   @default("")
 
@@ -119,22 +185,25 @@ model WeeklyReport {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, weekStart])
-  @@index([userId, weekStart])
+  @@unique([workspaceId, userId, weekStart])
+  @@index([workspaceId, userId, weekStart])
 }
 
 model AiUsage {
   id     String      @id @default(cuid())
   userId String
+  workspaceId String
   date   String      // YYYY-MM-DD (UTC)
   kind   AiUsageKind
   count  Int         @default(0)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, date, kind])
-  @@index([userId, date])
+  @@unique([workspaceId, userId, date, kind])
+  @@index([workspaceId, userId, date])
 }
 
 

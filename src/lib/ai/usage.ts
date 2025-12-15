@@ -15,16 +15,23 @@ function getDailyLimit() {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : 20;
 }
 
-export async function consumeAiUsage(input: { userId: string; kind: AiUsageKind }) {
+export async function consumeAiUsage(input: { workspaceId: string; userId: string; kind: AiUsageKind }) {
   const date = utcDateKey(new Date());
   const limit = getDailyLimit();
 
   // Atomic-ish: do it inside a transaction.
   const next = await prisma.$transaction(async (tx) => {
     const row = await tx.aiUsage.upsert({
-      where: { userId_date_kind: { userId: input.userId, date, kind: input.kind } },
+      where: {
+        workspaceId_userId_date_kind: {
+          workspaceId: input.workspaceId,
+          userId: input.userId,
+          date,
+          kind: input.kind
+        }
+      },
       update: { count: { increment: 1 } },
-      create: { userId: input.userId, date, kind: input.kind, count: 1 }
+      create: { workspaceId: input.workspaceId, userId: input.userId, date, kind: input.kind, count: 1 }
     });
     return row;
   });

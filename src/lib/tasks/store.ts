@@ -4,26 +4,26 @@ import { prisma } from "@/lib/db";
 
 export type TaskSource = "inbox" | "breakdown" | "weekly" | "demo";
 
-export async function listTasks(userId: string): Promise<Task[]> {
+export async function listTasks(input: { workspaceId: string; userId: string }): Promise<Task[]> {
   return prisma.task.findMany({
-    where: { userId },
+    where: { workspaceId: input.workspaceId, userId: input.userId },
     orderBy: { createdAt: "desc" }
   });
 }
 
-export async function countTasks(userId: string): Promise<number> {
-  return prisma.task.count({ where: { userId } });
+export async function countTasks(input: { workspaceId: string; userId: string }): Promise<number> {
+  return prisma.task.count({ where: { workspaceId: input.workspaceId, userId: input.userId } });
 }
 
-export async function getFocusTask(userId: string): Promise<Task | null> {
+export async function getFocusTask(input: { workspaceId: string; userId: string }): Promise<Task | null> {
   return prisma.task.findFirst({
-    where: { userId, status: "todo", focusAt: { not: null } },
+    where: { workspaceId: input.workspaceId, userId: input.userId, status: "todo", focusAt: { not: null } },
     orderBy: [{ focusAt: "desc" }, { createdAt: "desc" }]
   });
 }
 
 export async function listInboxTasks(
-  userId: string,
+  ctx: { workspaceId: string; userId: string },
   input: {
     q: string;
     status: "all" | "todo" | "done";
@@ -35,7 +35,8 @@ export async function listInboxTasks(
   const sort = input.sort;
 
   const where: Parameters<typeof prisma.task.findMany>[0]["where"] = {
-    userId,
+    workspaceId: ctx.workspaceId,
+    userId: ctx.userId,
     ...(q ? { title: { contains: q, mode: "insensitive" } } : {}),
     ...(status === "all" ? {} : { status })
   };
@@ -68,6 +69,7 @@ export async function listInboxTasks(
 }
 
 export async function createTask(input: {
+  workspaceId: string;
   userId: string;
   title: string;
   source?: TaskSource;
@@ -77,6 +79,7 @@ export async function createTask(input: {
 
   return prisma.task.create({
     data: {
+      workspaceId: input.workspaceId,
       userId: input.userId,
       title,
       source: input.source
@@ -85,6 +88,7 @@ export async function createTask(input: {
 }
 
 export async function createTasksBulk(input: {
+  workspaceId: string;
   userId: string;
   titles: string[];
   source?: TaskSource;
@@ -94,6 +98,7 @@ export async function createTasksBulk(input: {
 
   await prisma.task.createMany({
     data: titles.map((title) => ({
+      workspaceId: input.workspaceId,
       userId: input.userId,
       title,
       source: input.source
@@ -101,9 +106,9 @@ export async function createTasksBulk(input: {
   });
 }
 
-export async function toggleTaskDone(input: { userId: string; id: string }): Promise<Task> {
+export async function toggleTaskDone(input: { workspaceId: string; userId: string; id: string }): Promise<Task> {
   const task = await prisma.task.findFirst({
-    where: { id: input.id, userId: input.userId }
+    where: { id: input.id, workspaceId: input.workspaceId, userId: input.userId }
   });
   if (!task) throw new Error("Task not found");
 
@@ -119,44 +124,46 @@ export async function toggleTaskDone(input: { userId: string; id: string }): Pro
   });
 }
 
-export async function deleteTask(input: { userId: string; id: string }): Promise<void> {
+export async function deleteTask(input: { workspaceId: string; userId: string; id: string }): Promise<void> {
   await prisma.task.deleteMany({
-    where: { id: input.id, userId: input.userId }
+    where: { id: input.id, workspaceId: input.workspaceId, userId: input.userId }
   });
 }
 
-export async function updateTaskTitle(input: { userId: string; id: string; title: string }): Promise<Task> {
+export async function updateTaskTitle(input: { workspaceId: string; userId: string; id: string; title: string }): Promise<Task> {
   const title = input.title.trim();
   if (!title) throw new Error("Task title is required");
 
   const res = await prisma.task.updateMany({
-    where: { id: input.id, userId: input.userId },
+    where: { id: input.id, workspaceId: input.workspaceId, userId: input.userId },
     data: { title }
   });
   if (res.count === 0) throw new Error("Task not found");
 
-  const updated = await prisma.task.findFirst({ where: { id: input.id, userId: input.userId } });
+  const updated = await prisma.task.findFirst({
+    where: { id: input.id, workspaceId: input.workspaceId, userId: input.userId }
+  });
   if (!updated) throw new Error("Task not found");
   return updated;
 }
 
-export async function setFocusTask(input: { userId: string; id: string }): Promise<void> {
+export async function setFocusTask(input: { workspaceId: string; userId: string; id: string }): Promise<void> {
   await prisma.$transaction(async (tx) => {
     await tx.task.updateMany({
-      where: { userId: input.userId },
+      where: { workspaceId: input.workspaceId, userId: input.userId },
       data: { focusAt: null }
     });
     const res = await tx.task.updateMany({
-      where: { id: input.id, userId: input.userId, status: "todo" },
+      where: { id: input.id, workspaceId: input.workspaceId, userId: input.userId, status: "todo" },
       data: { focusAt: new Date() }
     });
     if (res.count === 0) throw new Error("Task not found");
   });
 }
 
-export async function clearFocusTask(input: { userId: string }): Promise<void> {
+export async function clearFocusTask(input: { workspaceId: string; userId: string }): Promise<void> {
   await prisma.task.updateMany({
-    where: { userId: input.userId },
+    where: { workspaceId: input.workspaceId, userId: input.userId },
     data: { focusAt: null }
   });
 }

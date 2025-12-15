@@ -21,6 +21,7 @@ Workflow Copilot tightens the loop: **Inbox → Breakdown → Weekly review → 
 - **Unsafe flags are blocked in prod**: `preflight:prod` fails builds if `AUTH_BYPASS` / `DEMO_TOOLS` / `E2E_TOKEN` are enabled.
 - **E2E determinism**: `/api/e2e/reset` enables predictable test state (guarded by flags + token).
 - **i18n discipline**: `en.json` and `ja.json` must match; CI enforces key parity.
+- **B2B foundation**: workspace membership + invite links (team-mode primitives).
 
 ## 4) What’s intentionally scoped (tradeoffs)
 

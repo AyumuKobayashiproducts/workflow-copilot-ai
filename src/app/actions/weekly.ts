@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getWeeklyNote, setWeeklyNote, setWeeklyReport } from "@/lib/weekly/store";
-import { requireUserId } from "@/lib/auth/user";
+import { requireWorkspaceContext } from "@/lib/workspaces/context";
 import { listTasks } from "@/lib/tasks/store";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { consumeAiUsage } from "@/lib/ai/usage";
@@ -34,12 +34,12 @@ export async function saveWeeklyNoteAction(formData: FormData) {
     });
     redirect(weeklyUrl(weekStart, { note: "failed" }));
   }
-  const userId = await requireUserId();
+  const ctx = await requireWorkspaceContext();
   const note = noteRaw.trim().slice(0, WEEKLY_NOTE_MAX_CHARS + 1);
   if (note.length > WEEKLY_NOTE_MAX_CHARS) {
     redirect(weeklyUrl(weekStart, { note: "too_long" }));
   }
-  await setWeeklyNote({ userId, weekStartIso: weekStart, note });
+  await setWeeklyNote({ workspaceId: ctx.workspaceId, userId: ctx.userId, weekStartIso: weekStart, note });
   revalidatePath("/weekly");
   redirect(weeklyUrl(weekStart, { note: "saved" }));
 }
@@ -54,12 +54,12 @@ export async function saveWeeklyReportAction(formData: FormData) {
     });
     redirect(weeklyUrl(weekStartIso, { report: "failed" }));
   }
-  const userId = await requireUserId();
+  const ctx = await requireWorkspaceContext();
   const text = reportRaw.trim().slice(0, WEEKLY_REPORT_MAX_CHARS + 1);
   if (text.length > WEEKLY_REPORT_MAX_CHARS) {
     redirect(weeklyUrl(weekStartIso, { report: "too_long" }));
   }
-  await setWeeklyReport({ userId, weekStartIso, text });
+  await setWeeklyReport({ workspaceId: ctx.workspaceId, userId: ctx.userId, weekStartIso, text });
   revalidatePath("/weekly");
   redirect(weeklyUrl(weekStartIso, { report: "saved" }));
 }
@@ -140,7 +140,7 @@ export async function generateWeeklyReportText(
   weekStartIso: string,
   template: "standard" | "short" | "detailed" = "standard"
 ): Promise<{ ok: true; text: string } | { ok: false; reason: "rate_limited" | "failed" }> {
-  const userId = await requireUserId();
+  const ctx = await requireWorkspaceContext();
   const locale = await getLocale();
 
   if (!weekStartIso || Number.isNaN(new Date(weekStartIso).getTime())) {
@@ -155,7 +155,7 @@ export async function generateWeeklyReportText(
   const startLabel = weekStart.toLocaleDateString(locale);
   const endLabel = weekEnd.toLocaleDateString(locale);
 
-  const tasks = await listTasks(userId);
+  const tasks = await listTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId });
   const inWeek = tasks.filter((task) => {
     const created = task.createdAt.getTime();
     return created >= weekStart.getTime() && created <= weekEnd.getTime();
@@ -164,7 +164,7 @@ export async function generateWeeklyReportText(
   const todoCount = inWeek.filter((x) => x.status === "todo").length;
   const blockedCount = 0;
 
-  const note = await getWeeklyNote({ userId, weekStartIso });
+  const note = await getWeeklyNote({ workspaceId: ctx.workspaceId, userId: ctx.userId, weekStartIso });
 
   const apiKey = process.env.OPENAI_API_KEY;
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
@@ -191,14 +191,14 @@ export async function generateWeeklyReportText(
       note,
       raw: text
     });
-    await setWeeklyReport({ userId, weekStartIso, text: formatted });
+    await setWeeklyReport({ workspaceId: ctx.workspaceId, userId: ctx.userId, weekStartIso, text: formatted });
     return {
       ok: true,
       text: formatted
     };
   }
 
-  const quota = await consumeAiUsage({ userId, kind: "weekly" });
+  const quota = await consumeAiUsage({ workspaceId: ctx.workspaceId, userId: ctx.userId, kind: "weekly" });
   if (!quota.ok) return { ok: false, reason: "rate_limited" };
 
   const language = locale === "ja" ? "Japanese" : "English";
@@ -270,12 +270,12 @@ export async function generateWeeklyReportText(
 
     const first = await callOnce();
     if (first) {
-      await setWeeklyReport({ userId, weekStartIso, text: first });
+      await setWeeklyReport({ workspaceId: ctx.workspaceId, userId: ctx.userId, weekStartIso, text: first });
       return { ok: true, text: first };
     }
     const second = await callOnce();
     if (second) {
-      await setWeeklyReport({ userId, weekStartIso, text: second });
+      await setWeeklyReport({ workspaceId: ctx.workspaceId, userId: ctx.userId, weekStartIso, text: second });
       return { ok: true, text: second };
     }
     return { ok: false, reason: "failed" };
@@ -291,7 +291,7 @@ export async function postWeeklyToSlackAction(formData: FormData) {
   const weekStartIso = String(formData.get("weekStart") ?? "");
   if (!weekStartIso) return;
 
-  const userId = await requireUserId();
+  const ctx = await requireWorkspaceContext();
 
   const locale = await getLocale();
   const messages = await getMessages(locale);
@@ -316,7 +316,7 @@ export async function postWeeklyToSlackAction(formData: FormData) {
   weekEnd.setDate(weekEnd.getDate() + 6);
   weekEnd.setHours(23, 59, 59, 999);
 
-  const tasks = await listTasks(userId);
+  const tasks = await listTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId });
   const inWeek = tasks.filter((task) => {
     const created = task.createdAt.getTime();
     return created >= weekStart.getTime() && created <= weekEnd.getTime();
@@ -328,7 +328,7 @@ export async function postWeeklyToSlackAction(formData: FormData) {
   const startLabel = weekStart.toLocaleDateString(locale);
   const endLabel = weekEnd.toLocaleDateString(locale);
 
-  const note = await getWeeklyNote({ userId, weekStartIso });
+  const note = await getWeeklyNote({ workspaceId: ctx.workspaceId, userId: ctx.userId, weekStartIso });
   const reportFromClient = String(formData.get("report") ?? "").trim();
   const report =
     reportFromClient ||

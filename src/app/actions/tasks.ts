@@ -14,7 +14,7 @@ import {
   toggleTaskDone,
   updateTaskTitle
 } from "@/lib/tasks/store";
-import { requireUserId } from "@/lib/auth/user";
+import { requireWorkspaceContext } from "@/lib/workspaces/context";
 
 function safeRedirectTo(raw: string | null): string {
   const v = (raw ?? "").trim();
@@ -32,16 +32,16 @@ function addQueryParam(path: string, key: string, value: string) {
 
 export async function createTaskAction(formData: FormData) {
   const title = String(formData.get("title") ?? "");
-  const userId = await requireUserId();
-  await createTask({ userId, title, source: "inbox" });
+  const ctx = await requireWorkspaceContext();
+  await createTask({ workspaceId: ctx.workspaceId, userId: ctx.userId, title, source: "inbox" });
   revalidatePath("/inbox");
   revalidatePath("/weekly");
 }
 
 export async function createWeeklyTaskAction(formData: FormData) {
   const title = String(formData.get("title") ?? "");
-  const userId = await requireUserId();
-  await createTask({ userId, title, source: "weekly" });
+  const ctx = await requireWorkspaceContext();
+  await createTask({ workspaceId: ctx.workspaceId, userId: ctx.userId, title, source: "weekly" });
   revalidatePath("/weekly");
   revalidatePath("/inbox");
 }
@@ -49,8 +49,8 @@ export async function createWeeklyTaskAction(formData: FormData) {
 export async function toggleTaskDoneAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
-  const userId = await requireUserId();
-  await toggleTaskDone({ userId, id });
+  const ctx = await requireWorkspaceContext();
+  await toggleTaskDone({ workspaceId: ctx.workspaceId, userId: ctx.userId, id });
   revalidatePath("/inbox");
   revalidatePath("/weekly");
 }
@@ -58,8 +58,8 @@ export async function toggleTaskDoneAction(formData: FormData) {
 export async function deleteTaskAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
-  const userId = await requireUserId();
-  await deleteTask({ userId, id });
+  const ctx = await requireWorkspaceContext();
+  await deleteTask({ workspaceId: ctx.workspaceId, userId: ctx.userId, id });
   revalidatePath("/inbox");
   revalidatePath("/weekly");
 }
@@ -68,10 +68,10 @@ export async function updateTaskTitleAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const title = String(formData.get("title") ?? "");
   if (!id) return;
-  const userId = await requireUserId();
+  const ctx = await requireWorkspaceContext();
   const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
   try {
-    await updateTaskTitle({ userId, id, title });
+    await updateTaskTitle({ workspaceId: ctx.workspaceId, userId: ctx.userId, id, title });
     revalidatePath("/inbox");
     revalidatePath("/weekly");
     redirect(addQueryParam(redirectTo, "toast", "task_updated"));
@@ -84,10 +84,10 @@ export async function updateTaskTitleAction(formData: FormData) {
 export async function setFocusTaskAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
-  const userId = await requireUserId();
+  const ctx = await requireWorkspaceContext();
   const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
   try {
-    await setFocusTask({ userId, id });
+    await setFocusTask({ workspaceId: ctx.workspaceId, userId: ctx.userId, id });
     revalidatePath("/inbox");
     revalidatePath("/weekly");
     redirect(addQueryParam(redirectTo, "toast", "focus_set"));
@@ -98,10 +98,10 @@ export async function setFocusTaskAction(formData: FormData) {
 }
 
 export async function clearFocusTaskAction(formData: FormData) {
-  const userId = await requireUserId();
+  const ctx = await requireWorkspaceContext();
   const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
   try {
-    await clearFocusTask({ userId });
+    await clearFocusTask({ workspaceId: ctx.workspaceId, userId: ctx.userId });
     revalidatePath("/inbox");
     revalidatePath("/weekly");
     redirect(addQueryParam(redirectTo, "toast", "focus_cleared"));
@@ -118,8 +118,8 @@ export async function createTasksFromBreakdownAction(formData: FormData) {
     .map((s) => s.trim())
     .filter(Boolean);
   if (steps.length === 0) return;
-  const userId = await requireUserId();
-  await createTasksBulk({ userId, titles: steps, source: "breakdown" });
+  const ctx = await requireWorkspaceContext();
+  await createTasksBulk({ workspaceId: ctx.workspaceId, userId: ctx.userId, titles: steps, source: "breakdown" });
   revalidatePath("/inbox");
   revalidatePath("/weekly");
 }

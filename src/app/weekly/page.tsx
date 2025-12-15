@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { getUserIdOrNull } from "@/lib/auth/user";
+import { getWorkspaceContextOrNull } from "@/lib/workspaces/context";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { listTasks } from "@/lib/tasks/store";
 import { getWeeklyNote, getWeeklyReport } from "@/lib/weekly/store";
@@ -29,10 +29,10 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   const doneScopeRaw = searchParams.doneScope;
   const doneScope = (Array.isArray(doneScopeRaw) ? doneScopeRaw[0] : doneScopeRaw) === "all" ? "all" : "week";
 
-  const userId = await getUserIdOrNull();
-  if (!userId) redirect("/login");
+  const ctx = await getWorkspaceContextOrNull();
+  if (!ctx) redirect("/login");
 
-  const tasks = await listTasks(userId);
+  const tasks = await listTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId });
 
   const base = weekStartParam && !Number.isNaN(new Date(weekStartParam).getTime()) ? new Date(weekStartParam) : new Date();
   const day = base.getDay(); // 0 Sun ... 6 Sat
@@ -46,8 +46,8 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   weekEnd.setHours(23, 59, 59, 999);
 
   const weekStartIso = weekStart.toISOString();
-  const note = await getWeeklyNote({ userId, weekStartIso });
-  const savedReport = await getWeeklyReport({ userId, weekStartIso });
+  const note = await getWeeklyNote({ workspaceId: ctx.workspaceId, userId: ctx.userId, weekStartIso });
+  const savedReport = await getWeeklyReport({ workspaceId: ctx.workspaceId, userId: ctx.userId, weekStartIso });
 
   const prevWeekStart = new Date(weekStart);
   prevWeekStart.setDate(prevWeekStart.getDate() - 7);

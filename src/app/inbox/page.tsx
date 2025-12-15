@@ -11,7 +11,7 @@ import {
   deleteTaskAction,
   toggleTaskDoneAction,
 } from "@/app/actions/tasks";
-import { getUserIdOrNull } from "@/lib/auth/user";
+import { getWorkspaceContextOrNull } from "@/lib/workspaces/context";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { countTasks, getFocusTask, listInboxTasks } from "@/lib/tasks/store";
 
@@ -19,10 +19,10 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
   const locale = await getLocale();
   const messages = await getMessages(locale);
   const t = createT(messages);
-  const userId = await getUserIdOrNull();
-  if (!userId) redirect("/login");
+  const ctx = await getWorkspaceContextOrNull();
+  if (!ctx) redirect("/login");
 
-  const totalCount = await countTasks(userId);
+  const totalCount = await countTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId });
   const demoEnabled = process.env.DEMO_TOOLS === "1";
   const searchParams = (await props.searchParams) ?? {};
   const qRaw = searchParams.q;
@@ -49,8 +49,8 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
               : "";
 
   const [visibleTasks, focusTask] = await Promise.all([
-    listInboxTasks(userId, { q, status: statusFilter, sort: sortKey }),
-    getFocusTask(userId)
+    listInboxTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId }, { q, status: statusFilter, sort: sortKey }),
+    getFocusTask({ workspaceId: ctx.workspaceId, userId: ctx.userId })
   ]);
 
   const selfUrl = inboxUrl({ q: q || undefined, status: statusFilter, sort: sortKey });

@@ -21,6 +21,7 @@ Workflow Copilot は **Inbox → Breakdown → Weekly → Next step（1つに絞
 - **危険フラグの本番封じ**: `preflight:prod` が `AUTH_BYPASS` / `DEMO_TOOLS` / `E2E_TOKEN` を本番でブロック
 - **E2Eの決定性**: `/api/e2e/reset`（フラグ＋トークンでガード）
 - **i18nの規律**: `en.json` と `ja.json` のキー一致をCIで強制
+- **B2Bの土台**: ワークスペース（Membership）＋招待リンク（Invite）
 
 ## 4) 意図的に未実装の範囲（トレードオフ）
 

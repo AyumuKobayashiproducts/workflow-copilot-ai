@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/db";
-import { requireUserId } from "@/lib/auth/user";
+import { requireWorkspaceContext } from "@/lib/workspaces/context";
 
 function ensureDemoToolsEnabled() {
   if (process.env.DEMO_TOOLS !== "1") {
@@ -14,11 +14,11 @@ function ensureDemoToolsEnabled() {
   }
 }
 
-async function seedDemoDataForUser(userId: string) {
-  await prisma.aiUsage.deleteMany({ where: { userId } });
-  await prisma.task.deleteMany({ where: { userId } });
-  await prisma.weeklyNote.deleteMany({ where: { userId } });
-  await prisma.weeklyReport.deleteMany({ where: { userId } });
+async function seedDemoDataForUser(input: { workspaceId: string; userId: string }) {
+  await prisma.aiUsage.deleteMany({ where: { workspaceId: input.workspaceId, userId: input.userId } });
+  await prisma.task.deleteMany({ where: { workspaceId: input.workspaceId, userId: input.userId } });
+  await prisma.weeklyNote.deleteMany({ where: { workspaceId: input.workspaceId, userId: input.userId } });
+  await prisma.weeklyReport.deleteMany({ where: { workspaceId: input.workspaceId, userId: input.userId } });
 
   // Seed demo data for a nice first-run experience.
   const base = new Date();
@@ -43,7 +43,8 @@ async function seedDemoDataForUser(userId: string) {
   await prisma.task.createMany({
     data: [
       {
-        userId,
+        workspaceId: input.workspaceId,
+        userId: input.userId,
         title: "Write down today's top goal (10 min)",
         status: "done",
         source: "demo",
@@ -52,7 +53,8 @@ async function seedDemoDataForUser(userId: string) {
         completedAt: withinWeek(0)
       },
       {
-        userId,
+        workspaceId: input.workspaceId,
+        userId: input.userId,
         title: "Break it into 5 steps",
         status: "done",
         source: "demo",
@@ -61,7 +63,8 @@ async function seedDemoDataForUser(userId: string) {
         completedAt: withinWeek(1)
       },
       {
-        userId,
+        workspaceId: input.workspaceId,
+        userId: input.userId,
         title: "Do the smallest next step (10 min)",
         status: "todo",
         source: "demo",
@@ -70,7 +73,8 @@ async function seedDemoDataForUser(userId: string) {
         focusAt: withinWeek(2)
       },
       {
-        userId,
+        workspaceId: input.workspaceId,
+        userId: input.userId,
         title: "Share a weekly report to Slack",
         status: "todo",
         source: "demo",
@@ -81,13 +85,13 @@ async function seedDemoDataForUser(userId: string) {
   });
 
   await prisma.weeklyNote.upsert({
-    where: { userId_weekStart: { userId, weekStart } },
+    where: { workspaceId_userId_weekStart: { workspaceId: input.workspaceId, userId: input.userId, weekStart } },
     update: { note: "Demo week: shipped core workflow + added monitoring." },
-    create: { userId, weekStart, note: "Demo week: shipped core workflow + added monitoring." }
+    create: { workspaceId: input.workspaceId, userId: input.userId, weekStart, note: "Demo week: shipped core workflow + added monitoring." }
   });
 
   await prisma.weeklyReport.upsert({
-    where: { userId_weekStart: { userId, weekStart } },
+    where: { workspaceId_userId_weekStart: { workspaceId: input.workspaceId, userId: input.userId, weekStart } },
     update: {
       text: [
         `Weekly report (${weekStart.toLocaleDateString("en-US")} - ${weekEnd.toLocaleDateString("en-US")})`,
@@ -97,7 +101,8 @@ async function seedDemoDataForUser(userId: string) {
       ].join("\n")
     },
     create: {
-      userId,
+      workspaceId: input.workspaceId,
+      userId: input.userId,
       weekStart,
       text: [
         `Weekly report (${weekStart.toLocaleDateString("en-US")} - ${weekEnd.toLocaleDateString("en-US")})`,
@@ -117,11 +122,11 @@ function safeRedirectTo(raw: string | null): string {
 
 export async function seedMyDemoDataAction(formData: FormData) {
   ensureDemoToolsEnabled();
-  const userId = await requireUserId();
+  const ctx = await requireWorkspaceContext();
   const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
 
   try {
-    await seedDemoDataForUser(userId);
+    await seedDemoDataForUser({ workspaceId: ctx.workspaceId, userId: ctx.userId });
   } catch (err) {
     Sentry.captureException(err);
     const sep = redirectTo.includes("?") ? "&" : "?";
@@ -139,9 +144,9 @@ export async function seedMyDemoDataAction(formData: FormData) {
 
 export async function clearMyDemoDataAction() {
   ensureDemoToolsEnabled();
-  const userId = await requireUserId();
+  const ctx = await requireWorkspaceContext();
 
-  await seedDemoDataForUser(userId);
+  await seedDemoDataForUser({ workspaceId: ctx.workspaceId, userId: ctx.userId });
 
   revalidatePath("/inbox");
   revalidatePath("/weekly");
