@@ -58,6 +58,9 @@
   "home.cta.start": "分解から始める",
   "home.cta.signIn": "ログインする",
   "home.cta.signInAndStart": "ログインして分解へ",
+  "home.cta.seedDemo": "デモデータを準備",
+  "home.demoSeeded": "デモデータを用意しました。",
+  "home.demoSeedFailed": "デモデータの準備に失敗しました。もう一度お試しください。",
   "home.whatYouCanDo.title": "できること",
   "home.whatYouCanDo.item1": "受信箱でタスクを追加・完了・削除",
   "home.whatYouCanDo.item2": "分解で目標をステップにして受信箱へ保存",
@@ -263,7 +266,13 @@
   "task.focus.badge": "次の一手",
   "task.focus.set": "次の一手にする",
   "task.focus.clear": "解除",
-  "weekly.focus.title": "最優先（次の一手）"
+  "weekly.focus.title": "最優先（次の一手）",
+
+  "toast.taskUpdated": "タスクを更新しました。",
+  "toast.taskUpdateFailed": "タスクを更新できませんでした。もう一度お試しください。",
+  "toast.focusSet": "「次の一手」を設定しました。",
+  "toast.focusCleared": "「次の一手」を解除しました。",
+  "toast.focusFailed": "「次の一手」を更新できませんでした。もう一度お試しください。"
 }
 
 

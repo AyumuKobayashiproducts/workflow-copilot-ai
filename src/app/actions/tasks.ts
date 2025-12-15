@@ -1,6 +1,9 @@
 "use server";
 
+import * as Sentry from "@sentry/nextjs";
+
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import {
   clearFocusTask,
@@ -12,6 +15,20 @@ import {
   updateTaskTitle
 } from "@/lib/tasks/store";
 import { requireUserId } from "@/lib/auth/user";
+
+function safeRedirectTo(raw: string | null): string {
+  const v = (raw ?? "").trim();
+  if (!v.startsWith("/")) return "/inbox";
+  return v;
+}
+
+function addQueryParam(path: string, key: string, value: string) {
+  const [p, qs = ""] = path.split("?");
+  const sp = new URLSearchParams(qs);
+  sp.set(key, value);
+  const out = sp.toString();
+  return out ? `${p}?${out}` : p;
+}
 
 export async function createTaskAction(formData: FormData) {
   const title = String(formData.get("title") ?? "");
@@ -52,25 +69,46 @@ export async function updateTaskTitleAction(formData: FormData) {
   const title = String(formData.get("title") ?? "");
   if (!id) return;
   const userId = await requireUserId();
-  await updateTaskTitle({ userId, id, title });
-  revalidatePath("/inbox");
-  revalidatePath("/weekly");
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
+  try {
+    await updateTaskTitle({ userId, id, title });
+    revalidatePath("/inbox");
+    revalidatePath("/weekly");
+    redirect(addQueryParam(redirectTo, "toast", "task_updated"));
+  } catch (err) {
+    Sentry.captureException(err, { tags: { feature: "tasks", action: "updateTitle" } });
+    redirect(addQueryParam(redirectTo, "toast", "task_update_failed"));
+  }
 }
 
 export async function setFocusTaskAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   const userId = await requireUserId();
-  await setFocusTask({ userId, id });
-  revalidatePath("/inbox");
-  revalidatePath("/weekly");
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
+  try {
+    await setFocusTask({ userId, id });
+    revalidatePath("/inbox");
+    revalidatePath("/weekly");
+    redirect(addQueryParam(redirectTo, "toast", "focus_set"));
+  } catch (err) {
+    Sentry.captureException(err, { tags: { feature: "tasks", action: "setFocus" } });
+    redirect(addQueryParam(redirectTo, "toast", "focus_failed"));
+  }
 }
 
-export async function clearFocusTaskAction() {
+export async function clearFocusTaskAction(formData: FormData) {
   const userId = await requireUserId();
-  await clearFocusTask({ userId });
-  revalidatePath("/inbox");
-  revalidatePath("/weekly");
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
+  try {
+    await clearFocusTask({ userId });
+    revalidatePath("/inbox");
+    revalidatePath("/weekly");
+    redirect(addQueryParam(redirectTo, "toast", "focus_cleared"));
+  } catch (err) {
+    Sentry.captureException(err, { tags: { feature: "tasks", action: "clearFocus" } });
+    redirect(addQueryParam(redirectTo, "toast", "focus_failed"));
+  }
 }
 
 export async function createTasksFromBreakdownAction(formData: FormData) {

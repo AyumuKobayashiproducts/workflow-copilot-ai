@@ -58,6 +58,9 @@
   "home.cta.start": "Start with Breakdown",
   "home.cta.signIn": "Sign in",
   "home.cta.signInAndStart": "Sign in and start",
+  "home.cta.seedDemo": "Prepare demo data",
+  "home.demoSeeded": "Demo data is ready.",
+  "home.demoSeedFailed": "Could not prepare demo data. Try again.",
   "home.whatYouCanDo.title": "What you can do",
   "home.whatYouCanDo.item1": "Add / complete / delete tasks in Inbox",
   "home.whatYouCanDo.item2": "Turn a goal into steps and save to Inbox",
@@ -263,7 +266,13 @@
   "task.focus.badge": "Next step",
   "task.focus.set": "Set as next step",
   "task.focus.clear": "Clear",
-  "weekly.focus.title": "Top priority (next step)"
+  "weekly.focus.title": "Top priority (next step)",
+
+  "toast.taskUpdated": "Task updated.",
+  "toast.taskUpdateFailed": "Could not update task. Try again.",
+  "toast.focusSet": "Next step set.",
+  "toast.focusCleared": "Next step cleared.",
+  "toast.focusFailed": "Could not update next step. Try again."
 }
 
 

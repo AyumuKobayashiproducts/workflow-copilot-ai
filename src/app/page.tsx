@@ -3,8 +3,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/auth";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
+import { seedMyDemoDataAction } from "@/app/actions/demo";
 
-export default async function HomePage() {
+export default async function HomePage(props: { searchParams?: Promise<Record<string, string | string[]>> }) {
   const locale = await getLocale();
   const messages = await getMessages(locale);
   const t = createT(messages);
@@ -12,6 +13,9 @@ export default async function HomePage() {
   const session = await auth();
   const signedIn = Boolean(session?.user) || process.env.AUTH_BYPASS === "1";
   const demoEnabled = process.env.DEMO_TOOLS === "1";
+  const searchParams = (await props.searchParams) ?? {};
+  const demoRaw = searchParams.demo;
+  const demo = (Array.isArray(demoRaw) ? demoRaw[0] : demoRaw) ?? "";
 
   return (
     <div className="space-y-6">
@@ -19,6 +23,16 @@ export default async function HomePage() {
         <h1 className="text-2xl font-semibold">{t("home.title")}</h1>
         <p className="text-sm text-neutral-700">{t("home.subtitle")}</p>
       </header>
+
+      {demo === "seeded" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("home.demoSeeded")}
+        </section>
+      ) : demo === "failed" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("home.demoSeedFailed")}
+        </section>
+      ) : null}
 
       <section className="rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
         <div className="space-y-3">
@@ -44,6 +58,14 @@ export default async function HomePage() {
                 <Button asChild>
                   <Link href="/breakdown">{t("home.cta.start")}</Link>
                 </Button>
+                {demoEnabled ? (
+                  <form action={seedMyDemoDataAction}>
+                    <input type="hidden" name="redirectTo" value="/" />
+                    <Button type="submit" variant="secondary">
+                      {t("home.cta.seedDemo")}
+                    </Button>
+                  </form>
+                ) : null}
                 <Button asChild variant="secondary">
                   <Link href="/inbox">{t("nav.inbox")}</Link>
                 </Button>

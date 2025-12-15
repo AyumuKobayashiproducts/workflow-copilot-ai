@@ -12,6 +12,7 @@ export function TaskTitleInlineEdit(props: {
   editLabel: string;
   saveLabel: string;
   cancelLabel: string;
+  redirectTo: string;
 }) {
   const [editing, setEditing] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
@@ -27,6 +28,7 @@ export function TaskTitleInlineEdit(props: {
       {editing ? (
         <form action={updateTaskTitleAction} className="flex gap-2" onReset={() => setEditing(false)}>
           <input type="hidden" name="id" value={props.taskId} />
+          <input type="hidden" name="redirectTo" value={props.redirectTo} />
           <input
             ref={inputRef}
             name="title"

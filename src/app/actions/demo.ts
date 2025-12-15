@@ -1,5 +1,7 @@
 "use server";
 
+import * as Sentry from "@sentry/nextjs";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -12,10 +14,7 @@ function ensureDemoToolsEnabled() {
   }
 }
 
-export async function clearMyDemoDataAction() {
-  ensureDemoToolsEnabled();
-  const userId = await requireUserId();
-
+async function seedDemoDataForUser(userId: string) {
   await prisma.aiUsage.deleteMany({ where: { userId } });
   await prisma.task.deleteMany({ where: { userId } });
   await prisma.weeklyNote.deleteMany({ where: { userId } });
@@ -67,7 +66,8 @@ export async function clearMyDemoDataAction() {
         status: "todo",
         source: "demo",
         createdAt: withinWeek(2),
-        updatedAt: withinWeek(2)
+        updatedAt: withinWeek(2),
+        focusAt: withinWeek(2)
       },
       {
         userId,
@@ -107,6 +107,41 @@ export async function clearMyDemoDataAction() {
       ].join("\n")
     }
   });
+}
+
+function safeRedirectTo(raw: string | null): string {
+  const v = (raw ?? "").trim();
+  if (!v.startsWith("/")) return "/settings?demo=seeded";
+  return v;
+}
+
+export async function seedMyDemoDataAction(formData: FormData) {
+  ensureDemoToolsEnabled();
+  const userId = await requireUserId();
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
+
+  try {
+    await seedDemoDataForUser(userId);
+  } catch (err) {
+    Sentry.captureException(err);
+    const sep = redirectTo.includes("?") ? "&" : "?";
+    redirect(`${redirectTo}${sep}demo=failed`);
+  }
+
+  revalidatePath("/inbox");
+  revalidatePath("/weekly");
+  revalidatePath("/settings");
+  revalidatePath("/");
+
+  const sep = redirectTo.includes("?") ? "&" : "?";
+  redirect(`${redirectTo}${sep}demo=seeded`);
+}
+
+export async function clearMyDemoDataAction() {
+  ensureDemoToolsEnabled();
+  const userId = await requireUserId();
+
+  await seedDemoDataForUser(userId);
 
   revalidatePath("/inbox");
   revalidatePath("/weekly");

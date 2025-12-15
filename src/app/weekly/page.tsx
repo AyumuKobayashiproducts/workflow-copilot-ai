@@ -67,6 +67,8 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
       .filter((t) => t.status === "todo" && t.focusAt)
       .sort((a, b) => (b.focusAt ?? b.createdAt).getTime() - (a.focusAt ?? a.createdAt).getTime())[0] ?? null;
 
+  const selfUrl = `/weekly?weekStart=${encodeURIComponent(weekStartIso)}&doneScope=${encodeURIComponent(doneScope)}`;
+
   const SHOW_TASKS = 8;
 
   const doneTasksThisWeek = completedThisWeek
@@ -105,6 +107,20 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   const noteStatus = (Array.isArray(noteRaw) ? noteRaw[0] : noteRaw) ?? "";
   const reportRaw = searchParams.report;
   const reportStatus = (Array.isArray(reportRaw) ? reportRaw[0] : reportRaw) ?? "";
+  const toastRaw = searchParams.toast;
+  const toast = (Array.isArray(toastRaw) ? toastRaw[0] : toastRaw) ?? "";
+  const toastMessage =
+    toast === "task_updated"
+      ? t("toast.taskUpdated")
+      : toast === "task_update_failed"
+        ? t("toast.taskUpdateFailed")
+        : toast === "focus_set"
+          ? t("toast.focusSet")
+          : toast === "focus_cleared"
+            ? t("toast.focusCleared")
+            : toast === "focus_failed"
+              ? t("toast.focusFailed")
+              : "";
   const slackMessageKey =
     slack === "posted"
       ? "weekly.slack.posted"
@@ -217,6 +233,12 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
         </section>
       ) : null}
 
+      {toastMessage ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {toastMessage}
+        </section>
+      ) : null}
+
       <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-700 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="font-medium">{t("weekly.range.label")}</div>
@@ -258,6 +280,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
               <div className="text-sm text-neutral-900">{focusTask.title}</div>
             </div>
             <form action={clearFocusTaskAction}>
+              <input type="hidden" name="redirectTo" value={selfUrl} />
               <Button type="submit" size="sm" variant="secondary">
                 {t("task.focus.clear")}
               </Button>
@@ -310,6 +333,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                           editLabel={t("common.edit")}
                           saveLabel={t("common.save")}
                           cancelLabel={t("common.cancel")}
+                          redirectTo={selfUrl}
                         />
                         {task.focusAt ? (
                           <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-900">
@@ -325,6 +349,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                     <div className="flex shrink-0 items-center gap-2">
                       <form action={setFocusTaskAction}>
                         <input type="hidden" name="id" value={task.id} />
+                        <input type="hidden" name="redirectTo" value={selfUrl} />
                         <Button type="submit" size="sm" variant={task.focusAt ? "default" : "secondary"}>
                           {t("task.focus.set")}
                         </Button>
@@ -360,6 +385,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                               editLabel={t("common.edit")}
                               saveLabel={t("common.save")}
                               cancelLabel={t("common.cancel")}
+                              redirectTo={selfUrl}
                             />
                             {task.focusAt ? (
                               <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-900">
@@ -375,6 +401,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                         <div className="flex shrink-0 items-center gap-2">
                           <form action={setFocusTaskAction}>
                             <input type="hidden" name="id" value={task.id} />
+                            <input type="hidden" name="redirectTo" value={selfUrl} />
                             <Button type="submit" size="sm" variant={task.focusAt ? "default" : "secondary"}>
                               {t("task.focus.set")}
                             </Button>
@@ -418,6 +445,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                           editLabel={t("common.edit")}
                           saveLabel={t("common.save")}
                           cancelLabel={t("common.cancel")}
+                          redirectTo={selfUrl}
                         />
                         <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
                           {sourceLabel(task.source)}
@@ -457,6 +485,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                               editLabel={t("common.edit")}
                               saveLabel={t("common.save")}
                               cancelLabel={t("common.cancel")}
+                              redirectTo={selfUrl}
                             />
                             <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
                               {sourceLabel(task.source)}

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { TaskTitleInlineEdit } from "@/components/task-title-inline-edit";
+import { seedMyDemoDataAction } from "@/app/actions/demo";
 import {
   clearFocusTaskAction,
   createTaskAction,
@@ -21,6 +22,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
   if (!userId) redirect("/login");
 
   const tasks = await listTasks(userId);
+  const demoEnabled = process.env.DEMO_TOOLS === "1";
   const searchParams = (await props.searchParams) ?? {};
   const qRaw = searchParams.q;
   const q = ((Array.isArray(qRaw) ? qRaw[0] : qRaw) ?? "").trim();
@@ -30,6 +32,20 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
   const sortRaw = searchParams.sort;
   const sort = (Array.isArray(sortRaw) ? sortRaw[0] : sortRaw) ?? "todoFirst";
   const sortKey = sort === "createdDesc" || sort === "completedDesc" || sort === "todoFirst" ? sort : "todoFirst";
+  const toastRaw = searchParams.toast;
+  const toast = (Array.isArray(toastRaw) ? toastRaw[0] : toastRaw) ?? "";
+  const toastMessage =
+    toast === "task_updated"
+      ? t("toast.taskUpdated")
+      : toast === "task_update_failed"
+        ? t("toast.taskUpdateFailed")
+        : toast === "focus_set"
+          ? t("toast.focusSet")
+          : toast === "focus_cleared"
+            ? t("toast.focusCleared")
+            : toast === "focus_failed"
+              ? t("toast.focusFailed")
+              : "";
 
   const normalizedQuery = q.toLowerCase();
   const filteredTasks = tasks.filter((task) => {
@@ -53,6 +69,8 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
     tasks
       .filter((t) => t.status === "todo" && t.focusAt)
       .sort((a, b) => (b.focusAt ?? b.createdAt).getTime() - (a.focusAt ?? a.createdAt).getTime())[0] ?? null;
+
+  const selfUrl = inboxUrl({ q: q || undefined, status: statusFilter, sort: sortKey });
 
   function inboxUrl(params: Record<string, string | undefined>) {
     const sp = new URLSearchParams();
@@ -94,6 +112,12 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
           </Button>
         </div>
       </header>
+
+      {toastMessage ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {toastMessage}
+        </section>
+      ) : null}
 
       <section className="rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -206,6 +230,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
               <div className="text-sm text-neutral-900">{focusTask.title}</div>
             </div>
             <form action={clearFocusTaskAction}>
+              <input type="hidden" name="redirectTo" value={selfUrl} />
               <Button type="submit" size="sm" variant="secondary">
                 {t("task.focus.clear")}
               </Button>
@@ -225,6 +250,14 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
               <Button asChild variant="secondary" size="sm">
                 <Link href="/breakdown">{t("inbox.empty.ctaBreakdown")}</Link>
               </Button>
+              {demoEnabled ? (
+                <form action={seedMyDemoDataAction}>
+                  <input type="hidden" name="redirectTo" value="/inbox" />
+                  <Button type="submit" variant="secondary" size="sm">
+                    {t("home.cta.seedDemo")}
+                  </Button>
+                </form>
+              ) : null}
             </div>
           </div>
         ) : visibleTasks.length === 0 ? (
@@ -252,6 +285,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
                         editLabel={t("common.edit")}
                         saveLabel={t("common.save")}
                         cancelLabel={t("common.cancel")}
+                        redirectTo={selfUrl}
                       />
                       {focused ? (
                         <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-900">
