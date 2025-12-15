@@ -14,6 +14,12 @@ function ensureDemoToolsEnabled() {
   }
 }
 
+function ensureOwnerForDemo(ctx: { role: string }) {
+  if (ctx.role !== "owner") {
+    throw new Error("Forbidden: demo tools require owner role");
+  }
+}
+
 async function seedDemoDataForUser(input: { workspaceId: string; userId: string }) {
   await prisma.aiUsage.deleteMany({ where: { workspaceId: input.workspaceId, userId: input.userId } });
   await prisma.task.deleteMany({ where: { workspaceId: input.workspaceId, userId: input.userId } });
@@ -118,6 +124,13 @@ async function seedDemoDataForUser(input: { workspaceId: string; userId: string 
   });
 }
 
+async function clearDemoDataForUser(input: { workspaceId: string; userId: string }) {
+  await prisma.aiUsage.deleteMany({ where: { workspaceId: input.workspaceId, userId: input.userId } });
+  await prisma.task.deleteMany({ where: { workspaceId: input.workspaceId, userId: input.userId } });
+  await prisma.weeklyNote.deleteMany({ where: { workspaceId: input.workspaceId, userId: input.userId } });
+  await prisma.weeklyReport.deleteMany({ where: { workspaceId: input.workspaceId, userId: input.userId } });
+}
+
 function safeRedirectTo(raw: string | null): string {
   const v = (raw ?? "").trim();
   if (!v.startsWith("/")) return "/settings?demo=seeded";
@@ -128,6 +141,13 @@ export async function seedMyDemoDataAction(formData: FormData) {
   ensureDemoToolsEnabled();
   const ctx = await requireWorkspaceContext();
   const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
+
+  try {
+    ensureOwnerForDemo(ctx);
+  } catch {
+    const sep = redirectTo.includes("?") ? "&" : "?";
+    redirect(`${redirectTo}${sep}demo=forbidden`);
+  }
 
   try {
     await seedDemoDataForUser({ workspaceId: ctx.workspaceId, userId: ctx.userId });
@@ -146,17 +166,32 @@ export async function seedMyDemoDataAction(formData: FormData) {
   redirect(`${redirectTo}${sep}demo=seeded`);
 }
 
-export async function clearMyDemoDataAction() {
+export async function clearMyDemoDataAction(formData: FormData) {
   ensureDemoToolsEnabled();
   const ctx = await requireWorkspaceContext();
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
 
-  await seedDemoDataForUser({ workspaceId: ctx.workspaceId, userId: ctx.userId });
+  try {
+    ensureOwnerForDemo(ctx);
+  } catch {
+    const sep = redirectTo.includes("?") ? "&" : "?";
+    redirect(`${redirectTo}${sep}demo=forbidden`);
+  }
+
+  try {
+    await clearDemoDataForUser({ workspaceId: ctx.workspaceId, userId: ctx.userId });
+  } catch (err) {
+    Sentry.captureException(err);
+    const sep = redirectTo.includes("?") ? "&" : "?";
+    redirect(`${redirectTo}${sep}demo=failed`);
+  }
 
   revalidatePath("/inbox");
   revalidatePath("/weekly");
   revalidatePath("/settings");
 
-  redirect("/settings?demo=seeded");
+  const sep = redirectTo.includes("?") ? "&" : "?";
+  redirect(`${redirectTo}${sep}demo=cleared`);
 }
 
 

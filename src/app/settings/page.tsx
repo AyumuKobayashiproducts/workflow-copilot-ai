@@ -89,6 +89,14 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {t("settings.demoTools.seeded")}
         </section>
+      ) : demo === "forbidden" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.demoTools.forbidden")}
+        </section>
+      ) : demo === "failed" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.demoTools.failed")}
+        </section>
       ) : null}
 
       {inviteStatus === "created" ? (
@@ -396,6 +404,7 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
           <p className="text-sm text-neutral-700">{t("settings.demoTools.disabled")}</p>
         ) : (
           <form action={clearMyDemoDataAction} className="flex justify-end">
+            <input type="hidden" name="redirectTo" value="/settings" />
             <Button type="submit" variant="secondary">
               {t("settings.demoTools.clearCta")}
             </Button>

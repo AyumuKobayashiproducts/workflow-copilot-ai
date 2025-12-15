@@ -335,6 +335,8 @@
   "settings.demoTools.clearCta": "Reset demo data",
   "settings.demoTools.cleared": "Your demo data was cleared.",
   "settings.demoTools.seeded": "Demo data is ready.",
+  "settings.demoTools.forbidden": "You do not have permission to use demo tools in this workspace.",
+  "settings.demoTools.failed": "Could not reset demo data. Try again.",
   "settings.demoTools.disabled": "Demo tools are disabled in this environment.",
 
   "empty.title": "Nothing here yet",

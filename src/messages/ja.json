@@ -335,6 +335,8 @@
   "settings.demoTools.clearCta": "デモデータをリセット",
   "settings.demoTools.cleared": "デモデータを削除しました。",
   "settings.demoTools.seeded": "デモデータを用意しました。",
+  "settings.demoTools.forbidden": "このワークスペースではデモ用ツールを実行する権限がありません。",
+  "settings.demoTools.failed": "デモデータを更新できませんでした。もう一度お試しください。",
   "settings.demoTools.disabled": "この環境ではデモ用ツールが無効です。",
 
   "empty.title": "まだ何もありません",
