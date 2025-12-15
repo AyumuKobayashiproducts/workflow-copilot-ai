@@ -1,26 +1,33 @@
 import { auth } from "@/auth";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 
 const AUTH_BYPASS_ENABLED = process.env.AUTH_BYPASS === "1";
 const TEST_USER_ID = "test-user";
 const TEST_USER_EMAIL = "test-user@example.com";
 
-async function ensureTestUser() {
+async function ensureUser(input: { id: string; email: string; name: string }) {
   await prisma.user.upsert({
-    where: { id: TEST_USER_ID },
+    where: { id: input.id },
     update: {},
     create: {
-      id: TEST_USER_ID,
-      email: TEST_USER_EMAIL,
-      name: "Test User"
+      id: input.id,
+      email: input.email,
+      name: input.name
     }
   });
 }
 
 export async function getUserIdOrNull(): Promise<string | null> {
   if (AUTH_BYPASS_ENABLED) {
-    await ensureTestUser();
-    return TEST_USER_ID;
+    // E2E: allow switching the acting user via a cookie.
+    // This is only honored when AUTH_BYPASS=1 (never in production).
+    const override = cookies().get("e2e_user_id")?.value?.trim() ?? "";
+    const id = override || TEST_USER_ID;
+    const email = id === TEST_USER_ID ? TEST_USER_EMAIL : `${id}@example.com`;
+    const name = id === TEST_USER_ID ? "Test User" : "Test Member";
+    await ensureUser({ id, email, name });
+    return id;
   }
 
   const session = await auth();
