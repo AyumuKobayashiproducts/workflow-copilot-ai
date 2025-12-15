@@ -3,6 +3,16 @@
 A small but production-minded Next.js app for an end-to-end personal workflow:
 **Inbox → Breakdown → Weekly review → (optional) post to Slack**.
 
+## Problem → Solution
+
+**Problem:** Personal task systems often fail at the “what should I do next?” moment: tasks pile up, weekly reviews are disconnected from execution, and sharing progress is frictionful.
+
+**Solution:** Workflow Copilot keeps the loop tight:
+- Capture tasks in **Inbox**
+- Turn goals into steps in **Breakdown**
+- Review outcomes in **Weekly**
+- Pick **one “Next step”** (focus) and optionally share a report to Slack
+
 ## What I built (outcomes)
 
 - **End-to-end workflow**: Goal → steps → tasks → weekly review → share
@@ -16,21 +26,15 @@ A small but production-minded Next.js app for an end-to-end personal workflow:
 - App: `https://workflow-copilot-ai.vercel.app`
 - Login: GitHub OAuth
 
-## 日本語：デモ手順（最短）
-
-1. `/`（ホーム）→ **30秒デモ**の手順どおりに進む
-2. （任意）`/settings` → **Reset demo data**（デモ用データを準備）
-3. `/breakdown` → 目標入力 → **Generate steps** → **Save to Inbox**
-4. `/inbox` → タスクを1つ完了にする／必要ならタスク名を編集
-5. `/weekly` → **次の一手**を1つ選ぶ → **Generate report** →（必要なら編集）→ **Save** → **Post to Slack**
-
 ## 30-second demo flow
 
-1. Login with GitHub
-2. Go to **Breakdown** → type a goal → generate steps → **Save to Inbox**
-3. Go to **Inbox** → add / complete / delete tasks
-4. Go to **Weekly** → verify counts and notes persistence
-5. (Optional) Click **Post to Slack** → see the weekly report in Slack
+Start from `/` (Home) and follow the guided flow:
+
+1. (Optional) `/settings` → **Reset demo data** (quick “first run” experience)
+2. `/breakdown` → type a goal → **Generate steps** → **Save to Inbox**
+3. `/inbox` → search/filter/sort → complete a task → optionally **edit a task title**
+4. `/weekly` → pick one **Next step** → generate & save a weekly report
+5. (Optional) **Post to Slack** → see the report in Slack
 
 ## Features
 
@@ -45,6 +49,11 @@ A small but production-minded Next.js app for an end-to-end personal workflow:
   - Keys must match (CI check)
   - Missing keys throw (translation omissions are detected immediately)
   - Locale is derived from cookie: `locale=en|ja`
+
+## “Next step” (focus)
+
+Weekly reviews become actionable by selecting exactly **one** top-priority task as the **Next step**.
+This is stored as `Task.focusAt` and surfaced in both `/weekly` and `/inbox`.
 
 ## Architecture notes (what I’m intentionally showing)
 
