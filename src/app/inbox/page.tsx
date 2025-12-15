@@ -38,6 +38,21 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
     return qs ? `/inbox?${qs}` : "/inbox";
   }
 
+  function sourceLabel(source: string | null | undefined) {
+    switch (source) {
+      case "inbox":
+        return t("task.source.inbox");
+      case "breakdown":
+        return t("task.source.breakdown");
+      case "weekly":
+        return t("task.source.weekly");
+      case "demo":
+        return t("task.source.demo");
+      default:
+        return t("task.source.unknown");
+    }
+  }
+
   return (
     <div className="space-y-6">
       <header className="flex items-start justify-between gap-4">
@@ -134,12 +149,13 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
           </div>
         ) : filteredTasks.length === 0 ? (
           <div className="mt-3 space-y-2">
-            <p className="text-sm text-neutral-700">{t("inbox.tasks.empty")}</p>
+            <p className="text-sm text-neutral-700">{t("inbox.tasks.noResults")}</p>
           </div>
         ) : (
           <ul className="mt-3 space-y-2">
             {filteredTasks.map((task) => {
               const done = task.status === "done";
+              const statusLabel = done ? t("inbox.filter.done") : t("inbox.filter.todo");
               return (
                 <li
                   key={task.id}
@@ -147,8 +163,16 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
                   className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2"
                 >
                   <div className="min-w-0">
-                    <div className={done ? "truncate text-sm line-through text-neutral-600" : "truncate text-sm"}>
-                      {task.title}
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <div className={done ? "truncate text-sm line-through text-neutral-600" : "truncate text-sm"}>
+                        {task.title}
+                      </div>
+                      <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
+                        {statusLabel}
+                      </span>
+                      <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
+                        {sourceLabel(task.source)}
+                      </span>
                     </div>
                     <div className="mt-0.5 text-xs text-neutral-500">
                       {task.createdAt.toLocaleString(locale)}

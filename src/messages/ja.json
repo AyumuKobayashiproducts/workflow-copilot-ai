@@ -95,6 +95,7 @@
   "inbox.newTask.submit": "追加",
   "inbox.tasks.title": "タスク",
   "inbox.tasks.empty": "まだタスクがありません。",
+  "inbox.tasks.noResults": "条件に一致するタスクがありません。",
   "inbox.empty.help": "ヒント：まずは「分解」で目標をステップにして、受信箱に保存しましょう。",
   "inbox.empty.ctaBreakdown": "分解へ",
   "inbox.task.markDone": "完了",

@@ -95,6 +95,7 @@
   "inbox.newTask.submit": "Add",
   "inbox.tasks.title": "Tasks",
   "inbox.tasks.empty": "No tasks yet.",
+  "inbox.tasks.noResults": "No tasks match your filters.",
   "inbox.empty.help": "Tip: Start with a goal in Breakdown, then save steps to your Inbox.",
   "inbox.empty.ctaBreakdown": "Go to Breakdown",
   "inbox.task.markDone": "Done",

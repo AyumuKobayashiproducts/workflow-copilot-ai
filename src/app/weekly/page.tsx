@@ -9,6 +9,7 @@ import { getWeeklyNote, getWeeklyReport } from "@/lib/weekly/store";
 import { createWeeklyTaskAction, toggleTaskDoneAction } from "@/app/actions/tasks";
 import { saveWeeklyNoteAction } from "@/app/actions/weekly";
 import { WeeklyShare } from "@/components/weekly-share";
+import { WeeklyDoneScopeToggle } from "@/components/weekly-done-scope-toggle";
 
 export default async function WeeklyPage(props: { searchParams?: Promise<Record<string, string | string[]>> }) {
   const locale = await getLocale();
@@ -131,17 +132,6 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
           : null;
 
   const showTasksPanel = createdThisWeek.length > 0 || completedThisWeek.length > 0 || (doneScope === "all" && allDoneTasks.length > 0);
-
-  function weeklyUrl(params: Record<string, string | undefined>) {
-    const sp = new URLSearchParams();
-    if (weekStartIso) sp.set("weekStart", weekStartIso);
-    if (doneScope) sp.set("doneScope", doneScope);
-    for (const [k, v] of Object.entries(params)) {
-      if (v) sp.set(k, v);
-    }
-    const qs = sp.toString();
-    return qs ? `/weekly?${qs}` : "/weekly";
-  }
 
   function sourceLabel(source: string | null | undefined) {
     switch (source) {
@@ -340,24 +330,12 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="text-xs font-medium text-neutral-700">{t("weekly.section.completed")}</div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    asChild
-                    size="sm"
-                    variant={doneScope === "week" ? "default" : "secondary"}
-                    data-testid="weekly-done-scope-week"
-                  >
-                    <Link href={weeklyUrl({ doneScope: "week" })}>{t("weekly.completedFilter.weekOnly")}</Link>
-                  </Button>
-                  <Button
-                    asChild
-                    size="sm"
-                    variant={doneScope === "all" ? "default" : "secondary"}
-                    data-testid="weekly-done-scope-all"
-                  >
-                    <Link href={weeklyUrl({ doneScope: "all" })}>{t("weekly.completedFilter.all")}</Link>
-                  </Button>
-                </div>
+                <WeeklyDoneScopeToggle
+                  weekStartIso={weekStartIso}
+                  current={doneScope}
+                  labelWeekOnly={t("weekly.completedFilter.weekOnly")}
+                  labelAll={t("weekly.completedFilter.all")}
+                />
               </div>
               <ul className="space-y-2">
                 {doneTasks.slice(0, SHOW_TASKS).map((task) => (
