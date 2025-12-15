@@ -295,6 +295,9 @@
   "settings.workspace.switch.active": "現在",
   "settings.workspace.switch.forbidden": "そのワークスペースには切り替えできません。",
 
+  "settings.activity.title": "最近の履歴（Activity）",
+  "settings.activity.empty": "まだ履歴はありません。",
+
   "settings.demoTools.title": "デモ用ツール",
   "settings.demoTools.clearCta": "デモデータをリセット",
   "settings.demoTools.cleared": "デモデータを削除しました。",

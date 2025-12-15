@@ -16,6 +16,19 @@ export async function listTaskActivities(input: {
   });
 }
 
+export async function listWorkspaceActivities(input: { workspaceId: string; take?: number }) {
+  const take = Math.max(1, Math.min(100, input.take ?? 20));
+  return prisma.taskActivity.findMany({
+    where: { workspaceId: input.workspaceId },
+    orderBy: { createdAt: "desc" },
+    take,
+    include: {
+      actor: { select: { id: true, name: true, email: true } },
+      task: { select: { id: true, title: true } }
+    }
+  });
+}
+
 export async function logTaskActivity(input: {
   workspaceId: string;
   taskId: string;

@@ -295,6 +295,9 @@
   "settings.workspace.switch.active": "Active",
   "settings.workspace.switch.forbidden": "You cannot switch to that workspace.",
 
+  "settings.activity.title": "Recent activity",
+  "settings.activity.empty": "No activity yet.",
+
   "settings.demoTools.title": "Demo tools",
   "settings.demoTools.clearCta": "Reset demo data",
   "settings.demoTools.cleared": "Your demo data was cleared.",

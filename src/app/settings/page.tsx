@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
@@ -6,6 +7,7 @@ import { clearMyDemoDataAction } from "@/app/actions/demo";
 import { createWorkspaceInviteAction, revokeWorkspaceInviteAction, switchWorkspaceAction } from "@/app/actions/workspaces";
 import { prisma } from "@/lib/db";
 import { getWorkspaceContextOrNull } from "@/lib/workspaces/context";
+import { listWorkspaceActivities } from "@/lib/tasks/activity";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 
 export default async function SettingsPage(props: { searchParams?: Promise<Record<string, string | string[]>> }) {
@@ -62,6 +64,8 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "http";
   const origin = process.env.AUTH_URL ?? (host ? `${proto}://${host}` : "http://localhost:3000");
+
+  const recentActivity = await listWorkspaceActivities({ workspaceId: ctx.workspaceId, take: 20 });
 
   return (
     <div className="space-y-6">
@@ -203,6 +207,57 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
           </div>
         ) : (
           <p className="text-sm text-neutral-700">{t("settings.workspace.invite.ownerOnly")}</p>
+        )}
+      </section>
+
+      <section className="space-y-3 rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
+        <h2 className="text-sm font-medium">{t("settings.activity.title")}</h2>
+        {recentActivity.length === 0 ? (
+          <p className="text-sm text-neutral-700">{t("settings.activity.empty")}</p>
+        ) : (
+          <ul className="space-y-2 text-sm">
+            {recentActivity.map((a) => {
+              const actor = a.actor.name || a.actor.email || a.actor.id;
+              function kindLabel(kind: string) {
+                switch (kind) {
+                  case "comment":
+                    return t("task.activity.kind.comment");
+                  case "created":
+                    return t("task.activity.kind.created");
+                  case "title_updated":
+                    return t("task.activity.kind.titleUpdated");
+                  case "status_toggled":
+                    return t("task.activity.kind.statusToggled");
+                  case "assigned":
+                    return t("task.activity.kind.assigned");
+                  case "focus_set":
+                    return t("task.activity.kind.focusSet");
+                  case "focus_cleared":
+                    return t("task.activity.kind.focusCleared");
+                  case "deleted":
+                    return t("task.activity.kind.deleted");
+                  default:
+                    return kind;
+                }
+              }
+              return (
+                <li key={a.id} className="flex flex-col gap-1 rounded-md border border-neutral-200 bg-neutral-50 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-xs font-medium text-neutral-700">{kindLabel(a.kind)}</div>
+                    <div className="text-xs text-neutral-500">{a.createdAt.toLocaleString(locale)}</div>
+                  </div>
+                  <div className="text-sm text-neutral-900">
+                    <span className="font-medium">{actor}</span>
+                    <span className="text-neutral-700"> · </span>
+                    <Link className="text-neutral-900 underline underline-offset-4" href={`/tasks/${a.task.id}`}>
+                      {a.task.title}
+                    </Link>
+                    {a.message ? <span className="text-neutral-700"> — {a.message}</span> : null}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </section>
 
