@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 const AUTH_BYPASS_ENABLED = process.env.AUTH_BYPASS === "1";
 const TEST_OWNER_ID = "test-user";
 const TEST_MEMBER_ID = "test-member";
+const TEST_OUTSIDER_ID = "test-outsider";
 const TEST_WORKSPACE_ID = "e2e-workspace";
 
 export async function POST(req: Request) {
@@ -32,6 +33,11 @@ export async function POST(req: Request) {
       update: {},
       create: { id: TEST_MEMBER_ID, email: "test-member@example.com", name: "Test Member" }
     });
+    await prisma.user.upsert({
+      where: { id: TEST_OUTSIDER_ID },
+      update: {},
+      create: { id: TEST_OUTSIDER_ID, email: "test-outsider@example.com", name: "Test Outsider" }
+    });
 
     await prisma.workspace.upsert({
       where: { id: TEST_WORKSPACE_ID },
@@ -53,6 +59,8 @@ export async function POST(req: Request) {
     // Ensure both users operate in the same default workspace.
     await prisma.user.update({ where: { id: TEST_OWNER_ID }, data: { defaultWorkspaceId: TEST_WORKSPACE_ID } });
     await prisma.user.update({ where: { id: TEST_MEMBER_ID }, data: { defaultWorkspaceId: TEST_WORKSPACE_ID } });
+    // Outsider stays outside the workspace (no membership, no default workspace).
+    await prisma.user.update({ where: { id: TEST_OUTSIDER_ID }, data: { defaultWorkspaceId: null } });
 
     // Reset workspace-scoped data used by E2E flows.
     await prisma.taskActivity.deleteMany({ where: { workspaceId: TEST_WORKSPACE_ID } });

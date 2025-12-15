@@ -80,6 +80,28 @@ export default async function InviteAcceptPage(props: { params: Promise<{ token:
         where: { id: invite.id },
         data: { usedCount: { increment: 1 } }
       });
+
+      // Audit (workspace event): invite accepted / member joined.
+      await tx.taskActivity.create({
+        data: {
+          workspaceId: invite.workspaceId,
+          taskId: null,
+          actorUserId: userId,
+          kind: "workspace_invite_accepted",
+          message: `Invite accepted (role=${invite.role})`,
+          metadata: { action: "accept_workspace_invite", inviteId: invite.id, role: invite.role }
+        }
+      });
+      await tx.taskActivity.create({
+        data: {
+          workspaceId: invite.workspaceId,
+          taskId: null,
+          actorUserId: userId,
+          kind: "workspace_member_joined",
+          message: `Member joined (role=${invite.role})`,
+          metadata: { action: "workspace_member_joined", inviteId: invite.id, role: invite.role }
+        }
+      });
     }
 
     // If the user has no default workspace yet, set it to this one.

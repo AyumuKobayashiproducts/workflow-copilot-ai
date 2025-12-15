@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 
 const OWNER_ID = "test-user";
 const MEMBER_ID = "test-member";
+const OUTSIDER_ID = "test-outsider";
 
 async function setE2EUser(page: Parameters<typeof test>[1] extends (args: infer A) => any ? A["page"] : any, userId: string) {
   // Ensure we know the current origin for cookie domain.
@@ -256,6 +257,34 @@ test("rbac+audit: member cannot revoke invite; forbidden is logged (workspace ev
 
   await page.goto("/settings");
   await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+});
+
+test("invite: outsider can accept invite; join events are logged", async ({ page }) => {
+  await page.request.post("/api/e2e/reset", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
+  });
+
+  // Owner creates an invite token.
+  await page.goto("/settings");
+  await setE2EUser(page, OWNER_ID);
+  const created = await page.request.post("/api/e2e/workspace/invite", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" },
+    data: { role: "member", maxUses: 5 }
+  });
+  expect(created.status()).toBe(200);
+  const createdJson = (await created.json()) as { ok: boolean; token?: string };
+  expect(createdJson.ok).toBe(true);
+  const token = String(createdJson.token ?? "");
+  expect(token.length).toBeGreaterThan(10);
+
+  // Outsider accepts invite via the real page.
+  await setE2EUser(page, OUTSIDER_ID);
+  await page.goto(`/invite/${token}`);
+  await expect(page).toHaveURL(/\/settings\?invite=accepted/);
+
+  // Activity feed should show invite accepted / member joined.
+  await expect(page.locator("text=/Invite accepted|招待リンク受諾/")).toBeVisible();
+  await expect(page.locator("text=/Member joined|メンバー参加/")).toBeVisible();
 });
 
 

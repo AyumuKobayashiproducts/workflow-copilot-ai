@@ -310,6 +310,10 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                             return t("task.activity.kind.workspaceInviteRevoked");
                           case "workspace_member_role_updated":
                             return t("task.activity.kind.workspaceMemberRoleUpdated");
+                          case "workspace_invite_accepted":
+                            return t("task.activity.kind.workspaceInviteAccepted");
+                          case "workspace_member_joined":
+                            return t("task.activity.kind.workspaceMemberJoined");
                   default:
                     return kind;
                 }
