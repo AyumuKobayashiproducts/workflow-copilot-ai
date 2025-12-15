@@ -104,4 +104,21 @@ test("rbac+audit: member cannot edit someone else's task title; forbidden is log
   await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
 });
 
+test("rbac+audit: member cannot run demo tools; forbidden is logged (workspace event)", async ({ page }) => {
+  await page.request.post("/api/e2e/reset", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
+  });
+
+  // Member tries to reset demo data from Settings -> forbidden banner.
+  await page.goto("/settings");
+  await setE2EUser(page, MEMBER_ID);
+  await page.goto("/settings");
+
+  await page.getByRole("button", { name: /reset demo data|デモデータをリセット/i }).click();
+  await expect(page).toHaveURL(/demo=forbidden/);
+
+  // Activity feed should show a Forbidden event.
+  await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+});
+
 

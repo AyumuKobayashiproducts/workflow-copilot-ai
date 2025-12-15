@@ -26,6 +26,8 @@ export default defineConfig({
           // Set AUTH_BYPASS=0 explicitly if you want to test the real login flow.
           AUTH_BYPASS: process.env.AUTH_BYPASS ?? "1",
           E2E_TOKEN: process.env.E2E_TOKEN ?? "e2e",
+          // Demo tools are useful in E2E to validate admin-only operations and audit logs.
+          DEMO_TOOLS: process.env.DEMO_TOOLS ?? "1",
           SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL ?? "mock",
           AUTH_URL: process.env.AUTH_URL ?? baseURL,
           AUTH_SECRET: process.env.AUTH_SECRET ?? "e2e-secret",
