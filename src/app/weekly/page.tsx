@@ -18,6 +18,8 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   const searchParams = (await props.searchParams) ?? {};
   const weekStartRaw = searchParams.weekStart;
   const weekStartParam = (Array.isArray(weekStartRaw) ? weekStartRaw[0] : weekStartRaw) ?? "";
+  const doneScopeRaw = searchParams.doneScope;
+  const doneScope = (Array.isArray(doneScopeRaw) ? doneScopeRaw[0] : doneScopeRaw) === "all" ? "all" : "week";
 
   const userId = await getUserIdOrNull();
   if (!userId) redirect("/login");
@@ -53,9 +55,6 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   // - tasks completed this week (even if created earlier)
   const createdThisWeek = tasks.filter((task) => createdInWeek(task.createdAt));
   const completedThisWeek = tasks.filter((task) => completedInWeek(task.completedAt));
-
-  const doneScopeRaw = searchParams.doneScope;
-  const doneScope = (Array.isArray(doneScopeRaw) ? doneScopeRaw[0] : doneScopeRaw) === "all" ? "all" : "week";
 
   const SHOW_TASKS = 8;
 
@@ -136,6 +135,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   function weeklyUrl(params: Record<string, string | undefined>) {
     const sp = new URLSearchParams();
     if (weekStartIso) sp.set("weekStart", weekStartIso);
+    if (doneScope) sp.set("doneScope", doneScope);
     for (const [k, v] of Object.entries(params)) {
       if (v) sp.set(k, v);
     }
@@ -168,7 +168,9 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
         <div className="flex items-center gap-2">
           <Button asChild variant="secondary" size="sm">
             <Link
-              href={`/weekly?weekStart=${encodeURIComponent(prevWeekStart.toISOString())}`}
+              href={`/weekly?weekStart=${encodeURIComponent(prevWeekStart.toISOString())}&doneScope=${encodeURIComponent(
+                doneScope
+              )}`}
               data-testid="weekly-prev-week"
             >
               {t("weekly.cta.previousWeek")}
@@ -176,7 +178,9 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
           </Button>
           <Button asChild variant="secondary" size="sm">
             <Link
-              href={`/weekly?weekStart=${encodeURIComponent(nextWeekStart.toISOString())}`}
+              href={`/weekly?weekStart=${encodeURIComponent(nextWeekStart.toISOString())}&doneScope=${encodeURIComponent(
+                doneScope
+              )}`}
               data-testid="weekly-next-week"
             >
               {t("weekly.cta.nextWeek")}

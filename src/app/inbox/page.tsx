@@ -7,7 +7,7 @@ import { getUserIdOrNull } from "@/lib/auth/user";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { listTasks } from "@/lib/tasks/store";
 
-export default async function InboxPage() {
+export default async function InboxPage(props: { searchParams?: Promise<Record<string, string | string[]>> }) {
   const locale = await getLocale();
   const messages = await getMessages(locale);
   const t = createT(messages);
@@ -15,6 +15,28 @@ export default async function InboxPage() {
   if (!userId) redirect("/login");
 
   const tasks = await listTasks(userId);
+  const searchParams = (await props.searchParams) ?? {};
+  const qRaw = searchParams.q;
+  const q = ((Array.isArray(qRaw) ? qRaw[0] : qRaw) ?? "").trim();
+  const statusRaw = searchParams.status;
+  const status = (Array.isArray(statusRaw) ? statusRaw[0] : statusRaw) ?? "all";
+  const statusFilter = status === "todo" || status === "done" ? status : "all";
+
+  const normalizedQuery = q.toLowerCase();
+  const filteredTasks = tasks.filter((task) => {
+    if (statusFilter !== "all" && task.status !== statusFilter) return false;
+    if (normalizedQuery && !task.title.toLowerCase().includes(normalizedQuery)) return false;
+    return true;
+  });
+
+  function inboxUrl(params: Record<string, string | undefined>) {
+    const sp = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+      if (v) sp.set(k, v);
+    }
+    const qs = sp.toString();
+    return qs ? `/inbox?${qs}` : "/inbox";
+  }
 
   return (
     <div className="space-y-6">
@@ -32,6 +54,53 @@ export default async function InboxPage() {
           </Button>
         </div>
       </header>
+
+      <section className="rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="w-full space-y-2 sm:max-w-md">
+            <div className="text-sm font-medium">{t("common.search")}</div>
+            <form action="/inbox" method="get" className="flex gap-2">
+              <input
+                name="q"
+                defaultValue={q}
+                placeholder={t("inbox.search.placeholder")}
+                data-testid="inbox-search-input"
+                className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+              />
+              <input type="hidden" name="status" value={statusFilter} />
+              <Button type="submit" variant="secondary" className="shrink-0" data-testid="inbox-search-submit">
+                {t("common.search")}
+              </Button>
+            </form>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="text-sm font-medium text-neutral-900">{t("common.filter")}</div>
+            <Button asChild size="sm" variant={statusFilter === "all" ? "default" : "secondary"}>
+              <Link href={inboxUrl({ q: q || undefined, status: "all" })} data-testid="inbox-filter-all">
+                {t("inbox.filter.all")}
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant={statusFilter === "todo" ? "default" : "secondary"}>
+              <Link href={inboxUrl({ q: q || undefined, status: "todo" })} data-testid="inbox-filter-todo">
+                {t("inbox.filter.todo")}
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant={statusFilter === "done" ? "default" : "secondary"}>
+              <Link href={inboxUrl({ q: q || undefined, status: "done" })} data-testid="inbox-filter-done">
+                {t("inbox.filter.done")}
+              </Link>
+            </Button>
+            {(q || statusFilter !== "all") && (
+              <Button asChild size="sm" variant="secondary">
+                <Link href="/inbox" data-testid="inbox-filter-clear">
+                  {t("common.clear")}
+                </Link>
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
 
       <section className="rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
         <div className="space-y-2">
@@ -63,9 +132,13 @@ export default async function InboxPage() {
               </Button>
             </div>
           </div>
+        ) : filteredTasks.length === 0 ? (
+          <div className="mt-3 space-y-2">
+            <p className="text-sm text-neutral-700">{t("inbox.tasks.empty")}</p>
+          </div>
         ) : (
           <ul className="mt-3 space-y-2">
-            {tasks.map((task) => {
+            {filteredTasks.map((task) => {
               const done = task.status === "done";
               return (
                 <li
