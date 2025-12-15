@@ -98,6 +98,9 @@ DROP INDEX IF EXISTS "AiUsage_userId_date_idx";
 DROP INDEX IF EXISTS "Task_userId_status_idx";
 DROP INDEX IF EXISTS "Task_userId_createdAt_idx";
 DROP INDEX IF EXISTS "Task_userId_focusAt_idx";
+DROP INDEX IF EXISTS "Task_workspaceId_userId_status_idx";
+DROP INDEX IF EXISTS "Task_workspaceId_userId_createdAt_idx";
+DROP INDEX IF EXISTS "Task_workspaceId_userId_focusAt_idx";
 
 -- CreateIndex
 CREATE UNIQUE INDEX "WorkspaceInvite_token_key" ON "WorkspaceInvite"("token");
@@ -107,9 +110,7 @@ CREATE INDEX "WorkspaceMembership_workspaceId_idx" ON "WorkspaceMembership"("wor
 CREATE INDEX "WorkspaceInvite_workspaceId_idx" ON "WorkspaceInvite"("workspaceId");
 CREATE INDEX "WorkspaceInvite_expiresAt_idx" ON "WorkspaceInvite"("expiresAt");
 
-CREATE INDEX "Task_workspaceId_userId_status_idx" ON "Task"("workspaceId", "userId", "status");
-CREATE INDEX "Task_workspaceId_userId_createdAt_idx" ON "Task"("workspaceId", "userId", "createdAt");
-CREATE INDEX "Task_workspaceId_userId_focusAt_idx" ON "Task"("workspaceId", "userId", "focusAt");
+-- Task indexes will be re-created by later migrations when assignees are introduced.
 
 CREATE INDEX "WeeklyNote_workspaceId_userId_weekStart_idx" ON "WeeklyNote"("workspaceId", "userId", "weekStart");
 CREATE UNIQUE INDEX "WeeklyNote_workspaceId_userId_weekStart_key" ON "WeeklyNote"("workspaceId", "userId", "weekStart");

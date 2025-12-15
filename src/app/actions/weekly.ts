@@ -155,7 +155,7 @@ export async function generateWeeklyReportText(
   const startLabel = weekStart.toLocaleDateString(locale);
   const endLabel = weekEnd.toLocaleDateString(locale);
 
-  const tasks = await listTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId });
+  const tasks = await listTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId, assigneeScope: "mine" });
   const inWeek = tasks.filter((task) => {
     const created = task.createdAt.getTime();
     return created >= weekStart.getTime() && created <= weekEnd.getTime();
@@ -316,7 +316,7 @@ export async function postWeeklyToSlackAction(formData: FormData) {
   weekEnd.setDate(weekEnd.getDate() + 6);
   weekEnd.setHours(23, 59, 59, 999);
 
-  const tasks = await listTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId });
+  const tasks = await listTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId, assigneeScope: "mine" });
   const inWeek = tasks.filter((task) => {
     const created = task.createdAt.getTime();
     return created >= weekStart.getTime() && created <= weekEnd.getTime();

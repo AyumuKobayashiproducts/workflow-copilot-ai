@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import {
+  assignTask,
   clearFocusTask,
   createTask,
   createTasksBulk,
@@ -34,6 +35,17 @@ export async function createTaskAction(formData: FormData) {
   const title = String(formData.get("title") ?? "");
   const ctx = await requireWorkspaceContext();
   await createTask({ workspaceId: ctx.workspaceId, userId: ctx.userId, title, source: "inbox" });
+  revalidatePath("/inbox");
+  revalidatePath("/weekly");
+}
+
+export async function assignTaskAction(formData: FormData) {
+  const taskId = String(formData.get("id") ?? "");
+  const assignee = String(formData.get("assignedToUserId") ?? "");
+  if (!taskId || !assignee) return;
+
+  const ctx = await requireWorkspaceContext();
+  await assignTask({ workspaceId: ctx.workspaceId, taskId, assignedToUserId: assignee });
   revalidatePath("/inbox");
   revalidatePath("/weekly");
 }

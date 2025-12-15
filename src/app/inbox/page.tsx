@@ -6,11 +6,13 @@ import { TaskTitleInlineEdit } from "@/components/task-title-inline-edit";
 import { ToastUrlCleaner } from "@/components/toast-url-cleaner";
 import { seedMyDemoDataAction } from "@/app/actions/demo";
 import {
+  assignTaskAction,
   clearFocusTaskAction,
   createTaskAction,
   deleteTaskAction,
   toggleTaskDoneAction,
 } from "@/app/actions/tasks";
+import { prisma } from "@/lib/db";
 import { getWorkspaceContextOrNull } from "@/lib/workspaces/context";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { countTasks, getFocusTask, listInboxTasks } from "@/lib/tasks/store";
@@ -22,7 +24,6 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
   const ctx = await getWorkspaceContextOrNull();
   if (!ctx) redirect("/login");
 
-  const totalCount = await countTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId });
   const demoEnabled = process.env.DEMO_TOOLS === "1";
   const searchParams = (await props.searchParams) ?? {};
   const qRaw = searchParams.q;
@@ -33,6 +34,8 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
   const sortRaw = searchParams.sort;
   const sort = (Array.isArray(sortRaw) ? sortRaw[0] : sortRaw) ?? "todoFirst";
   const sortKey = sort === "createdDesc" || sort === "completedDesc" || sort === "todoFirst" ? sort : "todoFirst";
+  const scopeRaw = searchParams.scope;
+  const scope = (Array.isArray(scopeRaw) ? scopeRaw[0] : scopeRaw) === "all" ? "all" : "mine";
   const toastRaw = searchParams.toast;
   const toast = (Array.isArray(toastRaw) ? toastRaw[0] : toastRaw) ?? "";
   const toastMessage =
@@ -48,12 +51,27 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
               ? t("toast.focusFailed")
               : "";
 
+  const totalCount = await countTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId, assigneeScope: scope });
+
+  const members = await prisma.workspaceMembership.findMany({
+    where: { workspaceId: ctx.workspaceId },
+    orderBy: [{ role: "asc" }, { createdAt: "asc" }],
+    select: {
+      id: true,
+      role: true,
+      user: { select: { id: true, name: true, email: true } }
+    }
+  });
+
   const [visibleTasks, focusTask] = await Promise.all([
-    listInboxTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId }, { q, status: statusFilter, sort: sortKey }),
+    listInboxTasks(
+      { workspaceId: ctx.workspaceId, userId: ctx.userId },
+      { q, status: statusFilter, sort: sortKey, scope }
+    ),
     getFocusTask({ workspaceId: ctx.workspaceId, userId: ctx.userId })
   ]);
 
-  const selfUrl = inboxUrl({ q: q || undefined, status: statusFilter, sort: sortKey });
+  const selfUrl = inboxUrl({ q: q || undefined, status: statusFilter, sort: sortKey, scope });
 
   function inboxUrl(params: Record<string, string | undefined>) {
     const sp = new URLSearchParams();
@@ -77,6 +95,11 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
       default:
         return t("task.source.unknown");
     }
+  }
+
+  function memberLabel(userId: string) {
+    const m = members.find((x) => x.user.id === userId);
+    return m?.user.name || m?.user.email || userId;
   }
 
   return (
@@ -117,6 +140,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
               />
               <input type="hidden" name="status" value={statusFilter} />
               <input type="hidden" name="sort" value={sortKey} />
+              <input type="hidden" name="scope" value={scope} />
               <Button type="submit" variant="secondary" className="shrink-0" data-testid="inbox-search-submit">
                 {t("common.search")}
               </Button>
@@ -127,7 +151,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
             <div className="text-sm font-medium text-neutral-900">{t("common.filter")}</div>
             <Button asChild size="sm" variant={statusFilter === "all" ? "default" : "secondary"}>
               <Link
-                href={inboxUrl({ q: q || undefined, status: "all", sort: sortKey })}
+                href={inboxUrl({ q: q || undefined, status: "all", sort: sortKey, scope })}
                 data-testid="inbox-filter-all"
               >
                 {t("inbox.filter.all")}
@@ -135,7 +159,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
             </Button>
             <Button asChild size="sm" variant={statusFilter === "todo" ? "default" : "secondary"}>
               <Link
-                href={inboxUrl({ q: q || undefined, status: "todo", sort: sortKey })}
+                href={inboxUrl({ q: q || undefined, status: "todo", sort: sortKey, scope })}
                 data-testid="inbox-filter-todo"
               >
                 {t("inbox.filter.todo")}
@@ -143,7 +167,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
             </Button>
             <Button asChild size="sm" variant={statusFilter === "done" ? "default" : "secondary"}>
               <Link
-                href={inboxUrl({ q: q || undefined, status: "done", sort: sortKey })}
+                href={inboxUrl({ q: q || undefined, status: "done", sort: sortKey, scope })}
                 data-testid="inbox-filter-done"
               >
                 {t("inbox.filter.done")}
@@ -152,10 +176,24 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
 
             <div className="mx-1 h-5 w-px bg-neutral-200" aria-hidden="true" />
 
+            <div className="text-sm font-medium text-neutral-900">{t("inbox.scope.label")}</div>
+            <Button asChild size="sm" variant={scope === "mine" ? "default" : "secondary"}>
+              <Link href={inboxUrl({ q: q || undefined, status: statusFilter, sort: sortKey, scope: "mine" })}>
+                {t("inbox.scope.mine")}
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant={scope === "all" ? "default" : "secondary"}>
+              <Link href={inboxUrl({ q: q || undefined, status: statusFilter, sort: sortKey, scope: "all" })}>
+                {t("inbox.scope.all")}
+              </Link>
+            </Button>
+
+            <div className="mx-1 h-5 w-px bg-neutral-200" aria-hidden="true" />
+
             <div className="text-sm font-medium text-neutral-900">{t("inbox.sort.label")}</div>
             <Button asChild size="sm" variant={sortKey === "todoFirst" ? "default" : "secondary"}>
               <Link
-                href={inboxUrl({ q: q || undefined, status: statusFilter, sort: "todoFirst" })}
+                href={inboxUrl({ q: q || undefined, status: statusFilter, sort: "todoFirst", scope })}
                 data-testid="inbox-sort-todo-first"
               >
                 {t("inbox.sort.todoFirst")}
@@ -163,7 +201,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
             </Button>
             <Button asChild size="sm" variant={sortKey === "createdDesc" ? "default" : "secondary"}>
               <Link
-                href={inboxUrl({ q: q || undefined, status: statusFilter, sort: "createdDesc" })}
+                href={inboxUrl({ q: q || undefined, status: statusFilter, sort: "createdDesc", scope })}
                 data-testid="inbox-sort-created-desc"
               >
                 {t("inbox.sort.createdDesc")}
@@ -171,14 +209,14 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
             </Button>
             <Button asChild size="sm" variant={sortKey === "completedDesc" ? "default" : "secondary"}>
               <Link
-                href={inboxUrl({ q: q || undefined, status: statusFilter, sort: "completedDesc" })}
+                href={inboxUrl({ q: q || undefined, status: statusFilter, sort: "completedDesc", scope })}
                 data-testid="inbox-sort-completed-desc"
               >
                 {t("inbox.sort.completedDesc")}
               </Link>
             </Button>
 
-            {(q || statusFilter !== "all") && (
+            {(q || statusFilter !== "all" || scope !== "mine") && (
               <Button asChild size="sm" variant="secondary">
                 <Link href="/inbox" data-testid="inbox-filter-clear">
                   {t("common.clear")}
@@ -282,6 +320,9 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
                       <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
                         {sourceLabel(task.source)}
                       </span>
+                      <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
+                        {t("inbox.assignee.label")}: {memberLabel(task.assignedToUserId)}
+                      </span>
                     </div>
                     <div className="mt-0.5 text-xs text-neutral-500">
                       {task.createdAt.toLocaleString(locale)}
@@ -289,6 +330,25 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
                   </div>
 
                   <div className="flex shrink-0 gap-2">
+                    {scope === "all" ? (
+                      <form action={assignTaskAction} className="flex items-center gap-2">
+                        <input type="hidden" name="id" value={task.id} />
+                        <select
+                          name="assignedToUserId"
+                          defaultValue={task.assignedToUserId}
+                          className="h-9 rounded-md border border-neutral-300 bg-white px-2 text-sm"
+                        >
+                          {members.map((m) => (
+                            <option key={m.user.id} value={m.user.id}>
+                              {memberLabel(m.user.id)}
+                            </option>
+                          ))}
+                        </select>
+                        <Button type="submit" size="sm" variant="secondary">
+                          {t("inbox.assignee.set")}
+                        </Button>
+                      </form>
+                    ) : null}
                     <form action={toggleTaskDoneAction}>
                       <input type="hidden" name="id" value={task.id} />
                       <Button type="submit" size="sm" variant={done ? "secondary" : "default"}>

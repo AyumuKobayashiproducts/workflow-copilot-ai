@@ -73,4 +73,30 @@ export async function revokeWorkspaceInviteAction(formData: FormData) {
   redirect(settingsUrl({ invite: "revoked" }));
 }
 
+export async function switchWorkspaceAction(formData: FormData) {
+  const workspaceId = String(formData.get("workspaceId") ?? "");
+  if (!workspaceId) return;
+
+  const ctx = await requireWorkspaceContext();
+
+  // Ensure the user is a member of the target workspace.
+  const membership = await prisma.workspaceMembership.findUnique({
+    where: { workspaceId_userId: { workspaceId, userId: ctx.userId } },
+    select: { id: true }
+  });
+  if (!membership) {
+    redirect(settingsUrl({ workspace: "forbidden" }));
+  }
+
+  await prisma.user.update({
+    where: { id: ctx.userId },
+    data: { defaultWorkspaceId: workspaceId }
+  });
+
+  revalidatePath("/inbox");
+  revalidatePath("/weekly");
+  revalidatePath("/settings");
+  redirect("/inbox");
+}
+
 

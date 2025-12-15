@@ -32,7 +32,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   const ctx = await getWorkspaceContextOrNull();
   if (!ctx) redirect("/login");
 
-  const tasks = await listTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId });
+  const tasks = await listTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId, assigneeScope: "mine" });
 
   const base = weekStartParam && !Number.isNaN(new Date(weekStartParam).getTime()) ? new Date(weekStartParam) : new Date();
   const day = base.getDay(); // 0 Sun ... 6 Sat

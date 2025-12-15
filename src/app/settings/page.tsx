@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 
 import { Button } from "@/components/ui/button";
 import { clearMyDemoDataAction } from "@/app/actions/demo";
-import { createWorkspaceInviteAction, revokeWorkspaceInviteAction } from "@/app/actions/workspaces";
+import { createWorkspaceInviteAction, revokeWorkspaceInviteAction, switchWorkspaceAction } from "@/app/actions/workspaces";
 import { prisma } from "@/lib/db";
 import { getWorkspaceContextOrNull } from "@/lib/workspaces/context";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
@@ -28,6 +28,18 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
   const demo = (Array.isArray(demoRaw) ? demoRaw[0] : demoRaw) ?? "";
   const inviteRaw = searchParams.invite;
   const inviteStatus = (Array.isArray(inviteRaw) ? inviteRaw[0] : inviteRaw) ?? "";
+  const workspaceRaw = searchParams.workspace;
+  const workspaceStatus = (Array.isArray(workspaceRaw) ? workspaceRaw[0] : workspaceRaw) ?? "";
+
+  const myMemberships = await prisma.workspaceMembership.findMany({
+    where: { userId: ctx.userId },
+    orderBy: { createdAt: "asc" },
+    select: {
+      id: true,
+      role: true,
+      workspace: { select: { id: true, name: true } }
+    }
+  });
 
   const members = await prisma.workspaceMembership.findMany({
     where: { workspaceId: ctx.workspaceId },
@@ -87,6 +99,40 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
       ) : inviteStatus === "failed" ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {t("settings.workspace.invite.failed")}
+        </section>
+      ) : workspaceStatus === "forbidden" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.workspace.switch.forbidden")}
+        </section>
+      ) : null}
+
+      {myMemberships.length > 1 ? (
+        <section className="space-y-3 rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
+          <h2 className="text-sm font-medium">{t("settings.workspace.switch.title")}</h2>
+          <ul className="space-y-2 text-sm">
+            {myMemberships.map((m) => {
+              const active = m.workspace.id === ctx.workspaceId;
+              return (
+                <li key={m.id} className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-neutral-900">{m.workspace.name}</div>
+                    <div className="text-xs text-neutral-600">
+                      {t("settings.workspace.role")}: {m.role}
+                      {active ? ` · ${t("settings.workspace.switch.active")}` : ""}
+                    </div>
+                  </div>
+                  {!active ? (
+                    <form action={switchWorkspaceAction}>
+                      <input type="hidden" name="workspaceId" value={m.workspace.id} />
+                      <Button type="submit" size="sm" variant="secondary">
+                        {t("settings.workspace.switch.cta")}
+                      </Button>
+                    </form>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
         </section>
       ) : null}
 

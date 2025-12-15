@@ -45,6 +45,7 @@ async function seedDemoDataForUser(input: { workspaceId: string; userId: string 
       {
         workspaceId: input.workspaceId,
         userId: input.userId,
+        assignedToUserId: input.userId,
         title: "Write down today's top goal (10 min)",
         status: "done",
         source: "demo",
@@ -55,6 +56,7 @@ async function seedDemoDataForUser(input: { workspaceId: string; userId: string 
       {
         workspaceId: input.workspaceId,
         userId: input.userId,
+        assignedToUserId: input.userId,
         title: "Break it into 5 steps",
         status: "done",
         source: "demo",
@@ -65,6 +67,7 @@ async function seedDemoDataForUser(input: { workspaceId: string; userId: string 
       {
         workspaceId: input.workspaceId,
         userId: input.userId,
+        assignedToUserId: input.userId,
         title: "Do the smallest next step (10 min)",
         status: "todo",
         source: "demo",
@@ -75,6 +78,7 @@ async function seedDemoDataForUser(input: { workspaceId: string; userId: string 
       {
         workspaceId: input.workspaceId,
         userId: input.userId,
+        assignedToUserId: input.userId,
         title: "Share a weekly report to Slack",
         status: "todo",
         source: "demo",
