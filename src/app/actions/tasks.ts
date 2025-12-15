@@ -51,9 +51,23 @@ export async function createTaskAction(formData: FormData) {
 export async function assignTaskAction(formData: FormData) {
   const taskId = String(formData.get("id") ?? "");
   const assignee = String(formData.get("assignedToUserId") ?? "");
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
   if (!taskId || !assignee) return;
 
   const ctx = await requireWorkspaceContext();
+  if (ctx.role !== "owner") {
+    redirect(addQueryParam(redirectTo, "toast", "forbidden"));
+  }
+
+  // Ensure the assignee is a member of this workspace.
+  const assigneeMembership = await prisma.workspaceMembership.findUnique({
+    where: { workspaceId_userId: { workspaceId: ctx.workspaceId, userId: assignee } },
+    select: { id: true }
+  });
+  if (!assigneeMembership) {
+    redirect(addQueryParam(redirectTo, "toast", "forbidden"));
+  }
+
   await assignTask({ workspaceId: ctx.workspaceId, taskId, assignedToUserId: assignee });
   await logTaskActivity({
     workspaceId: ctx.workspaceId,
@@ -64,6 +78,7 @@ export async function assignTaskAction(formData: FormData) {
   });
   revalidatePath("/inbox");
   revalidatePath("/weekly");
+  redirect(redirectTo);
 }
 
 export async function createWeeklyTaskAction(formData: FormData) {
@@ -83,8 +98,19 @@ export async function createWeeklyTaskAction(formData: FormData) {
 
 export async function toggleTaskDoneAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
   if (!id) return;
   const ctx = await requireWorkspaceContext();
+
+  const task = await prisma.task.findFirst({
+    where: { id, workspaceId: ctx.workspaceId },
+    select: { id: true, assignedToUserId: true }
+  });
+  if (!task) return;
+  if (ctx.role !== "owner" && task.assignedToUserId !== ctx.userId) {
+    redirect(addQueryParam(redirectTo, "toast", "forbidden"));
+  }
+
   await toggleTaskDone({ workspaceId: ctx.workspaceId, userId: ctx.userId, id });
   await logTaskActivity({
     workspaceId: ctx.workspaceId,
@@ -94,12 +120,24 @@ export async function toggleTaskDoneAction(formData: FormData) {
   });
   revalidatePath("/inbox");
   revalidatePath("/weekly");
+  redirect(redirectTo);
 }
 
 export async function deleteTaskAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
   if (!id) return;
   const ctx = await requireWorkspaceContext();
+
+  const task = await prisma.task.findFirst({
+    where: { id, workspaceId: ctx.workspaceId },
+    select: { id: true, userId: true }
+  });
+  if (!task) return;
+  if (ctx.role !== "owner" && task.userId !== ctx.userId) {
+    redirect(addQueryParam(redirectTo, "toast", "forbidden"));
+  }
+
   await logTaskActivity({
     workspaceId: ctx.workspaceId,
     taskId: id,
@@ -111,6 +149,7 @@ export async function deleteTaskAction(formData: FormData) {
   await deleteTask({ workspaceId: ctx.workspaceId, userId: ctx.userId, id });
   revalidatePath("/inbox");
   revalidatePath("/weekly");
+  redirect(redirectTo);
 }
 
 export async function updateTaskTitleAction(formData: FormData) {
@@ -120,6 +159,17 @@ export async function updateTaskTitleAction(formData: FormData) {
   const ctx = await requireWorkspaceContext();
   const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
   try {
+    const task = await prisma.task.findFirst({
+      where: { id, workspaceId: ctx.workspaceId },
+      select: { id: true, userId: true, assignedToUserId: true }
+    });
+    if (!task) {
+      redirect(addQueryParam(redirectTo, "toast", "task_update_failed"));
+    }
+    if (ctx.role !== "owner" && task.userId !== ctx.userId && task.assignedToUserId !== ctx.userId) {
+      redirect(addQueryParam(redirectTo, "toast", "forbidden"));
+    }
+
     await updateTaskTitle({ workspaceId: ctx.workspaceId, userId: ctx.userId, id, title });
     await logTaskActivity({
       workspaceId: ctx.workspaceId,

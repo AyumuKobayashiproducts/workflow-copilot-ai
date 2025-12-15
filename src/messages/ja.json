@@ -373,7 +373,8 @@
   "toast.taskUpdateFailed": "タスクを更新できませんでした。もう一度お試しください。",
   "toast.focusSet": "「次の一手」を設定しました。",
   "toast.focusCleared": "「次の一手」を解除しました。",
-  "toast.focusFailed": "「次の一手」を更新できませんでした。もう一度お試しください。"
+  "toast.focusFailed": "「次の一手」を更新できませんでした。もう一度お試しください。",
+  "toast.forbidden": "権限がありません。"
 }
 
 

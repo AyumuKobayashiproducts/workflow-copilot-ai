@@ -43,6 +43,8 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
       ? t("toast.taskUpdated")
       : toast === "task_update_failed"
         ? t("toast.taskUpdateFailed")
+        : toast === "forbidden"
+          ? t("toast.forbidden")
         : toast === "focus_set"
           ? t("toast.focusSet")
           : toast === "focus_cleared"
@@ -336,9 +338,10 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
                   </div>
 
                   <div className="flex shrink-0 gap-2">
-                    {scope === "all" ? (
+                    {scope === "all" && ctx.role === "owner" ? (
                       <form action={assignTaskAction} className="flex items-center gap-2">
                         <input type="hidden" name="id" value={task.id} />
+                        <input type="hidden" name="redirectTo" value={selfUrl} />
                         <select
                           name="assignedToUserId"
                           defaultValue={task.assignedToUserId}
@@ -357,12 +360,14 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
                     ) : null}
                     <form action={toggleTaskDoneAction}>
                       <input type="hidden" name="id" value={task.id} />
+                      <input type="hidden" name="redirectTo" value={selfUrl} />
                       <Button type="submit" size="sm" variant={done ? "secondary" : "default"}>
                         {done ? t("inbox.task.markTodo") : t("inbox.task.markDone")}
                       </Button>
                     </form>
                     <form action={deleteTaskAction}>
                       <input type="hidden" name="id" value={task.id} />
+                      <input type="hidden" name="redirectTo" value={selfUrl} />
                       <Button type="submit" size="sm" variant="secondary">
                         {t("inbox.task.delete")}
                       </Button>

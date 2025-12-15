@@ -133,6 +133,8 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
       ? t("toast.taskUpdated")
       : toast === "task_update_failed"
         ? t("toast.taskUpdateFailed")
+        : toast === "forbidden"
+          ? t("toast.forbidden")
         : toast === "focus_set"
           ? t("toast.focusSet")
           : toast === "focus_cleared"
@@ -397,9 +399,10 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                       <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                      {scope === "all" ? (
+                      {scope === "all" && ctx.role === "owner" ? (
                         <form action={assignTaskAction} className="flex items-center gap-2">
                           <input type="hidden" name="id" value={task.id} />
+                          <input type="hidden" name="redirectTo" value={selfUrl} />
                           <select
                             name="assignedToUserId"
                             defaultValue={task.assignedToUserId}
@@ -425,6 +428,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                       </form>
                       <form action={toggleTaskDoneAction}>
                         <input type="hidden" name="id" value={task.id} />
+                        <input type="hidden" name="redirectTo" value={selfUrl} />
                         <Button type="submit" size="sm" variant="secondary">
                           {t("inbox.task.markDone")}
                         </Button>
@@ -477,9 +481,10 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                           <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
-                          {scope === "all" ? (
+                          {scope === "all" && ctx.role === "owner" ? (
                             <form action={assignTaskAction} className="flex items-center gap-2">
                               <input type="hidden" name="id" value={task.id} />
+                              <input type="hidden" name="redirectTo" value={selfUrl} />
                               <select
                                 name="assignedToUserId"
                                 defaultValue={task.assignedToUserId}
@@ -505,6 +510,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                           </form>
                           <form action={toggleTaskDoneAction}>
                             <input type="hidden" name="id" value={task.id} />
+                            <input type="hidden" name="redirectTo" value={selfUrl} />
                             <Button type="submit" size="sm" variant="secondary">
                               {t("inbox.task.markDone")}
                             </Button>
@@ -560,6 +566,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                     </div>
                     <form action={toggleTaskDoneAction} className="shrink-0">
                       <input type="hidden" name="id" value={task.id} />
+                      <input type="hidden" name="redirectTo" value={selfUrl} />
                       <Button type="submit" size="sm" variant="secondary">
                         {t("inbox.task.markTodo")}
                       </Button>
@@ -606,6 +613,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                         </div>
                         <form action={toggleTaskDoneAction} className="shrink-0">
                           <input type="hidden" name="id" value={task.id} />
+                          <input type="hidden" name="redirectTo" value={selfUrl} />
                           <Button type="submit" size="sm" variant="secondary">
                             {t("inbox.task.markTodo")}
                           </Button>

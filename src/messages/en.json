@@ -373,7 +373,8 @@
   "toast.taskUpdateFailed": "Could not update task. Try again.",
   "toast.focusSet": "Next step set.",
   "toast.focusCleared": "Next step cleared.",
-  "toast.focusFailed": "Could not update next step. Try again."
+  "toast.focusFailed": "Could not update next step. Try again.",
+  "toast.forbidden": "You do not have permission to do that."
 }
 
 
