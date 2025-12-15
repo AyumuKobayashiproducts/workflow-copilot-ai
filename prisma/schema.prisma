@@ -84,6 +84,7 @@ enum TaskActivityKind {
   focus_set
   focus_cleared
   deleted
+  forbidden
 }
 
 enum AiUsageKind {
@@ -174,7 +175,7 @@ model Task {
 model TaskActivity {
   id          String           @id @default(cuid())
   workspaceId String
-  taskId      String
+  taskId      String?
   actorUserId String
   kind        TaskActivityKind
   message     String?          // optional human-readable note (comments use this)
@@ -183,7 +184,7 @@ model TaskActivity {
   createdAt   DateTime         @default(now())
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  task      Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task      Task?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   actor     User      @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, taskId, createdAt])

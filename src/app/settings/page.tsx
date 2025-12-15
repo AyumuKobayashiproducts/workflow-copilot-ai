@@ -302,6 +302,8 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                     return t("task.activity.kind.focusCleared");
                   case "deleted":
                     return t("task.activity.kind.deleted");
+                          case "forbidden":
+                            return t("task.activity.kind.forbidden");
                   default:
                     return kind;
                 }
@@ -312,14 +314,18 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                     <div className="text-xs font-medium text-neutral-700">{kindLabel(a.kind)}</div>
                     <div className="text-xs text-neutral-500">{a.createdAt.toLocaleString(locale)}</div>
                   </div>
-                  <div className="text-sm text-neutral-900">
-                    <span className="font-medium">{actor}</span>
-                    <span className="text-neutral-700"> · </span>
-                    <Link className="text-neutral-900 underline underline-offset-4" href={`/tasks/${a.task.id}`}>
-                      {a.task.title}
-                    </Link>
-                    {a.message ? <span className="text-neutral-700"> — {a.message}</span> : null}
-                  </div>
+                          <div className="text-sm text-neutral-900">
+                            <span className="font-medium">{actor}</span>
+                            {a.task ? (
+                              <>
+                                <span className="text-neutral-700"> · </span>
+                                <Link className="text-neutral-900 underline underline-offset-4" href={`/tasks/${a.task.id}`}>
+                                  {a.task.title}
+                                </Link>
+                              </>
+                            ) : null}
+                            {a.message ? <span className="text-neutral-700"> — {a.message}</span> : null}
+                          </div>
                 </li>
               );
             })}

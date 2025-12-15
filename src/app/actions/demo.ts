@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/db";
 import { requireWorkspaceContext } from "@/lib/workspaces/context";
+import { logTaskActivity } from "@/lib/tasks/activity";
 
 function ensureDemoToolsEnabled() {
   if (process.env.DEMO_TOOLS !== "1") {
@@ -145,6 +146,13 @@ export async function seedMyDemoDataAction(formData: FormData) {
   try {
     ensureOwnerForDemo(ctx);
   } catch {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: seed demo data",
+      metadata: { action: "seed_demo_data" }
+    }).catch(() => {});
     const sep = redirectTo.includes("?") ? "&" : "?";
     redirect(`${redirectTo}${sep}demo=forbidden`);
   }
@@ -174,6 +182,13 @@ export async function clearMyDemoDataAction(formData: FormData) {
   try {
     ensureOwnerForDemo(ctx);
   } catch {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: clear demo data",
+      metadata: { action: "clear_demo_data" }
+    }).catch(() => {});
     const sep = redirectTo.includes("?") ? "&" : "?";
     redirect(`${redirectTo}${sep}demo=forbidden`);
   }

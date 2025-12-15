@@ -56,6 +56,14 @@ export async function assignTaskAction(formData: FormData) {
 
   const ctx = await requireWorkspaceContext();
   if (ctx.role !== "owner") {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      taskId,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: assign task",
+      metadata: { action: "assign_task", assignedToUserId: assignee }
+    }).catch(() => {});
     redirect(addQueryParam(redirectTo, "toast", "forbidden"));
   }
 
@@ -65,6 +73,14 @@ export async function assignTaskAction(formData: FormData) {
     select: { id: true }
   });
   if (!assigneeMembership) {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      taskId,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: assign to non-member",
+      metadata: { action: "assign_task", assignedToUserId: assignee, reason: "assignee_not_member" }
+    }).catch(() => {});
     redirect(addQueryParam(redirectTo, "toast", "forbidden"));
   }
 
@@ -108,6 +124,14 @@ export async function toggleTaskDoneAction(formData: FormData) {
   });
   if (!task) return;
   if (ctx.role !== "owner" && task.assignedToUserId !== ctx.userId) {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      taskId: id,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: toggle status",
+      metadata: { action: "toggle_task_done" }
+    }).catch(() => {});
     redirect(addQueryParam(redirectTo, "toast", "forbidden"));
   }
 
@@ -135,6 +159,14 @@ export async function deleteTaskAction(formData: FormData) {
   });
   if (!task) return;
   if (ctx.role !== "owner" && task.userId !== ctx.userId) {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      taskId: id,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: delete task",
+      metadata: { action: "delete_task" }
+    }).catch(() => {});
     redirect(addQueryParam(redirectTo, "toast", "forbidden"));
   }
 
@@ -167,6 +199,14 @@ export async function updateTaskTitleAction(formData: FormData) {
       redirect(addQueryParam(redirectTo, "toast", "task_update_failed"));
     }
     if (ctx.role !== "owner" && task.userId !== ctx.userId && task.assignedToUserId !== ctx.userId) {
+      await logTaskActivity({
+        workspaceId: ctx.workspaceId,
+        taskId: id,
+        actorUserId: ctx.userId,
+        kind: "forbidden",
+        message: "Forbidden: edit title",
+        metadata: { action: "update_task_title" }
+      }).catch(() => {});
       redirect(addQueryParam(redirectTo, "toast", "forbidden"));
     }
 

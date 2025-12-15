@@ -8,6 +8,7 @@ import { randomBytes } from "node:crypto";
 
 import { prisma } from "@/lib/db";
 import { requireWorkspaceContext } from "@/lib/workspaces/context";
+import { logTaskActivity } from "@/lib/tasks/activity";
 
 function settingsUrl(params?: Record<string, string | undefined>) {
   const sp = new URLSearchParams();
@@ -26,6 +27,13 @@ export async function createWorkspaceInviteAction(formData: FormData) {
 
   const ctx = await requireWorkspaceContext();
   if (ctx.role !== "owner") {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: create invite",
+      metadata: { action: "create_workspace_invite", role, maxUses }
+    }).catch(() => {});
     redirect(settingsUrl({ invite: "forbidden" }));
   }
 
@@ -60,10 +68,24 @@ export async function updateWorkspaceMemberRoleAction(formData: FormData) {
 
   const ctx = await requireWorkspaceContext();
   if (ctx.role !== "owner") {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: update member role",
+      metadata: { action: "update_workspace_member_role", targetUserId, nextRole }
+    }).catch(() => {});
     redirect(settingsUrl({ member: "forbidden" }));
   }
   // Prevent self role change (avoids accidental lock-out).
   if (targetUserId === ctx.userId) {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: change own role",
+      metadata: { action: "update_workspace_member_role", targetUserId, nextRole, reason: "self_change" }
+    }).catch(() => {});
     redirect(settingsUrl({ member: "self_forbidden" }));
   }
 
@@ -105,6 +127,13 @@ export async function revokeWorkspaceInviteAction(formData: FormData) {
 
   const ctx = await requireWorkspaceContext();
   if (ctx.role !== "owner") {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: revoke invite",
+      metadata: { action: "revoke_workspace_invite", inviteId: id }
+    }).catch(() => {});
     redirect(settingsUrl({ invite: "forbidden" }));
   }
 
@@ -134,6 +163,13 @@ export async function switchWorkspaceAction(formData: FormData) {
     select: { id: true }
   });
   if (!membership) {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: switch workspace",
+      metadata: { action: "switch_workspace", targetWorkspaceId: workspaceId }
+    }).catch(() => {});
     redirect(settingsUrl({ workspace: "forbidden" }));
   }
 

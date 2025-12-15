@@ -387,6 +387,7 @@
   "task.activity.kind.focusSet": "Next step set",
   "task.activity.kind.focusCleared": "Next step cleared",
   "task.activity.kind.deleted": "Deleted",
+  "task.activity.kind.forbidden": "Forbidden",
 
   "task.source.inbox": "Inbox",
   "task.source.breakdown": "Breakdown",

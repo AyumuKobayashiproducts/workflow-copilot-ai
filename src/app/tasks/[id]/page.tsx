@@ -80,6 +80,8 @@ export default async function TaskDetailPage(props: { params: Promise<{ id: stri
         return t("task.activity.kind.focusCleared");
       case "deleted":
         return t("task.activity.kind.deleted");
+      case "forbidden":
+        return t("task.activity.kind.forbidden");
       default:
         return kind;
     }

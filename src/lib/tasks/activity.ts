@@ -31,7 +31,7 @@ export async function listWorkspaceActivities(input: { workspaceId: string; take
 
 export async function logTaskActivity(input: {
   workspaceId: string;
-  taskId: string;
+  taskId?: string;
   actorUserId: string;
   kind: TaskActivityKind;
   message?: string;

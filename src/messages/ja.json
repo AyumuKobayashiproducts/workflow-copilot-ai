@@ -387,6 +387,7 @@
   "task.activity.kind.focusSet": "次の一手を設定",
   "task.activity.kind.focusCleared": "次の一手を解除",
   "task.activity.kind.deleted": "削除",
+  "task.activity.kind.forbidden": "権限拒否",
 
   "task.source.inbox": "受信箱",
   "task.source.breakdown": "分解",
