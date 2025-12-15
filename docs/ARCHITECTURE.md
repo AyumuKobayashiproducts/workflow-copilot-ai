@@ -38,4 +38,9 @@ Weekly page selects exactly one task → sets `Task.focusAt` → Inbox surfaces 
 
 `POST /api/e2e/reset` is guarded by environment flags and token headers; it exists to keep local/CI E2E deterministic.
 
+### Workspace invite links
+
+- Invites are stored as `WorkspaceInvite.tokenHash` (SHA-256), not raw tokens.
+- Accept flow: `/invite/[token]` → hash token → lookup by `tokenHash` → create membership → audit events.
+
 

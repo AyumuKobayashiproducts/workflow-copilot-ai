@@ -30,6 +30,12 @@ See also: `docs/RUNBOOK.md` for a deploy checklist and incident response steps.
 - Data is stored in Postgres via Prisma.
 - Deleting a user cascades related records (`onDelete: Cascade` in schema).
 
+## Invite links (token hashing)
+
+- Workspace invites do **not** store raw tokens in the database.
+- The app stores `WorkspaceInvite.tokenHash` (SHA-256) and compares by hashing the URL token at accept time.
+- The raw invite link is intentionally shown **only once** right after creation (to reduce accidental leakage).
+
 ## What’s intentionally out of scope (portfolio tradeoffs)
 
 - Rate limiting and abuse protection for public endpoints

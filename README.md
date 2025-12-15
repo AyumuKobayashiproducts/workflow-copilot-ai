@@ -41,6 +41,7 @@ The portfolio focus is to demonstrate **product thinking + full-stack execution 
 - **Operational defaults**: Prisma migrations committed + CI runs DB migrate + Playwright.
 - **Observability hooks**: server-side errors are captured with Sentry (configurable).
 - **i18n discipline without a library**: missing keys throw and CI enforces key parity.
+- **Security-minded invites**: workspace invite tokens are stored as **SHA-256 hashes** (no raw tokens in DB); the raw link is shown only once after creation.
 
 ## Tech stack
 
