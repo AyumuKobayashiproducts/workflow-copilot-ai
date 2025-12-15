@@ -4,7 +4,12 @@ import { headers } from "next/headers";
 
 import { Button } from "@/components/ui/button";
 import { clearMyDemoDataAction } from "@/app/actions/demo";
-import { createWorkspaceInviteAction, revokeWorkspaceInviteAction, switchWorkspaceAction } from "@/app/actions/workspaces";
+import {
+  createWorkspaceInviteAction,
+  revokeWorkspaceInviteAction,
+  switchWorkspaceAction,
+  updateWorkspaceMemberRoleAction
+} from "@/app/actions/workspaces";
 import { prisma } from "@/lib/db";
 import { getWorkspaceContextOrNull } from "@/lib/workspaces/context";
 import { listWorkspaceActivities } from "@/lib/tasks/activity";
@@ -32,6 +37,8 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
   const inviteStatus = (Array.isArray(inviteRaw) ? inviteRaw[0] : inviteRaw) ?? "";
   const workspaceRaw = searchParams.workspace;
   const workspaceStatus = (Array.isArray(workspaceRaw) ? workspaceRaw[0] : workspaceRaw) ?? "";
+  const memberRaw = searchParams.member;
+  const memberStatus = (Array.isArray(memberRaw) ? memberRaw[0] : memberRaw) ?? "";
 
   const myMemberships = await prisma.workspaceMembership.findMany({
     where: { userId: ctx.userId },
@@ -108,6 +115,22 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {t("settings.workspace.switch.forbidden")}
         </section>
+      ) : memberStatus === "updated" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.workspace.members.updated")}
+        </section>
+      ) : memberStatus === "last_owner" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.workspace.members.lastOwner")}
+        </section>
+      ) : memberStatus === "forbidden" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.workspace.members.forbidden")}
+        </section>
+      ) : memberStatus === "failed" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.workspace.members.failed")}
+        </section>
       ) : null}
 
       {myMemberships.length > 1 ? (
@@ -160,7 +183,26 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                 <span className="text-neutral-900">
                   {m.user.name || m.user.email || m.user.id}
                 </span>
-                <span className="text-xs text-neutral-700">{m.role}</span>
+                {ctx.role === "owner" ? (
+                  <form action={updateWorkspaceMemberRoleAction} className="flex items-center gap-2">
+                    <input type="hidden" name="userId" value={m.user.id} />
+                    <select
+                      name="role"
+                      defaultValue={m.role}
+                      className="h-9 rounded-md border border-neutral-300 bg-white px-2 text-sm"
+                    >
+                      <option value="member">{t("settings.workspace.role.member")}</option>
+                      <option value="owner">{t("settings.workspace.role.owner")}</option>
+                    </select>
+                    <Button type="submit" size="sm" variant="secondary">
+                      {t("settings.workspace.members.updateCta")}
+                    </Button>
+                  </form>
+                ) : (
+                  <span className="text-xs text-neutral-700">
+                    {m.role === "owner" ? t("settings.workspace.role.owner") : t("settings.workspace.role.member")}
+                  </span>
+                )}
               </li>
             ))}
           </ul>
@@ -171,6 +213,14 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
             <div className="text-xs font-medium text-neutral-700">{t("settings.workspace.invite.title")}</div>
             <form action={createWorkspaceInviteAction} className="flex flex-wrap items-center gap-2">
               <input type="hidden" name="maxUses" value="5" />
+              <select
+                name="role"
+                defaultValue="member"
+                className="h-9 rounded-md border border-neutral-300 bg-white px-2 text-sm"
+              >
+                <option value="member">{t("settings.workspace.role.member")}</option>
+                <option value="owner">{t("settings.workspace.role.owner")}</option>
+              </select>
               <Button type="submit" variant="secondary">
                 {t("settings.workspace.invite.create")}
               </Button>

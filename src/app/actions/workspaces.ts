@@ -21,6 +21,8 @@ function settingsUrl(params?: Record<string, string | undefined>) {
 export async function createWorkspaceInviteAction(formData: FormData) {
   const maxUsesRaw = String(formData.get("maxUses") ?? "5");
   const maxUses = Number.isFinite(Number(maxUsesRaw)) ? Math.max(1, Math.min(50, Math.floor(Number(maxUsesRaw)))) : 5;
+  const roleRaw = String(formData.get("role") ?? "member");
+  const role = roleRaw === "owner" ? "owner" : "member";
 
   const ctx = await requireWorkspaceContext();
   if (ctx.role !== "owner") {
@@ -35,7 +37,7 @@ export async function createWorkspaceInviteAction(formData: FormData) {
       data: {
         workspaceId: ctx.workspaceId,
         token,
-        role: "member",
+        role,
         createdByUserId: ctx.userId,
         expiresAt,
         maxUses
@@ -48,6 +50,49 @@ export async function createWorkspaceInviteAction(formData: FormData) {
 
   revalidatePath("/settings");
   redirect(settingsUrl({ invite: "created" }));
+}
+
+export async function updateWorkspaceMemberRoleAction(formData: FormData) {
+  const targetUserId = String(formData.get("userId") ?? "");
+  const roleRaw = String(formData.get("role") ?? "");
+  const nextRole = roleRaw === "owner" ? "owner" : roleRaw === "member" ? "member" : null;
+  if (!targetUserId || !nextRole) return;
+
+  const ctx = await requireWorkspaceContext();
+  if (ctx.role !== "owner") {
+    redirect(settingsUrl({ member: "forbidden" }));
+  }
+
+  const membership = await prisma.workspaceMembership.findUnique({
+    where: { workspaceId_userId: { workspaceId: ctx.workspaceId, userId: targetUserId } },
+    select: { role: true }
+  });
+  if (!membership) {
+    redirect(settingsUrl({ member: "not_found" }));
+  }
+
+  // Prevent removing the last owner.
+  if (membership.role === "owner" && nextRole !== "owner") {
+    const ownerCount = await prisma.workspaceMembership.count({
+      where: { workspaceId: ctx.workspaceId, role: "owner" }
+    });
+    if (ownerCount <= 1) {
+      redirect(settingsUrl({ member: "last_owner" }));
+    }
+  }
+
+  try {
+    await prisma.workspaceMembership.update({
+      where: { workspaceId_userId: { workspaceId: ctx.workspaceId, userId: targetUserId } },
+      data: { role: nextRole }
+    });
+  } catch (err) {
+    Sentry.captureException(err, { tags: { feature: "workspace", action: "updateMemberRole" } });
+    redirect(settingsUrl({ member: "failed" }));
+  }
+
+  revalidatePath("/settings");
+  redirect(settingsUrl({ member: "updated" }));
 }
 
 export async function revokeWorkspaceInviteAction(formData: FormData) {
