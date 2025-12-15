@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { assignTaskAction } from "@/app/actions/tasks";
+import { prisma } from "@/lib/db";
 import { getWorkspaceContextOrNull } from "@/lib/workspaces/context";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { listTasks } from "@/lib/tasks/store";
@@ -28,11 +30,27 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   const weekStartParam = (Array.isArray(weekStartRaw) ? weekStartRaw[0] : weekStartRaw) ?? "";
   const doneScopeRaw = searchParams.doneScope;
   const doneScope = (Array.isArray(doneScopeRaw) ? doneScopeRaw[0] : doneScopeRaw) === "all" ? "all" : "week";
+  const scopeRaw = searchParams.scope;
+  const scope = (Array.isArray(scopeRaw) ? scopeRaw[0] : scopeRaw) === "all" ? "all" : "mine";
 
   const ctx = await getWorkspaceContextOrNull();
   if (!ctx) redirect("/login");
 
-  const tasks = await listTasks({ workspaceId: ctx.workspaceId, userId: ctx.userId, assigneeScope: "mine" });
+  const tasks = await listTasks({
+    workspaceId: ctx.workspaceId,
+    userId: ctx.userId,
+    assigneeScope: scope
+  });
+
+  const members = await prisma.workspaceMembership.findMany({
+    where: { workspaceId: ctx.workspaceId },
+    orderBy: [{ role: "asc" }, { createdAt: "asc" }],
+    select: {
+      id: true,
+      role: true,
+      user: { select: { id: true, name: true, email: true } }
+    }
+  });
 
   const base = weekStartParam && !Number.isNaN(new Date(weekStartParam).getTime()) ? new Date(weekStartParam) : new Date();
   const day = base.getDay(); // 0 Sun ... 6 Sat
@@ -65,10 +83,10 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   const completedThisWeek = tasks.filter((task) => completedInWeek(task.completedAt));
   const focusTask =
     tasks
-      .filter((t) => t.status === "todo" && t.focusAt)
+      .filter((t) => t.status === "todo" && t.focusAt && t.assignedToUserId === ctx.userId)
       .sort((a, b) => (b.focusAt ?? b.createdAt).getTime() - (a.focusAt ?? a.createdAt).getTime())[0] ?? null;
 
-  const selfUrl = `/weekly?weekStart=${encodeURIComponent(weekStartIso)}&doneScope=${encodeURIComponent(doneScope)}`;
+  const selfUrl = `/weekly?weekStart=${encodeURIComponent(weekStartIso)}&doneScope=${encodeURIComponent(doneScope)}&scope=${encodeURIComponent(scope)}`;
 
   const SHOW_TASKS = 8;
 
@@ -175,6 +193,11 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
     }
   }
 
+  function memberLabel(userId: string) {
+    const m = members.find((x) => x.user.id === userId);
+    return m?.user.name || m?.user.email || userId;
+  }
+
   return (
     <div className="space-y-6">
       <header className="flex items-start justify-between gap-4">
@@ -250,6 +273,22 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
         </div>
         <div className="mt-1 text-xs text-neutral-500">
           {t("weekly.meta.weekStart")}: {startLabel}
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-700 shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="text-sm font-medium text-neutral-900">{t("weekly.scope.label")}</div>
+          <Button asChild size="sm" variant={scope === "mine" ? "default" : "secondary"}>
+            <Link href={`/weekly?weekStart=${encodeURIComponent(weekStartIso)}&doneScope=${encodeURIComponent(doneScope)}&scope=mine`}>
+              {t("weekly.scope.mine")}
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant={scope === "all" ? "default" : "secondary"}>
+            <Link href={`/weekly?weekStart=${encodeURIComponent(weekStartIso)}&doneScope=${encodeURIComponent(doneScope)}&scope=all`}>
+              {t("weekly.scope.all")}
+            </Link>
+          </Button>
         </div>
       </section>
 
@@ -345,10 +384,32 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                         <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
                           {sourceLabel(task.source)}
                         </span>
+                        <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
+                          {t("weekly.assignee.label")}: {memberLabel(task.assignedToUserId)}
+                        </span>
                       </div>
                       <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
+                      {scope === "all" ? (
+                        <form action={assignTaskAction} className="flex items-center gap-2">
+                          <input type="hidden" name="id" value={task.id} />
+                          <select
+                            name="assignedToUserId"
+                            defaultValue={task.assignedToUserId}
+                            className="h-9 rounded-md border border-neutral-300 bg-white px-2 text-sm"
+                          >
+                            {members.map((m) => (
+                              <option key={m.user.id} value={m.user.id}>
+                                {memberLabel(m.user.id)}
+                              </option>
+                            ))}
+                          </select>
+                          <Button type="submit" size="sm" variant="secondary">
+                            {t("weekly.assignee.set")}
+                          </Button>
+                        </form>
+                      ) : null}
                       <form action={setFocusTaskAction}>
                         <input type="hidden" name="id" value={task.id} />
                         <input type="hidden" name="redirectTo" value={selfUrl} />
@@ -397,10 +458,32 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                             <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
                               {sourceLabel(task.source)}
                             </span>
+                            <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
+                              {t("weekly.assignee.label")}: {memberLabel(task.assignedToUserId)}
+                            </span>
                           </div>
                           <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
+                          {scope === "all" ? (
+                            <form action={assignTaskAction} className="flex items-center gap-2">
+                              <input type="hidden" name="id" value={task.id} />
+                              <select
+                                name="assignedToUserId"
+                                defaultValue={task.assignedToUserId}
+                                className="h-9 rounded-md border border-neutral-300 bg-white px-2 text-sm"
+                              >
+                                {members.map((m) => (
+                                  <option key={m.user.id} value={m.user.id}>
+                                    {memberLabel(m.user.id)}
+                                  </option>
+                                ))}
+                              </select>
+                              <Button type="submit" size="sm" variant="secondary">
+                                {t("weekly.assignee.set")}
+                              </Button>
+                            </form>
+                          ) : null}
                           <form action={setFocusTaskAction}>
                             <input type="hidden" name="id" value={task.id} />
                             <input type="hidden" name="redirectTo" value={selfUrl} />
