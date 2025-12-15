@@ -62,6 +62,10 @@ export async function updateWorkspaceMemberRoleAction(formData: FormData) {
   if (ctx.role !== "owner") {
     redirect(settingsUrl({ member: "forbidden" }));
   }
+  // Prevent self role change (avoids accidental lock-out).
+  if (targetUserId === ctx.userId) {
+    redirect(settingsUrl({ member: "self_forbidden" }));
+  }
 
   const membership = await prisma.workspaceMembership.findUnique({
     where: { workspaceId_userId: { workspaceId: ctx.workspaceId, userId: targetUserId } },

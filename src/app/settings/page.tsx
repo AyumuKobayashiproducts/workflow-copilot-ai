@@ -131,9 +131,17 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {t("settings.workspace.members.lastOwner")}
         </section>
+      ) : memberStatus === "self_forbidden" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.workspace.members.selfForbidden")}
+        </section>
       ) : memberStatus === "forbidden" ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {t("settings.workspace.members.forbidden")}
+        </section>
+      ) : memberStatus === "not_found" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.workspace.members.notFound")}
         </section>
       ) : memberStatus === "failed" ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
@@ -191,7 +199,7 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                 <span className="text-neutral-900">
                   {m.user.name || m.user.email || m.user.id}
                 </span>
-                {ctx.role === "owner" ? (
+                {ctx.role === "owner" && m.user.id !== ctx.userId ? (
                   <form action={updateWorkspaceMemberRoleAction} className="flex items-center gap-2">
                     <input type="hidden" name="userId" value={m.user.id} />
                     <select
