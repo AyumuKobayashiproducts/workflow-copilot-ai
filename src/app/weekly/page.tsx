@@ -6,7 +6,7 @@ import { getUserIdOrNull } from "@/lib/auth/user";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { listTasks } from "@/lib/tasks/store";
 import { getWeeklyNote, getWeeklyReport } from "@/lib/weekly/store";
-import { toggleTaskDoneAction } from "@/app/actions/tasks";
+import { createWeeklyTaskAction, toggleTaskDoneAction } from "@/app/actions/tasks";
 import { saveWeeklyNoteAction } from "@/app/actions/weekly";
 import { WeeklyShare } from "@/components/weekly-share";
 
@@ -51,23 +51,37 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
   // Weekly review should reflect what happened this week:
   // - tasks created this week
   // - tasks completed this week (even if created earlier)
-  const inWeek = tasks.filter((task) => createdInWeek(task.createdAt) || completedInWeek(task.completedAt));
+  const createdThisWeek = tasks.filter((task) => createdInWeek(task.createdAt));
+  const completedThisWeek = tasks.filter((task) => completedInWeek(task.completedAt));
+
+  const doneScopeRaw = searchParams.doneScope;
+  const doneScope = (Array.isArray(doneScopeRaw) ? doneScopeRaw[0] : doneScopeRaw) === "all" ? "all" : "week";
 
   const SHOW_TASKS = 8;
 
-  const doneTasks = inWeek
+  const doneTasksThisWeek = completedThisWeek
     .filter((t) => t.status === "done")
     .sort((a, b) => {
       const at = (a.completedAt ?? a.createdAt).getTime();
       const bt = (b.completedAt ?? b.createdAt).getTime();
       return bt - at;
     });
-  const todoTasks = inWeek
+  const allDoneTasks = tasks
+    .filter((t) => t.status === "done")
+    .sort((a, b) => {
+      const at = (a.completedAt ?? a.createdAt).getTime();
+      const bt = (b.completedAt ?? b.createdAt).getTime();
+      return bt - at;
+    });
+
+  const doneTasks = doneScope === "all" ? allDoneTasks : doneTasksThisWeek;
+
+  const todoTasks = createdThisWeek
     .filter((t) => t.status === "todo")
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-  const doneCount = inWeek.filter((t) => t.status === "done").length;
-  const todoCount = inWeek.filter((t) => t.status === "todo").length;
+  const doneCount = doneTasksThisWeek.length;
+  const todoCount = todoTasks.length;
   const blockedCount = 0;
 
   const startLabel = weekStart.toLocaleDateString(locale);
@@ -116,6 +130,33 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
         : reportStatus === "failed"
           ? "weekly.report.saveFailed"
           : null;
+
+  const showTasksPanel = createdThisWeek.length > 0 || completedThisWeek.length > 0 || (doneScope === "all" && allDoneTasks.length > 0);
+
+  function weeklyUrl(params: Record<string, string | undefined>) {
+    const sp = new URLSearchParams();
+    if (weekStartIso) sp.set("weekStart", weekStartIso);
+    for (const [k, v] of Object.entries(params)) {
+      if (v) sp.set(k, v);
+    }
+    const qs = sp.toString();
+    return qs ? `/weekly?${qs}` : "/weekly";
+  }
+
+  function sourceLabel(source: string | null | undefined) {
+    switch (source) {
+      case "inbox":
+        return t("task.source.inbox");
+      case "breakdown":
+        return t("task.source.breakdown");
+      case "weekly":
+        return t("task.source.weekly");
+      case "demo":
+        return t("task.source.demo");
+      default:
+        return t("task.source.unknown");
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -213,7 +254,22 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
           </Button>
         </div>
 
-        {inWeek.length === 0 ? (
+        <div className="mt-2 space-y-2">
+          <div className="text-xs font-medium text-neutral-700">{t("weekly.newTask.label")}</div>
+          <form action={createWeeklyTaskAction} className="flex gap-2">
+            <input
+              name="title"
+              placeholder={t("weekly.newTask.placeholder")}
+              data-testid="weekly-new-task-input"
+              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            />
+            <Button type="submit" className="shrink-0" data-testid="weekly-new-task-submit">
+              {t("weekly.newTask.submit")}
+            </Button>
+          </form>
+        </div>
+
+        {!showTasksPanel ? (
           <p className="text-sm text-neutral-700">{t("weekly.tasks.empty")}</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
@@ -226,7 +282,12 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                     className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm"
                   >
                     <div className="min-w-0">
-                      <div className="truncate text-neutral-900">{task.title}</div>
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <div className="truncate text-neutral-900">{task.title}</div>
+                        <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
+                          {sourceLabel(task.source)}
+                        </span>
+                      </div>
                       <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
                     </div>
                     <form action={toggleTaskDoneAction} className="shrink-0">
@@ -251,7 +312,12 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                         className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm"
                       >
                         <div className="min-w-0">
-                          <div className="truncate text-neutral-900">{task.title}</div>
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <div className="truncate text-neutral-900">{task.title}</div>
+                            <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
+                              {sourceLabel(task.source)}
+                            </span>
+                          </div>
                           <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
                         </div>
                         <form action={toggleTaskDoneAction} className="shrink-0">
@@ -268,7 +334,27 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-medium text-neutral-700">{t("weekly.section.completed")}</div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs font-medium text-neutral-700">{t("weekly.section.completed")}</div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    asChild
+                    size="sm"
+                    variant={doneScope === "week" ? "default" : "secondary"}
+                    data-testid="weekly-done-scope-week"
+                  >
+                    <Link href={weeklyUrl({ doneScope: "week" })}>{t("weekly.completedFilter.weekOnly")}</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    variant={doneScope === "all" ? "default" : "secondary"}
+                    data-testid="weekly-done-scope-all"
+                  >
+                    <Link href={weeklyUrl({ doneScope: "all" })}>{t("weekly.completedFilter.all")}</Link>
+                  </Button>
+                </div>
+              </div>
               <ul className="space-y-2">
                 {doneTasks.slice(0, SHOW_TASKS).map((task) => (
                   <li
@@ -276,7 +362,12 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                     className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm"
                   >
                     <div className="min-w-0">
-                      <div className="truncate text-neutral-600 line-through">{task.title}</div>
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <div className="truncate text-neutral-600 line-through">{task.title}</div>
+                        <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
+                          {sourceLabel(task.source)}
+                        </span>
+                      </div>
                       <div className="mt-0.5 text-xs text-neutral-500">
                         {(task.completedAt ?? task.createdAt).toLocaleString(locale)}
                       </div>
@@ -303,7 +394,12 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                         className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm"
                       >
                         <div className="min-w-0">
-                          <div className="truncate text-neutral-600 line-through">{task.title}</div>
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <div className="truncate text-neutral-600 line-through">{task.title}</div>
+                            <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
+                              {sourceLabel(task.source)}
+                            </span>
+                          </div>
                           <div className="mt-0.5 text-xs text-neutral-500">
                             {(task.completedAt ?? task.createdAt).toLocaleString(locale)}
                           </div>

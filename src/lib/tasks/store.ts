@@ -2,7 +2,7 @@ import type { Task, TaskStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
 
-export type TaskSource = "inbox" | "breakdown";
+export type TaskSource = "inbox" | "breakdown" | "weekly" | "demo";
 
 export async function listTasks(userId: string): Promise<Task[]> {
   return prisma.task.findMany({

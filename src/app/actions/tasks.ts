@@ -10,6 +10,15 @@ export async function createTaskAction(formData: FormData) {
   const userId = await requireUserId();
   await createTask({ userId, title, source: "inbox" });
   revalidatePath("/inbox");
+  revalidatePath("/weekly");
+}
+
+export async function createWeeklyTaskAction(formData: FormData) {
+  const title = String(formData.get("title") ?? "");
+  const userId = await requireUserId();
+  await createTask({ userId, title, source: "weekly" });
+  revalidatePath("/weekly");
+  revalidatePath("/inbox");
 }
 
 export async function toggleTaskDoneAction(formData: FormData) {

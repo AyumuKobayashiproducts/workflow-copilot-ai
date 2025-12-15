@@ -147,6 +147,11 @@
   "weekly.tasks.title": "Tasks this week",
   "weekly.tasks.goToInbox": "Go to Inbox",
   "weekly.tasks.empty": "No tasks created this week yet.",
+  "weekly.newTask.label": "Add a next step",
+  "weekly.newTask.placeholder": "What is the next action?",
+  "weekly.newTask.submit": "Add",
+  "weekly.completedFilter.weekOnly": "This week",
+  "weekly.completedFilter.all": "All",
   "weekly.notes.title": "Notes",
   "weekly.notes.placeholder": "What worked? What didn't?",
   "weekly.notes.saved": "Saved.",
@@ -223,7 +228,13 @@
   "error.network": "Network error. Check your connection.",
   "error.timeout": "Request timed out. Try again.",
   "error.validation": "Please check your input.",
-  "error.unknown": "Unknown error."
+  "error.unknown": "Unknown error.",
+
+  "task.source.inbox": "Inbox",
+  "task.source.breakdown": "Breakdown",
+  "task.source.weekly": "Weekly",
+  "task.source.demo": "Demo",
+  "task.source.unknown": "Other"
 }
 
 
