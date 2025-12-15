@@ -18,10 +18,11 @@ A small but production-minded Next.js app for an end-to-end personal workflow:
 
 ## 日本語：デモ手順（最短）
 
-1. `/settings` → **Reset demo data**（デモ用データを準備）
-2. `/breakdown` → 目標入力 → **Generate steps** → **Save to Inbox**
-3. `/inbox` → タスクを1つ完了にする
-4. `/weekly` → **Generate report** →（必要なら編集）→ **Save** → **Post to Slack**
+1. `/`（ホーム）→ **30秒デモ**の手順どおりに進む
+2. （任意）`/settings` → **Reset demo data**（デモ用データを準備）
+3. `/breakdown` → 目標入力 → **Generate steps** → **Save to Inbox**
+4. `/inbox` → タスクを1つ完了にする／必要ならタスク名を編集
+5. `/weekly` → **次の一手**を1つ選ぶ → **Generate report** →（必要なら編集）→ **Save** → **Post to Slack**
 
 ## 30-second demo flow
 
@@ -35,9 +36,9 @@ A small but production-minded Next.js app for an end-to-end personal workflow:
 
 - **Auth**: GitHub OAuth (Auth.js / NextAuth v5) + middleware route protection
 - **DB persistence**: Prisma + Postgres (migrations included)
-- **Inbox**: create / toggle done / delete
+- **Inbox**: create / search/filter/sort / edit title / toggle done / delete
 - **Breakdown**: goal → steps (MVP generator) → bulk save to Inbox
-- **Weekly**: counts + weekly note/report persistence (saved per week)
+- **Weekly**: counts + “next step” focus + weekly note/report persistence (saved per week)
 - **Slack (optional)**: weekly report via Incoming Webhook
 - **i18n (no library)**:
   - Messages are fully separated into `src/messages/en.json` and `src/messages/ja.json`
@@ -169,6 +170,7 @@ GitHub Actions runs:
 
 - `npm run lint`
 - `npm run check:i18n` (en/ja keys must match)
+- `npm run test:e2e` (Playwright, with Postgres service)
 
 ## Scripts
 

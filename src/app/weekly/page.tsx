@@ -10,12 +10,12 @@ import {
   clearFocusTaskAction,
   createWeeklyTaskAction,
   setFocusTaskAction,
-  toggleTaskDoneAction,
-  updateTaskTitleAction
+  toggleTaskDoneAction
 } from "@/app/actions/tasks";
 import { saveWeeklyNoteAction } from "@/app/actions/weekly";
 import { WeeklyShare } from "@/components/weekly-share";
 import { WeeklyDoneScopeToggle } from "@/components/weekly-done-scope-toggle";
+import { TaskTitleInlineEdit } from "@/components/task-title-inline-edit";
 
 export default async function WeeklyPage(props: { searchParams?: Promise<Record<string, string | string[]>> }) {
   const locale = await getLocale();
@@ -303,7 +303,14 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                   >
                     <div className="min-w-0">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
-                        <div className="truncate text-neutral-900">{task.title}</div>
+                        <TaskTitleInlineEdit
+                          taskId={task.id}
+                          title={task.title}
+                          done={false}
+                          editLabel={t("common.edit")}
+                          saveLabel={t("common.save")}
+                          cancelLabel={t("common.cancel")}
+                        />
                         {task.focusAt ? (
                           <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-900">
                             {t("task.focus.badge")}
@@ -314,23 +321,6 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                         </span>
                       </div>
                       <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
-
-                      <details className="mt-2">
-                        <summary className="cursor-pointer select-none text-xs text-neutral-700 underline-offset-4 hover:underline">
-                          {t("common.edit")}
-                        </summary>
-                        <form action={updateTaskTitleAction} className="mt-2 flex gap-2">
-                          <input type="hidden" name="id" value={task.id} />
-                          <input
-                            name="title"
-                            defaultValue={task.title}
-                            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-                          />
-                          <Button type="submit" size="sm" variant="secondary" className="shrink-0">
-                            {t("common.save")}
-                          </Button>
-                        </form>
-                      </details>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <form action={setFocusTaskAction}>
@@ -363,7 +353,14 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                       >
                         <div className="min-w-0">
                           <div className="flex min-w-0 flex-wrap items-center gap-2">
-                            <div className="truncate text-neutral-900">{task.title}</div>
+                            <TaskTitleInlineEdit
+                              taskId={task.id}
+                              title={task.title}
+                              done={false}
+                              editLabel={t("common.edit")}
+                              saveLabel={t("common.save")}
+                              cancelLabel={t("common.cancel")}
+                            />
                             {task.focusAt ? (
                               <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-900">
                                 {t("task.focus.badge")}
@@ -374,23 +371,6 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                             </span>
                           </div>
                           <div className="mt-0.5 text-xs text-neutral-500">{task.createdAt.toLocaleString(locale)}</div>
-
-                          <details className="mt-2">
-                            <summary className="cursor-pointer select-none text-xs text-neutral-700 underline-offset-4 hover:underline">
-                              {t("common.edit")}
-                            </summary>
-                            <form action={updateTaskTitleAction} className="mt-2 flex gap-2">
-                              <input type="hidden" name="id" value={task.id} />
-                              <input
-                                name="title"
-                                defaultValue={task.title}
-                                className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-                              />
-                              <Button type="submit" size="sm" variant="secondary" className="shrink-0">
-                                {t("common.save")}
-                              </Button>
-                            </form>
-                          </details>
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
                           <form action={setFocusTaskAction}>
@@ -431,7 +411,14 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                   >
                     <div className="min-w-0">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
-                        <div className="truncate text-neutral-600 line-through">{task.title}</div>
+                        <TaskTitleInlineEdit
+                          taskId={task.id}
+                          title={task.title}
+                          done
+                          editLabel={t("common.edit")}
+                          saveLabel={t("common.save")}
+                          cancelLabel={t("common.cancel")}
+                        />
                         <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
                           {sourceLabel(task.source)}
                         </span>
@@ -439,23 +426,6 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                       <div className="mt-0.5 text-xs text-neutral-500">
                         {(task.completedAt ?? task.createdAt).toLocaleString(locale)}
                       </div>
-
-                      <details className="mt-2">
-                        <summary className="cursor-pointer select-none text-xs text-neutral-700 underline-offset-4 hover:underline">
-                          {t("common.edit")}
-                        </summary>
-                        <form action={updateTaskTitleAction} className="mt-2 flex gap-2">
-                          <input type="hidden" name="id" value={task.id} />
-                          <input
-                            name="title"
-                            defaultValue={task.title}
-                            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-                          />
-                          <Button type="submit" size="sm" variant="secondary" className="shrink-0">
-                            {t("common.save")}
-                          </Button>
-                        </form>
-                      </details>
                     </div>
                     <form action={toggleTaskDoneAction} className="shrink-0">
                       <input type="hidden" name="id" value={task.id} />
@@ -480,7 +450,14 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                       >
                         <div className="min-w-0">
                           <div className="flex min-w-0 flex-wrap items-center gap-2">
-                            <div className="truncate text-neutral-600 line-through">{task.title}</div>
+                            <TaskTitleInlineEdit
+                              taskId={task.id}
+                              title={task.title}
+                              done
+                              editLabel={t("common.edit")}
+                              saveLabel={t("common.save")}
+                              cancelLabel={t("common.cancel")}
+                            />
                             <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
                               {sourceLabel(task.source)}
                             </span>
@@ -488,23 +465,6 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                           <div className="mt-0.5 text-xs text-neutral-500">
                             {(task.completedAt ?? task.createdAt).toLocaleString(locale)}
                           </div>
-
-                          <details className="mt-2">
-                            <summary className="cursor-pointer select-none text-xs text-neutral-700 underline-offset-4 hover:underline">
-                              {t("common.edit")}
-                            </summary>
-                            <form action={updateTaskTitleAction} className="mt-2 flex gap-2">
-                              <input type="hidden" name="id" value={task.id} />
-                              <input
-                                name="title"
-                                defaultValue={task.title}
-                                className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-                              />
-                              <Button type="submit" size="sm" variant="secondary" className="shrink-0">
-                                {t("common.save")}
-                              </Button>
-                            </form>
-                          </details>
                         </div>
                         <form action={toggleTaskDoneAction} className="shrink-0">
                           <input type="hidden" name="id" value={task.id} />

@@ -2,12 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { TaskTitleInlineEdit } from "@/components/task-title-inline-edit";
 import {
   clearFocusTaskAction,
   createTaskAction,
   deleteTaskAction,
   toggleTaskDoneAction,
-  updateTaskTitleAction
 } from "@/app/actions/tasks";
 import { getUserIdOrNull } from "@/lib/auth/user";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
@@ -245,9 +245,14 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
                 >
                   <div className="min-w-0">
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
-                      <div className={done ? "truncate text-sm line-through text-neutral-600" : "truncate text-sm"}>
-                        {task.title}
-                      </div>
+                      <TaskTitleInlineEdit
+                        taskId={task.id}
+                        title={task.title}
+                        done={done}
+                        editLabel={t("common.edit")}
+                        saveLabel={t("common.save")}
+                        cancelLabel={t("common.cancel")}
+                      />
                       {focused ? (
                         <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-900">
                           {t("task.focus.badge")}
@@ -263,23 +268,6 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
                     <div className="mt-0.5 text-xs text-neutral-500">
                       {task.createdAt.toLocaleString(locale)}
                     </div>
-
-                  <details className="mt-2">
-                    <summary className="cursor-pointer select-none text-xs text-neutral-700 underline-offset-4 hover:underline">
-                      {t("common.edit")}
-                    </summary>
-                    <form action={updateTaskTitleAction} className="mt-2 flex gap-2">
-                      <input type="hidden" name="id" value={task.id} />
-                      <input
-                        name="title"
-                        defaultValue={task.title}
-                        className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-                      />
-                      <Button type="submit" size="sm" variant="secondary" className="shrink-0">
-                        {t("common.save")}
-                      </Button>
-                    </form>
-                  </details>
                   </div>
 
                   <div className="flex shrink-0 gap-2">
