@@ -5,6 +5,16 @@
  *   node scripts/preflight-prod.mjs
  */
 
+const isVercel = String(process.env.VERCEL ?? "") === "1";
+const vercelEnv = String(process.env.VERCEL_ENV ?? ""); // "production" | "preview" | "development"
+const force = String(process.env.PREFLIGHT_PROD ?? "") === "1";
+const isProduction = vercelEnv === "production";
+
+if (!force && isVercel && !isProduction) {
+  console.log(`[preflight] Skipped (VERCEL_ENV=${vercelEnv || "unknown"})`);
+  process.exit(0);
+}
+
 const required = [
   "DATABASE_URL",
   "PRISMA_DATABASE_URL",
@@ -16,7 +26,9 @@ const required = [
 
 const forbiddenTruthies = [
   ["AUTH_BYPASS", "1"],
-  ["DEMO_TOOLS", "1"]
+  ["DEMO_TOOLS", "1"],
+  // If this leaks into production, it may allow privileged test endpoints.
+  ["E2E_TOKEN", "e2e"]
 ];
 
 function isTruthy(v) {

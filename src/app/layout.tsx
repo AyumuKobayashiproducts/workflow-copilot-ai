@@ -64,6 +64,19 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             </div>
           </header>
           <main className="mx-auto w-full max-w-3xl px-4 pb-12 pt-6">{children}</main>
+          <footer className="border-t border-neutral-200 bg-neutral-50">
+            <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-4 py-6 text-sm text-neutral-700 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <Link href="/terms" className="underline-offset-2 hover:underline">
+                  {t("footer.terms")}
+                </Link>
+                <Link href="/privacy" className="underline-offset-2 hover:underline">
+                  {t("footer.privacy")}
+                </Link>
+              </div>
+              <div className="text-xs text-neutral-500">{t("footer.disclaimer")}</div>
+            </div>
+          </footer>
         </div>
       </body>
     </html>

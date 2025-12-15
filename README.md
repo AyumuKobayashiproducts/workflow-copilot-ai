@@ -3,6 +3,8 @@
 A small but production-minded Next.js app for an end-to-end personal workflow:
 **Inbox → Breakdown → Weekly review → (optional) post to Slack**.
 
+Japanese README: `README.ja.md`
+
 ## Problem → Solution
 
 **Problem:** Personal task systems often fail at the “what should I do next?” moment: tasks pile up, weekly reviews are disconnected from execution, and sharing progress is frictionful.
@@ -20,6 +22,16 @@ A small but production-minded Next.js app for an end-to-end personal workflow:
 - **Weekly report persistence**: saved per week (upsert) and editable (manual save)
 - **Slack sharing**: Block Kit formatting, clear error reasons, double-submit prevention
 - **Production ergonomics**: Sentry integration + integration status on Settings + E2E coverage
+
+## Positioning (how this becomes a “sellable” product)
+
+Workflow Copilot is designed for **busy individual contributors** (and small teams) who want a lightweight execution loop:
+
+- Capture everything in **Inbox**
+- Convert goals into steps in **Breakdown**
+- In **Weekly**, pick exactly **one** “Next step” and optionally share progress to Slack
+
+The portfolio focus is to demonstrate **product thinking + full-stack execution + production guardrails**.
 
 ## Differentiators (why it’s “production-minded”)
 
@@ -84,6 +96,16 @@ This is stored as `Task.focusAt` and surfaced in both `/weekly` and `/inbox`.
 - **Prisma migrations committed** so `prisma migrate deploy` can run in CI/CD
 - **Typed routes disabled** because this app intentionally uses dynamic back URLs in `redirect()`
 
+## Documentation
+
+- Architecture: `docs/ARCHITECTURE.md`
+- Security notes: `docs/SECURITY.md`
+- Runbook: `docs/RUNBOOK.md`
+- Roadmap: `docs/ROADMAP.md`
+- Changelog: `docs/CHANGELOG.md`
+- Terms: `/terms` (in-app) + `docs/TERMS.md`
+- Privacy: `/privacy` (in-app) + `docs/PRIVACY.md`
+
 ## Environment variables
 
 See `docs/env.example`.
@@ -114,9 +136,19 @@ Optional:
   - Never enable in production.
 - **DEMO_TOOLS**: `DEMO_TOOLS=1` enables “Prepare demo data” buttons.
   - Never enable in production.
+- **E2E_TOKEN**: only used to protect the E2E reset endpoint in local/CI contexts.
+  - Never set in production.
 - **Sentry**: Set `SENTRY_DSN` (and optionally `SENTRY_TRACES_SAMPLE_RATE`) in Vercel to capture errors.
 - **Slack**: Set `SLACK_WEBHOOK_URL` to enable Slack posting.
 - **OpenAI**: Set `OPENAI_API_KEY` to enable AI generation in Breakdown/Weekly. Keep `AI_DAILY_LIMIT` conservative.
+
+## For recruiters (what to look at first)
+
+- **System overview**: `docs/ARCHITECTURE.md`
+- **Security posture**: `docs/SECURITY.md`
+- **How I deploy/operate**: `docs/RUNBOOK.md`
+- **Product intent**: `docs/ROADMAP.md` + “Tradeoffs” section in this README
+- **Review guide**: `docs/RECRUITER_NOTES.md`
 
 ## Production deploy checklist
 
