@@ -51,6 +51,14 @@ export async function POST(req: Request) {
     }
   });
 
+  await logTaskActivity({
+    workspaceId: ctx.workspaceId,
+    actorUserId: ctx.userId,
+    kind: "workspace_invite_created",
+    message: `Invite created (role=${role}, maxUses=${maxUses})`,
+    metadata: { action: "create_workspace_invite", role, maxUses, via: "e2e" }
+  }).catch(() => {});
+
   return NextResponse.json({ ok: true, token: tokenValue });
 }
 

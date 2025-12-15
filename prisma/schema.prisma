@@ -85,6 +85,9 @@ enum TaskActivityKind {
   focus_cleared
   deleted
   forbidden
+  workspace_invite_created
+  workspace_invite_revoked
+  workspace_member_role_updated
 }
 
 enum AiUsageKind {

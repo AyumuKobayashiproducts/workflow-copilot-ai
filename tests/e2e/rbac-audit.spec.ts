@@ -163,4 +163,45 @@ test("rbac+audit: member cannot change member roles; forbidden is logged (worksp
   await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
 });
 
+test("rbac+audit: owner can create invite; event is logged", async ({ page }) => {
+  await page.request.post("/api/e2e/reset", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
+  });
+
+  await page.goto("/settings");
+  await setE2EUser(page, OWNER_ID);
+
+  const res = await page.request.post("/api/e2e/workspace/invite", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" },
+    data: { role: "member", maxUses: 5 }
+  });
+  expect(res.status()).toBe(200);
+  const json = (await res.json()) as { ok: boolean; token?: string };
+  expect(json.ok).toBe(true);
+  expect(typeof json.token).toBe("string");
+
+  await page.goto("/settings");
+  await expect(page.locator("text=/Invite created|招待リンク作成/")).toBeVisible();
+});
+
+test("rbac+audit: owner can update member role; event is logged", async ({ page }) => {
+  await page.request.post("/api/e2e/reset", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
+  });
+
+  await page.goto("/settings");
+  await setE2EUser(page, OWNER_ID);
+
+  const res = await page.request.post("/api/e2e/workspace/member-role", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" },
+    data: { userId: MEMBER_ID, role: "owner" }
+  });
+  expect(res.status()).toBe(200);
+  const json = (await res.json()) as { ok: boolean };
+  expect(json.ok).toBe(true);
+
+  await page.goto("/settings");
+  await expect(page.locator("text=/Member role updated|メンバー権限変更/")).toBeVisible();
+});
+
 

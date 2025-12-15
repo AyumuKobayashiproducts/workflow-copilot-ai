@@ -44,6 +44,14 @@ export async function POST(req: Request) {
     data: { role: nextRole }
   });
 
+  await logTaskActivity({
+    workspaceId: ctx.workspaceId,
+    actorUserId: ctx.userId,
+    kind: "workspace_member_role_updated",
+    message: `Member role updated (userId=${targetUserId}, role=${nextRole})`,
+    metadata: { action: "update_workspace_member_role", targetUserId, nextRole, via: "e2e" }
+  }).catch(() => {});
+
   return NextResponse.json({ ok: true });
 }
 

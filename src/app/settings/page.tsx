@@ -304,6 +304,12 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                     return t("task.activity.kind.deleted");
                           case "forbidden":
                             return t("task.activity.kind.forbidden");
+                          case "workspace_invite_created":
+                            return t("task.activity.kind.workspaceInviteCreated");
+                          case "workspace_invite_revoked":
+                            return t("task.activity.kind.workspaceInviteRevoked");
+                          case "workspace_member_role_updated":
+                            return t("task.activity.kind.workspaceMemberRoleUpdated");
                   default:
                     return kind;
                 }

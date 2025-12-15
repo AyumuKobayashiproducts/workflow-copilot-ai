@@ -51,6 +51,13 @@ export async function createWorkspaceInviteAction(formData: FormData) {
         maxUses
       }
     });
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "workspace_invite_created",
+      message: `Invite created (role=${role}, maxUses=${maxUses})`,
+      metadata: { action: "create_workspace_invite", role, maxUses }
+    }).catch(() => {});
   } catch (err) {
     Sentry.captureException(err, { tags: { feature: "workspace", action: "createInvite" } });
     redirect(settingsUrl({ invite: "failed" }));
@@ -112,6 +119,13 @@ export async function updateWorkspaceMemberRoleAction(formData: FormData) {
       where: { workspaceId_userId: { workspaceId: ctx.workspaceId, userId: targetUserId } },
       data: { role: nextRole }
     });
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "workspace_member_role_updated",
+      message: `Member role updated (userId=${targetUserId}, role=${nextRole})`,
+      metadata: { action: "update_workspace_member_role", targetUserId, nextRole }
+    }).catch(() => {});
   } catch (err) {
     Sentry.captureException(err, { tags: { feature: "workspace", action: "updateMemberRole" } });
     redirect(settingsUrl({ member: "failed" }));
@@ -142,6 +156,13 @@ export async function revokeWorkspaceInviteAction(formData: FormData) {
       where: { id, workspaceId: ctx.workspaceId },
       data: { revokedAt: new Date() }
     });
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "workspace_invite_revoked",
+      message: `Invite revoked (id=${id})`,
+      metadata: { action: "revoke_workspace_invite", inviteId: id }
+    }).catch(() => {});
   } catch (err) {
     Sentry.captureException(err, { tags: { feature: "workspace", action: "revokeInvite" } });
     redirect(settingsUrl({ invite: "failed" }));
