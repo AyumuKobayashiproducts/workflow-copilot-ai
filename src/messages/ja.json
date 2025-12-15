@@ -4,6 +4,7 @@
   "common.loading": "読み込み中…",
   "common.saving": "保存中…",
   "common.saved": "保存しました。",
+  "common.save": "保存",
   "common.cancel": "キャンセル",
   "common.close": "閉じる",
   "common.back": "戻る",
@@ -43,6 +44,24 @@
   "nav.signOut": "サインアウト",
   "nav.home": "ホーム",
   "nav.menu": "メニュー",
+
+  "home.title": "Workflow Copilot",
+  "home.subtitle": "Inbox → Breakdown → Weekly で、計画・実行・改善を回す。",
+  "home.demo.title": "30秒デモ（最短）",
+  "home.demo.step1.title": "1) デモデータを準備",
+  "home.demo.step1.enabled": "設定で「デモデータをリセット」を押す（初回はおすすめ）。",
+  "home.demo.step1.disabled": "この環境ではデモ用ツールが無効です（通常のタスク作成で進められます）。",
+  "home.demo.step2.title": "2) 目標を分解して受信箱へ",
+  "home.demo.step2.desc": "分解で目標→ステップ生成→受信箱に保存。",
+  "home.demo.step3.title": "3) 週間で振り返って共有",
+  "home.demo.step3.desc": "週間でカウント確認→週報生成→（任意）Slackへ投稿。",
+  "home.cta.start": "分解から始める",
+  "home.cta.signIn": "ログインする",
+  "home.cta.signInAndStart": "ログインして分解へ",
+  "home.whatYouCanDo.title": "できること",
+  "home.whatYouCanDo.item1": "受信箱でタスクを追加・完了・削除",
+  "home.whatYouCanDo.item2": "分解で目標をステップにして受信箱へ保存",
+  "home.whatYouCanDo.item3": "週間で振り返り（週報/Slack共有）",
 
   "languageSwitcher.label": "言語",
   "languageSwitcher.english": "English",
@@ -239,7 +258,12 @@
   "task.source.breakdown": "分解",
   "task.source.weekly": "週間",
   "task.source.demo": "デモ",
-  "task.source.unknown": "その他"
+  "task.source.unknown": "その他",
+
+  "task.focus.badge": "次の一手",
+  "task.focus.set": "次の一手にする",
+  "task.focus.clear": "解除",
+  "weekly.focus.title": "最優先（次の一手）"
 }
 
 

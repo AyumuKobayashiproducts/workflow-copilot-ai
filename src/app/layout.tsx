@@ -22,15 +22,17 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <header className="sticky top-0 z-40 border-b border-neutral-200 bg-neutral-50/80 backdrop-blur">
             <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-4 py-3">
               <div className="flex items-center gap-3">
-                <Link href="/inbox" className="text-sm font-semibold no-underline">
+                <Link href="/" className="text-sm font-semibold no-underline">
                   {t("common.appName")}
                 </Link>
                 <TopNav
                   menuLabel={t("nav.menu")}
                   items={[
+                    { href: "/", label: t("nav.home") },
                     { href: "/inbox", label: t("nav.inbox") },
                     { href: "/breakdown", label: t("nav.breakdown") },
                     { href: "/weekly", label: t("nav.weekly") },
+                    { href: "/settings", label: t("nav.settings") },
                     { href: "/login", label: t("nav.login") }
                   ]}
                 />

@@ -82,6 +82,7 @@ model Task {
   status      TaskStatus @default(todo)
   source      String?
   completedAt DateTime?
+  focusAt     DateTime?
 
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -90,6 +91,7 @@ model Task {
 
   @@index([userId, status])
   @@index([userId, createdAt])
+  @@index([userId, focusAt])
 }
 
 model WeeklyNote {

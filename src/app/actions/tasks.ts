@@ -2,7 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createTask, createTasksBulk, deleteTask, toggleTaskDone } from "@/lib/tasks/store";
+import {
+  clearFocusTask,
+  createTask,
+  createTasksBulk,
+  deleteTask,
+  setFocusTask,
+  toggleTaskDone,
+  updateTaskTitle
+} from "@/lib/tasks/store";
 import { requireUserId } from "@/lib/auth/user";
 
 export async function createTaskAction(formData: FormData) {
@@ -35,6 +43,32 @@ export async function deleteTaskAction(formData: FormData) {
   if (!id) return;
   const userId = await requireUserId();
   await deleteTask({ userId, id });
+  revalidatePath("/inbox");
+  revalidatePath("/weekly");
+}
+
+export async function updateTaskTitleAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const title = String(formData.get("title") ?? "");
+  if (!id) return;
+  const userId = await requireUserId();
+  await updateTaskTitle({ userId, id, title });
+  revalidatePath("/inbox");
+  revalidatePath("/weekly");
+}
+
+export async function setFocusTaskAction(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  const userId = await requireUserId();
+  await setFocusTask({ userId, id });
+  revalidatePath("/inbox");
+  revalidatePath("/weekly");
+}
+
+export async function clearFocusTaskAction() {
+  const userId = await requireUserId();
+  await clearFocusTask({ userId });
   revalidatePath("/inbox");
   revalidatePath("/weekly");
 }

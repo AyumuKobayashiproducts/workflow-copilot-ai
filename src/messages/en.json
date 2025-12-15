@@ -4,6 +4,7 @@
   "common.loading": "Loading…",
   "common.saving": "Saving…",
   "common.saved": "Saved.",
+  "common.save": "Save",
   "common.cancel": "Cancel",
   "common.close": "Close",
   "common.back": "Back",
@@ -43,6 +44,24 @@
   "nav.signOut": "Sign out",
   "nav.home": "Home",
   "nav.menu": "Menu",
+
+  "home.title": "Workflow Copilot",
+  "home.subtitle": "Run a simple loop: Inbox → Breakdown → Weekly.",
+  "home.demo.title": "30-second demo",
+  "home.demo.step1.title": "1) Prepare demo data",
+  "home.demo.step1.enabled": "Go to Settings and click “Reset demo data” (recommended for first run).",
+  "home.demo.step1.disabled": "Demo tools are disabled in this environment (you can still create tasks normally).",
+  "home.demo.step2.title": "2) Break down a goal into tasks",
+  "home.demo.step2.desc": "In Breakdown: goal → generate steps → save to Inbox.",
+  "home.demo.step3.title": "3) Review and share",
+  "home.demo.step3.desc": "In Weekly: check counts → generate report → (optional) post to Slack.",
+  "home.cta.start": "Start with Breakdown",
+  "home.cta.signIn": "Sign in",
+  "home.cta.signInAndStart": "Sign in and start",
+  "home.whatYouCanDo.title": "What you can do",
+  "home.whatYouCanDo.item1": "Add / complete / delete tasks in Inbox",
+  "home.whatYouCanDo.item2": "Turn a goal into steps and save to Inbox",
+  "home.whatYouCanDo.item3": "Weekly review (report + optional Slack sharing)",
 
   "languageSwitcher.label": "Language",
   "languageSwitcher.english": "English",
@@ -239,7 +258,12 @@
   "task.source.breakdown": "Breakdown",
   "task.source.weekly": "Weekly",
   "task.source.demo": "Demo",
-  "task.source.unknown": "Other"
+  "task.source.unknown": "Other",
+
+  "task.focus.badge": "Next step",
+  "task.focus.set": "Set as next step",
+  "task.focus.clear": "Clear",
+  "weekly.focus.title": "Top priority (next step)"
 }
 
 

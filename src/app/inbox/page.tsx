@@ -2,7 +2,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { createTaskAction, deleteTaskAction, toggleTaskDoneAction } from "@/app/actions/tasks";
+import {
+  clearFocusTaskAction,
+  createTaskAction,
+  deleteTaskAction,
+  toggleTaskDoneAction,
+  updateTaskTitleAction
+} from "@/app/actions/tasks";
 import { getUserIdOrNull } from "@/lib/auth/user";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { listTasks } from "@/lib/tasks/store";
@@ -42,6 +48,11 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
     if (a.status !== b.status) return a.status === "todo" ? -1 : 1;
     return b.createdAt.getTime() - a.createdAt.getTime();
   });
+
+  const focusTask =
+    tasks
+      .filter((t) => t.status === "todo" && t.focusAt)
+      .sort((a, b) => (b.focusAt ?? b.createdAt).getTime() - (a.focusAt ?? a.createdAt).getTime())[0] ?? null;
 
   function inboxUrl(params: Record<string, string | undefined>) {
     const sp = new URLSearchParams();
@@ -187,6 +198,22 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
         </div>
       </section>
 
+      {focusTask ? (
+        <section className="rounded-lg border border-amber-300 bg-amber-50 p-6 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="text-xs font-medium text-amber-900">{t("weekly.focus.title")}</div>
+              <div className="text-sm text-neutral-900">{focusTask.title}</div>
+            </div>
+            <form action={clearFocusTaskAction}>
+              <Button type="submit" size="sm" variant="secondary">
+                {t("task.focus.clear")}
+              </Button>
+            </form>
+          </div>
+        </section>
+      ) : null}
+
       <section className="rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
         <h2 className="text-sm font-medium">{t("inbox.tasks.title")}</h2>
 
@@ -209,6 +236,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
             {visibleTasks.map((task) => {
               const done = task.status === "done";
               const statusLabel = done ? t("inbox.filter.done") : t("inbox.filter.todo");
+              const focused = task.status === "todo" && Boolean(task.focusAt);
               return (
                 <li
                   key={task.id}
@@ -220,6 +248,11 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
                       <div className={done ? "truncate text-sm line-through text-neutral-600" : "truncate text-sm"}>
                         {task.title}
                       </div>
+                      {focused ? (
+                        <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-900">
+                          {t("task.focus.badge")}
+                        </span>
+                      ) : null}
                       <span className="rounded-full border border-neutral-300 bg-white px-2 py-0.5 text-[10px] text-neutral-700">
                         {statusLabel}
                       </span>
@@ -230,6 +263,23 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
                     <div className="mt-0.5 text-xs text-neutral-500">
                       {task.createdAt.toLocaleString(locale)}
                     </div>
+
+                  <details className="mt-2">
+                    <summary className="cursor-pointer select-none text-xs text-neutral-700 underline-offset-4 hover:underline">
+                      {t("common.edit")}
+                    </summary>
+                    <form action={updateTaskTitleAction} className="mt-2 flex gap-2">
+                      <input type="hidden" name="id" value={task.id} />
+                      <input
+                        name="title"
+                        defaultValue={task.title}
+                        className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                      />
+                      <Button type="submit" size="sm" variant="secondary" className="shrink-0">
+                        {t("common.save")}
+                      </Button>
+                    </form>
+                  </details>
                   </div>
 
                   <div className="flex shrink-0 gap-2">
