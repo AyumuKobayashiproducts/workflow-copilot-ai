@@ -204,4 +204,25 @@ test("rbac+audit: owner can update member role; event is logged", async ({ page 
   await expect(page.locator("text=/Member role updated|メンバー権限変更/")).toBeVisible();
 });
 
+test("rbac+audit: owner can revoke invite; event is logged", async ({ page }) => {
+  await page.request.post("/api/e2e/reset", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
+  });
+
+  await page.goto("/settings");
+  await setE2EUser(page, OWNER_ID);
+
+  const created = await page.request.post("/api/e2e/workspace/invite", {
+    headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" },
+    data: { role: "member", maxUses: 5 }
+  });
+  expect(created.status()).toBe(200);
+
+  await page.goto("/settings");
+  await page.getByRole("button", { name: /revoke|失効/i }).first().click();
+
+  await page.goto("/settings");
+  await expect(page.locator("text=/Invite revoked|招待リンク失効/")).toBeVisible();
+});
+
 
