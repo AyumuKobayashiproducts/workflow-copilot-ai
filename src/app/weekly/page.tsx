@@ -367,6 +367,12 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                   >
                     <div className="min-w-0">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <Link
+                          href={`/tasks/${task.id}`}
+                          className="text-xs text-neutral-700 underline-offset-4 hover:underline"
+                        >
+                          {t("task.detail.link")}
+                        </Link>
                         <TaskTitleInlineEdit
                           taskId={task.id}
                           title={task.title}
@@ -441,6 +447,12 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                       >
                         <div className="min-w-0">
                           <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <Link
+                              href={`/tasks/${task.id}`}
+                              className="text-xs text-neutral-700 underline-offset-4 hover:underline"
+                            >
+                              {t("task.detail.link")}
+                            </Link>
                             <TaskTitleInlineEdit
                               taskId={task.id}
                               title={task.title}
@@ -523,6 +535,12 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                   >
                     <div className="min-w-0">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <Link
+                          href={`/tasks/${task.id}`}
+                          className="text-xs text-neutral-700 underline-offset-4 hover:underline"
+                        >
+                          {t("task.detail.link")}
+                        </Link>
                         <TaskTitleInlineEdit
                           taskId={task.id}
                           title={task.title}
@@ -563,6 +581,12 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
                       >
                         <div className="min-w-0">
                           <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <Link
+                              href={`/tasks/${task.id}`}
+                              className="text-xs text-neutral-700 underline-offset-4 hover:underline"
+                            >
+                              {t("task.detail.link")}
+                            </Link>
                             <TaskTitleInlineEdit
                               taskId={task.id}
                               title={task.title}

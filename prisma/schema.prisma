@@ -75,6 +75,17 @@ enum TaskStatus {
   done
 }
 
+enum TaskActivityKind {
+  comment
+  created
+  title_updated
+  status_toggled
+  assigned
+  focus_set
+  focus_cleared
+  deleted
+}
+
 enum AiUsageKind {
   breakdown
   weekly
@@ -153,10 +164,30 @@ model Task {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   assignedToUser User @relation("TaskAssignedTo", fields: [assignedToUserId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  activities TaskActivity[]
 
   @@index([workspaceId, assignedToUserId, status])
   @@index([workspaceId, assignedToUserId, createdAt])
   @@index([workspaceId, assignedToUserId, focusAt])
+}
+
+model TaskActivity {
+  id          String           @id @default(cuid())
+  workspaceId String
+  taskId      String
+  actorUserId String
+  kind        TaskActivityKind
+  message     String?          // optional human-readable note (comments use this)
+  metadata    Json?
+
+  createdAt   DateTime         @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  task      Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  actor     User      @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, taskId, createdAt])
+  @@index([workspaceId, actorUserId, createdAt])
 }
 
 model WeeklyNote {
