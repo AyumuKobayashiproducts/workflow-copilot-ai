@@ -312,6 +312,55 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
       </section>
 
       <section className="space-y-3 rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
+        <h2 className="text-sm font-medium">{t("settings.permissions.title")}</h2>
+        <p className="text-sm text-neutral-700">{t("settings.permissions.subtitle")}</p>
+
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="text-left text-xs text-neutral-700">
+                <th className="border-b border-neutral-200 pb-2 pr-4">{t("settings.permissions.action")}</th>
+                <th className="border-b border-neutral-200 pb-2 pr-4">{t("settings.workspace.role.owner")}</th>
+                <th className="border-b border-neutral-200 pb-2">{t("settings.workspace.role.member")}</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm text-neutral-900">
+              <tr>
+                <td className="border-b border-neutral-100 py-2 pr-4">{t("settings.permissions.rows.assign")}</td>
+                <td className="border-b border-neutral-100 py-2 pr-4">{t("common.yes")}</td>
+                <td className="border-b border-neutral-100 py-2">{t("common.no")}</td>
+              </tr>
+              <tr>
+                <td className="border-b border-neutral-100 py-2 pr-4">{t("settings.permissions.rows.toggleDone")}</td>
+                <td className="border-b border-neutral-100 py-2 pr-4">{t("common.yes")}</td>
+                <td className="border-b border-neutral-100 py-2">{t("settings.permissions.member.toggleDone")}</td>
+              </tr>
+              <tr>
+                <td className="border-b border-neutral-100 py-2 pr-4">{t("settings.permissions.rows.editTitle")}</td>
+                <td className="border-b border-neutral-100 py-2 pr-4">{t("common.yes")}</td>
+                <td className="border-b border-neutral-100 py-2">{t("settings.permissions.member.editTitle")}</td>
+              </tr>
+              <tr>
+                <td className="border-b border-neutral-100 py-2 pr-4">{t("settings.permissions.rows.delete")}</td>
+                <td className="border-b border-neutral-100 py-2 pr-4">{t("common.yes")}</td>
+                <td className="border-b border-neutral-100 py-2">{t("settings.permissions.member.delete")}</td>
+              </tr>
+              <tr>
+                <td className="border-b border-neutral-100 py-2 pr-4">{t("settings.permissions.rows.invites")}</td>
+                <td className="border-b border-neutral-100 py-2 pr-4">{t("common.yes")}</td>
+                <td className="border-b border-neutral-100 py-2">{t("common.no")}</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-4">{t("settings.permissions.rows.memberRoles")}</td>
+                <td className="py-2 pr-4">{t("common.yes")}</td>
+                <td className="py-2">{t("common.no")}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="space-y-3 rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
         <h2 className="text-sm font-medium">{t("settings.integrations.title")}</h2>
 
         <ul className="space-y-2 text-sm">
