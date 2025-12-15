@@ -61,7 +61,7 @@ export default async function HomePage(props: { searchParams?: Promise<Record<st
                 {demoEnabled ? (
                   <form action={seedMyDemoDataAction}>
                     <input type="hidden" name="redirectTo" value="/" />
-                    <Button type="submit" variant="secondary">
+                    <Button type="submit" variant="secondary" data-testid="home-seed-demo">
                       {t("home.cta.seedDemo")}
                     </Button>
                   </form>

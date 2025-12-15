@@ -192,8 +192,16 @@ npm run db:deploy
 
 ## Screenshots
 
-![Login](docs/screenshots/login.png)
+Generate (English UI) screenshots locally:
 
-![Weekly report in Slack](docs/screenshots/slack-weekly.png)
+```bash
+npm run screenshots
+```
+
+Outputs (written to `docs/screenshots/`):
+
+- `home.png`
+- `inbox.png`
+- `weekly.png`
 
 
