@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getUserIdOrNull } from "@/lib/auth/user";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
+import { hashInviteToken } from "@/lib/workspaces/invite-token";
 
 export default async function InviteAcceptPage(props: { params: Promise<{ token: string }> }) {
   const locale = await getLocale();
@@ -19,8 +20,9 @@ export default async function InviteAcceptPage(props: { params: Promise<{ token:
     redirect(`/login?callbackUrl=${encodeURIComponent(`/invite/${tokenSafe}`)}`);
   }
 
+  const tokenHash = hashInviteToken(tokenSafe);
   const invite = await prisma.workspaceInvite.findUnique({
-    where: { token: tokenSafe },
+    where: { tokenHash },
     include: { workspace: { select: { id: true, name: true } } }
   });
 

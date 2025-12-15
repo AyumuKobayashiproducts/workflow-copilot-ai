@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireWorkspaceContext } from "@/lib/workspaces/context";
 import { logTaskActivity } from "@/lib/tasks/activity";
+import { hashInviteToken } from "@/lib/workspaces/invite-token";
 
 const AUTH_BYPASS_ENABLED = process.env.AUTH_BYPASS === "1";
 
@@ -25,9 +26,10 @@ export async function POST(req: Request) {
   if (!inviteToken) {
     return NextResponse.json({ ok: false, error: "bad_request" }, { status: 400 });
   }
+  const inviteTokenHash = hashInviteToken(inviteToken);
 
   const invite = await prisma.workspaceInvite.findFirst({
-    where: { workspaceId: ctx.workspaceId, token: inviteToken, revokedAt: null },
+    where: { workspaceId: ctx.workspaceId, tokenHash: inviteTokenHash, revokedAt: null },
     select: { id: true }
   });
   if (!invite) {

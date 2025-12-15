@@ -3,12 +3,14 @@
 import * as Sentry from "@sentry/nextjs";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { randomBytes } from "node:crypto";
 
 import { prisma } from "@/lib/db";
 import { requireWorkspaceContext } from "@/lib/workspaces/context";
 import { logTaskActivity } from "@/lib/tasks/activity";
+import { hashInviteToken } from "@/lib/workspaces/invite-token";
 
 function settingsUrl(params?: Record<string, string | undefined>) {
   const sp = new URLSearchParams();
@@ -38,18 +40,28 @@ export async function createWorkspaceInviteAction(formData: FormData) {
   }
 
   const token = randomBytes(16).toString("hex");
+  const tokenHash = hashInviteToken(token);
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   try {
     await prisma.workspaceInvite.create({
       data: {
         workspaceId: ctx.workspaceId,
-        token,
+        tokenHash,
         role,
         createdByUserId: ctx.userId,
         expiresAt,
         maxUses
       }
+    });
+    // Show the raw invite link only once (right after creation).
+    // The raw token is NOT stored in DB.
+    cookies().set("new_invite_token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60,
+      path: "/"
     });
     await logTaskActivity({
       workspaceId: ctx.workspaceId,
@@ -65,6 +77,11 @@ export async function createWorkspaceInviteAction(formData: FormData) {
 
   revalidatePath("/settings");
   redirect(settingsUrl({ invite: "created" }));
+}
+
+export async function clearNewInviteTokenAction() {
+  cookies().set("new_invite_token", "", { maxAge: 0, path: "/" });
+  redirect("/settings");
 }
 
 export async function updateWorkspaceMemberRoleAction(formData: FormData) {

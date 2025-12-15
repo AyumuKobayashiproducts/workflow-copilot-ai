@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { headers } from "next/headers";
 
 import { Button } from "@/components/ui/button";
 import { clearMyDemoDataAction } from "@/app/actions/demo";
 import {
+  clearNewInviteTokenAction,
   createWorkspaceInviteAction,
   revokeWorkspaceInviteAction,
   switchWorkspaceAction,
@@ -64,13 +66,14 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
     where: { workspaceId: ctx.workspaceId, revokedAt: null },
     orderBy: { createdAt: "desc" },
     take: 3,
-    select: { id: true, token: true, expiresAt: true, usedCount: true, maxUses: true }
+    select: { id: true, expiresAt: true, usedCount: true, maxUses: true }
   });
 
   const h = headers();
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "http";
   const origin = process.env.AUTH_URL ?? (host ? `${proto}://${host}` : "http://localhost:3000");
+  const newInviteToken = cookies().get("new_invite_token")?.value ?? "";
 
   const recentActivity = await listWorkspaceActivities({ workspaceId: ctx.workspaceId, take: 20 });
 
@@ -241,11 +244,26 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                 {t("settings.workspace.invite.create")}
               </Button>
             </form>
+            <p className="text-xs text-neutral-600">{t("settings.workspace.invite.oneTimeLinkNote")}</p>
+
+            {newInviteToken ? (
+              <div className="space-y-2 rounded-md border border-neutral-200 bg-neutral-50 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-xs font-medium text-neutral-800">{t("settings.workspace.invite.newLinkTitle")}</div>
+                  <form action={clearNewInviteTokenAction}>
+                    <Button type="submit" size="sm" variant="secondary">
+                      {t("common.dismiss")}
+                    </Button>
+                  </form>
+                </div>
+                <div className="break-all text-sm text-neutral-900">{`${origin}/invite/${newInviteToken}`}</div>
+                <div className="text-xs text-neutral-600">{t("settings.workspace.invite.newLinkHint")}</div>
+              </div>
+            ) : null}
 
             {invites.length > 0 ? (
               <div className="space-y-2">
                 {invites.map((inv) => {
-                  const url = `${origin}/invite/${inv.token}`;
                   return (
                     <div key={inv.id} className="rounded-md border border-neutral-200 bg-neutral-50 p-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -259,7 +277,6 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                           </Button>
                         </form>
                       </div>
-                      <div className="mt-2 break-all text-sm text-neutral-900">{url}</div>
                       <div className="mt-1 text-xs text-neutral-500">
                         {inv.expiresAt ? `${t("settings.workspace.invite.expiresAt")}: ${inv.expiresAt.toLocaleString(locale)}` : null}
                       </div>

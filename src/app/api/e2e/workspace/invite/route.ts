@@ -6,6 +6,7 @@ import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { requireWorkspaceContext } from "@/lib/workspaces/context";
 import { logTaskActivity } from "@/lib/tasks/activity";
+import { hashInviteToken } from "@/lib/workspaces/invite-token";
 
 const AUTH_BYPASS_ENABLED = process.env.AUTH_BYPASS === "1";
 
@@ -38,12 +39,13 @@ export async function POST(req: Request) {
   const maxUses = Number.isFinite(Number(body.maxUses)) ? Math.max(1, Math.min(50, Math.floor(Number(body.maxUses)))) : 5;
 
   const tokenValue = randomBytes(16).toString("hex");
+  const tokenHash = hashInviteToken(tokenValue);
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   await prisma.workspaceInvite.create({
     data: {
       workspaceId: ctx.workspaceId,
-      token: tokenValue,
+      tokenHash,
       role,
       createdByUserId: ctx.userId,
       expiresAt,

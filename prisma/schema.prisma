@@ -137,7 +137,7 @@ model WorkspaceMembership {
 model WorkspaceInvite {
   id              String        @id @default(cuid())
   workspaceId      String
-  token            String        @unique
+  tokenHash        String        @unique
   role             WorkspaceRole @default(member)
   createdByUserId  String
   expiresAt        DateTime?
