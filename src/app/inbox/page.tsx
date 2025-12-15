@@ -12,7 +12,7 @@ import {
 } from "@/app/actions/tasks";
 import { getUserIdOrNull } from "@/lib/auth/user";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
-import { listTasks } from "@/lib/tasks/store";
+import { countTasks, getFocusTask, listInboxTasks } from "@/lib/tasks/store";
 
 export default async function InboxPage(props: { searchParams?: Promise<Record<string, string | string[]>> }) {
   const locale = await getLocale();
@@ -21,7 +21,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
   const userId = await getUserIdOrNull();
   if (!userId) redirect("/login");
 
-  const tasks = await listTasks(userId);
+  const totalCount = await countTasks(userId);
   const demoEnabled = process.env.DEMO_TOOLS === "1";
   const searchParams = (await props.searchParams) ?? {};
   const qRaw = searchParams.q;
@@ -47,28 +47,10 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
               ? t("toast.focusFailed")
               : "";
 
-  const normalizedQuery = q.toLowerCase();
-  const filteredTasks = tasks.filter((task) => {
-    if (statusFilter !== "all" && task.status !== statusFilter) return false;
-    if (normalizedQuery && !task.title.toLowerCase().includes(normalizedQuery)) return false;
-    return true;
-  });
-  const visibleTasks = [...filteredTasks].sort((a, b) => {
-    if (sortKey === "createdDesc") return b.createdAt.getTime() - a.createdAt.getTime();
-    if (sortKey === "completedDesc") {
-      const at = (a.completedAt ?? new Date(0)).getTime();
-      const bt = (b.completedAt ?? new Date(0)).getTime();
-      return bt - at;
-    }
-    // todoFirst (default): todo above done, then by createdAt desc
-    if (a.status !== b.status) return a.status === "todo" ? -1 : 1;
-    return b.createdAt.getTime() - a.createdAt.getTime();
-  });
-
-  const focusTask =
-    tasks
-      .filter((t) => t.status === "todo" && t.focusAt)
-      .sort((a, b) => (b.focusAt ?? b.createdAt).getTime() - (a.focusAt ?? a.createdAt).getTime())[0] ?? null;
+  const [visibleTasks, focusTask] = await Promise.all([
+    listInboxTasks(userId, { q, status: statusFilter, sort: sortKey }),
+    getFocusTask(userId)
+  ]);
 
   const selfUrl = inboxUrl({ q: q || undefined, status: statusFilter, sort: sortKey });
 
@@ -242,7 +224,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
       <section className="rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
         <h2 className="text-sm font-medium">{t("inbox.tasks.title")}</h2>
 
-        {tasks.length === 0 ? (
+        {totalCount === 0 ? (
           <div className="mt-2 space-y-3">
             <p className="text-sm text-neutral-700">{t("inbox.tasks.empty")}</p>
             <p className="text-sm text-neutral-700">{t("inbox.empty.help")}</p>

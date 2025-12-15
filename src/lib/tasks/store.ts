@@ -11,6 +11,56 @@ export async function listTasks(userId: string): Promise<Task[]> {
   });
 }
 
+export async function countTasks(userId: string): Promise<number> {
+  return prisma.task.count({ where: { userId } });
+}
+
+export async function getFocusTask(userId: string): Promise<Task | null> {
+  return prisma.task.findFirst({
+    where: { userId, status: "todo", focusAt: { not: null } },
+    orderBy: [{ focusAt: "desc" }, { createdAt: "desc" }]
+  });
+}
+
+export async function listInboxTasks(
+  userId: string,
+  input: {
+    q: string;
+    status: "all" | "todo" | "done";
+    sort: "todoFirst" | "createdDesc" | "completedDesc";
+  }
+): Promise<Task[]> {
+  const q = (input.q ?? "").trim();
+  const status = input.status;
+  const sort = input.sort;
+
+  const where: Parameters<typeof prisma.task.findMany>[0]["where"] = {
+    userId,
+    ...(q ? { title: { contains: q, mode: "insensitive" } } : {}),
+    ...(status === "all" ? {} : { status })
+  };
+
+  if (sort === "createdDesc") {
+    return prisma.task.findMany({ where, orderBy: { createdAt: "desc" } });
+  }
+  if (sort === "completedDesc") {
+    // Note: tasks without completedAt will appear last in Postgres when ordering desc.
+    return prisma.task.findMany({ where, orderBy: [{ completedAt: "desc" }, { createdAt: "desc" }] });
+  }
+
+  // todoFirst: keep the UX expectation (todo above done). Prisma can't express custom enum ordering reliably,
+  // so we query in two parts when status=all.
+  if (status !== "all") {
+    return prisma.task.findMany({ where, orderBy: { createdAt: "desc" } });
+  }
+
+  const [todo, done] = await Promise.all([
+    prisma.task.findMany({ where: { ...where, status: "todo" }, orderBy: { createdAt: "desc" } }),
+    prisma.task.findMany({ where: { ...where, status: "done" }, orderBy: { createdAt: "desc" } })
+  ]);
+  return [...todo, ...done];
+}
+
 export async function createTask(input: {
   userId: string;
   title: string;

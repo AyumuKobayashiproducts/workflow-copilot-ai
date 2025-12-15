@@ -21,6 +21,22 @@ A small but production-minded Next.js app for an end-to-end personal workflow:
 - **Slack sharing**: Block Kit formatting, clear error reasons, double-submit prevention
 - **Production ergonomics**: Sentry integration + integration status on Settings + E2E coverage
 
+## Differentiators (why it’s “production-minded”)
+
+- **Actionable weekly review**: pick exactly **one Next step** (stored as `Task.focusAt`) and surface it everywhere.
+- **Guardrails over “magic”**: validation, deterministic fallbacks, daily AI quota, and explicit error reasons.
+- **Operational defaults**: Prisma migrations committed + CI runs DB migrate + Playwright.
+- **Observability hooks**: server-side errors are captured with Sentry (configurable).
+- **i18n discipline without a library**: missing keys throw and CI enforces key parity.
+
+## Tech stack
+
+- Next.js (App Router) + React
+- Auth.js / NextAuth v5 (JWT session strategy + Edge middleware)
+- Prisma + Postgres
+- Playwright (E2E) + GitHub Actions
+- Sentry (optional)
+
 ## Live demo
 
 - App: `https://workflow-copilot-ai.vercel.app`
@@ -54,6 +70,12 @@ Start from `/` (Home) and follow the guided flow:
 
 Weekly reviews become actionable by selecting exactly **one** top-priority task as the **Next step**.
 This is stored as `Task.focusAt` and surfaced in both `/weekly` and `/inbox`.
+
+## Tradeoffs (intentional scope)
+
+- **Simple task model**: minimal fields (title/status/source/focusAt) to keep the workflow tight.
+- **Server Actions first**: no complex client state/optimistic updates; correctness and observability take priority.
+- **Local dev requires DB**: E2E and persistence assume Postgres is available (CI uses a Postgres service).
 
 ## Architecture notes (what I’m intentionally showing)
 
