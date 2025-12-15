@@ -196,9 +196,24 @@ CI runs Playwright with a Postgres service. For local E2E you need:
 - A running Postgres and valid `DATABASE_URL` / `PRISMA_DATABASE_URL` in `.env.local`
 - Browsers installed: `npx playwright install --with-deps chromium`
 
+Local quickstart:
+
+```bash
+# 1) DB ready
+npm run db:generate
+npm run db:migrate
+
+# 2) Install browser once
+npx playwright install --with-deps chromium
+
+# 3) Run E2E
+npm run test:e2e
+```
+
 Notes:
 
 - Playwright starts the dev server with `AUTH_BYPASS=1` by default (set `AUTH_BYPASS=0` to test real OAuth).
+- Playwright enables `DEMO_TOOLS=1` by default in E2E to test admin-only flows (do not use in prod).
 - If you already have `npm run dev` running, Playwright will **reuse the existing server by default** to avoid port conflicts.
   - Set `E2E_REUSE_SERVER=0` if you want Playwright to always start a fresh server.
 - You can change the dev server port for E2E with `E2E_PORT` (default: `3000`).

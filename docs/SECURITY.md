@@ -36,6 +36,31 @@ See also: `docs/RUNBOOK.md` for a deploy checklist and incident response steps.
 - The app stores `WorkspaceInvite.tokenHash` (SHA-256) and compares by hashing the URL token at accept time.
 - The raw invite link is intentionally shown **only once** right after creation (to reduce accidental leakage).
 
+## RBAC policy (workspace roles)
+
+This app uses workspace roles (`owner` / `member`) and enforces permissions in server-side actions.
+
+| Action | Owner | Member |
+| --- | --- | --- |
+| Create / revoke invite links | ✅ | ❌ |
+| Change member roles | ✅ (cannot change own role) | ❌ |
+| Assign tasks | ✅ | ❌ |
+| Toggle task done | ✅ | ✅ (only if assignee) |
+| Edit task title | ✅ | ✅ (only if creator or assignee) |
+| Delete task | ✅ | ✅ (only if creator) |
+| Demo tools | ✅ | ❌ |
+
+## Audit logging
+
+Security-relevant actions (including `forbidden`) are recorded in `TaskActivity` for the active workspace.
+
+Events (`TaskActivityKind`) currently include:
+
+- Task events: `created`, `title_updated`, `status_toggled`, `assigned`, `focus_set`, `focus_cleared`, `deleted`, `comment`
+- Access control: `forbidden`
+- Workspace events: `workspace_invite_created`, `workspace_invite_revoked`, `workspace_member_role_updated`
+- Invite lifecycle: `workspace_invite_accepted`, `workspace_member_joined`, `workspace_invite_used`, `workspace_invite_used_up`
+
 ## What’s intentionally out of scope (portfolio tradeoffs)
 
 - Rate limiting and abuse protection for public endpoints

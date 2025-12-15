@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { headers } from "next/headers";
+import type { TaskActivityKind } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import { clearMyDemoDataAction } from "@/app/actions/demo";
@@ -41,6 +42,29 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
   const workspaceStatus = (Array.isArray(workspaceRaw) ? workspaceRaw[0] : workspaceRaw) ?? "";
   const memberRaw = searchParams.member;
   const memberStatus = (Array.isArray(memberRaw) ? memberRaw[0] : memberRaw) ?? "";
+  const activityKindRaw = searchParams.activityKind;
+  const activityKindValue = (Array.isArray(activityKindRaw) ? activityKindRaw[0] : activityKindRaw) ?? "";
+  const allowedActivityKinds: TaskActivityKind[] = [
+    "comment",
+    "created",
+    "title_updated",
+    "status_toggled",
+    "assigned",
+    "focus_set",
+    "focus_cleared",
+    "deleted",
+    "forbidden",
+    "workspace_invite_created",
+    "workspace_invite_revoked",
+    "workspace_member_role_updated",
+    "workspace_invite_accepted",
+    "workspace_member_joined",
+    "workspace_invite_used",
+    "workspace_invite_used_up"
+  ];
+  const activityKind: "all" | TaskActivityKind = allowedActivityKinds.includes(activityKindValue as TaskActivityKind)
+    ? (activityKindValue as TaskActivityKind)
+    : "all";
 
   const myMemberships = await prisma.workspaceMembership.findMany({
     where: { userId: ctx.userId },
@@ -75,7 +99,11 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
   const origin = process.env.AUTH_URL ?? (host ? `${proto}://${host}` : "http://localhost:3000");
   const newInviteToken = cookies().get("new_invite_token")?.value ?? "";
 
-  const recentActivity = await listWorkspaceActivities({ workspaceId: ctx.workspaceId, take: 20 });
+  const recentActivity = await listWorkspaceActivities({
+    workspaceId: ctx.workspaceId,
+    take: 20,
+    kind: activityKind === "all" ? undefined : activityKind
+  });
 
   return (
     <div className="space-y-6">
@@ -295,6 +323,39 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
 
       <section className="space-y-3 rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
         <h2 className="text-sm font-medium">{t("settings.activity.title")}</h2>
+        <form action="/settings" method="get" className="flex flex-wrap items-center gap-2">
+          {demo ? <input type="hidden" name="demo" value={demo} /> : null}
+          {inviteStatus ? <input type="hidden" name="invite" value={inviteStatus} /> : null}
+          {workspaceStatus ? <input type="hidden" name="workspace" value={workspaceStatus} /> : null}
+          {memberStatus ? <input type="hidden" name="member" value={memberStatus} /> : null}
+          <div className="text-xs font-medium text-neutral-700">{t("settings.activity.filter.label")}</div>
+          <select
+            name="activityKind"
+            defaultValue={activityKind}
+            className="h-9 rounded-md border border-neutral-300 bg-white px-2 text-sm"
+          >
+            <option value="all">{t("settings.activity.filter.all")}</option>
+            <option value="forbidden">{t("task.activity.kind.forbidden")}</option>
+            <option value="workspace_invite_created">{t("task.activity.kind.workspaceInviteCreated")}</option>
+            <option value="workspace_invite_revoked">{t("task.activity.kind.workspaceInviteRevoked")}</option>
+            <option value="workspace_invite_accepted">{t("task.activity.kind.workspaceInviteAccepted")}</option>
+            <option value="workspace_invite_used">{t("task.activity.kind.workspaceInviteUsed")}</option>
+            <option value="workspace_invite_used_up">{t("task.activity.kind.workspaceInviteUsedUp")}</option>
+            <option value="workspace_member_joined">{t("task.activity.kind.workspaceMemberJoined")}</option>
+            <option value="workspace_member_role_updated">{t("task.activity.kind.workspaceMemberRoleUpdated")}</option>
+            <option value="created">{t("task.activity.kind.created")}</option>
+            <option value="title_updated">{t("task.activity.kind.titleUpdated")}</option>
+            <option value="status_toggled">{t("task.activity.kind.statusToggled")}</option>
+            <option value="assigned">{t("task.activity.kind.assigned")}</option>
+            <option value="focus_set">{t("task.activity.kind.focusSet")}</option>
+            <option value="focus_cleared">{t("task.activity.kind.focusCleared")}</option>
+            <option value="deleted">{t("task.activity.kind.deleted")}</option>
+            <option value="comment">{t("task.activity.kind.comment")}</option>
+          </select>
+          <Button type="submit" size="sm" variant="secondary">
+            {t("common.filter")}
+          </Button>
+        </form>
         {recentActivity.length === 0 ? (
           <p className="text-sm text-neutral-700">{t("settings.activity.empty")}</p>
         ) : (
@@ -319,22 +380,22 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                     return t("task.activity.kind.focusCleared");
                   case "deleted":
                     return t("task.activity.kind.deleted");
-                          case "forbidden":
-                            return t("task.activity.kind.forbidden");
-                          case "workspace_invite_created":
-                            return t("task.activity.kind.workspaceInviteCreated");
-                          case "workspace_invite_revoked":
-                            return t("task.activity.kind.workspaceInviteRevoked");
-                          case "workspace_member_role_updated":
-                            return t("task.activity.kind.workspaceMemberRoleUpdated");
-                          case "workspace_invite_accepted":
-                            return t("task.activity.kind.workspaceInviteAccepted");
-                          case "workspace_member_joined":
-                            return t("task.activity.kind.workspaceMemberJoined");
-                          case "workspace_invite_used":
-                            return t("task.activity.kind.workspaceInviteUsed");
-                          case "workspace_invite_used_up":
-                            return t("task.activity.kind.workspaceInviteUsedUp");
+                  case "forbidden":
+                    return t("task.activity.kind.forbidden");
+                  case "workspace_invite_created":
+                    return t("task.activity.kind.workspaceInviteCreated");
+                  case "workspace_invite_revoked":
+                    return t("task.activity.kind.workspaceInviteRevoked");
+                  case "workspace_member_role_updated":
+                    return t("task.activity.kind.workspaceMemberRoleUpdated");
+                  case "workspace_invite_accepted":
+                    return t("task.activity.kind.workspaceInviteAccepted");
+                  case "workspace_member_joined":
+                    return t("task.activity.kind.workspaceMemberJoined");
+                  case "workspace_invite_used":
+                    return t("task.activity.kind.workspaceInviteUsed");
+                  case "workspace_invite_used_up":
+                    return t("task.activity.kind.workspaceInviteUsedUp");
                   default:
                     return kind;
                 }
@@ -345,18 +406,18 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                     <div className="text-xs font-medium text-neutral-700">{kindLabel(a.kind)}</div>
                     <div className="text-xs text-neutral-500">{a.createdAt.toLocaleString(locale)}</div>
                   </div>
-                          <div className="text-sm text-neutral-900">
-                            <span className="font-medium">{actor}</span>
-                            {a.task ? (
-                              <>
-                                <span className="text-neutral-700"> · </span>
-                                <Link className="text-neutral-900 underline underline-offset-4" href={`/tasks/${a.task.id}`}>
-                                  {a.task.title}
-                                </Link>
-                              </>
-                            ) : null}
-                            {a.message ? <span className="text-neutral-700"> — {a.message}</span> : null}
-                          </div>
+                  <div className="text-sm text-neutral-900">
+                    <span className="font-medium">{actor}</span>
+                    {a.task ? (
+                      <>
+                        <span className="text-neutral-700"> · </span>
+                        <Link className="text-neutral-900 underline underline-offset-4" href={`/tasks/${a.task.id}`}>
+                          {a.task.title}
+                        </Link>
+                      </>
+                    ) : null}
+                    {a.message ? <span className="text-neutral-700"> — {a.message}</span> : null}
+                  </div>
                 </li>
               );
             })}

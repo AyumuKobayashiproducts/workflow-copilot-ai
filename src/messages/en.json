@@ -312,6 +312,8 @@
 
   "settings.activity.title": "Recent activity",
   "settings.activity.empty": "No activity yet.",
+  "settings.activity.filter.label": "Filter",
+  "settings.activity.filter.all": "All",
 
   "settings.permissions.title": "Permissions",
   "settings.permissions.subtitle": "Role-based access control (RBAC) rules enforced by server actions.",

@@ -312,6 +312,8 @@
 
   "settings.activity.title": "最近の履歴（Activity）",
   "settings.activity.empty": "まだ履歴はありません。",
+  "settings.activity.filter.label": "絞り込み",
+  "settings.activity.filter.all": "すべて",
 
   "settings.permissions.title": "権限（Permissions）",
   "settings.permissions.subtitle": "ロールベースの権限制御（RBAC）はサーバー側で強制しています。",
