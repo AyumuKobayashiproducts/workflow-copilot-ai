@@ -1,11 +1,13 @@
 import { defineConfig } from "@playwright/test";
 
-const port = Number(process.env.E2E_PORT ?? 3000);
+// Use a separate port by default to avoid clashing with an existing local dev server.
+const port = Number(process.env.SCREENSHOTS_PORT ?? process.env.E2E_PORT ?? 3001);
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${port}`;
 
 export default defineConfig({
   testDir: "tests/screenshots",
   fullyParallel: false,
+  reporter: "line",
   retries: 0,
   use: {
     baseURL,
@@ -16,7 +18,9 @@ export default defineConfig({
     : {
         command: `npm run dev -- --port ${port}`,
         url: baseURL,
-        reuseExistingServer: process.env.E2E_REUSE_SERVER !== "0",
+        // Screenshots should be deterministic (DEMO_TOOLS/locale/auth env must apply),
+        // so default to a fresh server.
+        reuseExistingServer: process.env.E2E_REUSE_SERVER === "1",
         timeout: 120_000,
         env: {
           ...process.env,

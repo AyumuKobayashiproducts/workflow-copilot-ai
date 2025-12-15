@@ -21,9 +21,13 @@ test("capture english screenshots (home/inbox/weekly)", async ({ page, baseURL }
   ]);
 
   // Reset DB state (AUTH_BYPASS=1 + E2E reset endpoint).
-  await page.request.post("/api/e2e/reset", {
+  const reset = await page.request.post("/api/e2e/reset", {
     headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
   });
+  if (!reset.ok()) {
+    const body = await reset.text().catch(() => "");
+    throw new Error(`E2E reset failed: ${reset.status()} ${body.slice(0, 500)}`);
+  }
 
   // Seed demo data (gives "next step" + weekly data).
   await page.goto("/");
