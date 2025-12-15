@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { TaskTitleInlineEdit } from "@/components/task-title-inline-edit";
+import { ToastUrlCleaner } from "@/components/toast-url-cleaner";
 import { seedMyDemoDataAction } from "@/app/actions/demo";
 import {
   clearFocusTaskAction,
@@ -98,6 +99,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
       {toastMessage ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {toastMessage}
+          <ToastUrlCleaner />
         </section>
       ) : null}
 

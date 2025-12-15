@@ -51,11 +51,17 @@ export async function listInboxTasks(
   // todoFirst: keep the UX expectation (todo above done). Prisma can't express custom enum ordering reliably,
   // so we query in two parts when status=all.
   if (status !== "all") {
+    if (status === "todo") {
+      return prisma.task.findMany({ where, orderBy: [{ focusAt: "desc" }, { createdAt: "desc" }] });
+    }
     return prisma.task.findMany({ where, orderBy: { createdAt: "desc" } });
   }
 
   const [todo, done] = await Promise.all([
-    prisma.task.findMany({ where: { ...where, status: "todo" }, orderBy: { createdAt: "desc" } }),
+    prisma.task.findMany({
+      where: { ...where, status: "todo" },
+      orderBy: [{ focusAt: "desc" }, { createdAt: "desc" }]
+    }),
     prisma.task.findMany({ where: { ...where, status: "done" }, orderBy: { createdAt: "desc" } })
   ]);
   return [...todo, ...done];

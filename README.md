@@ -112,9 +112,23 @@ Optional:
 
 - **AUTH_BYPASS**: This app supports `AUTH_BYPASS=1` to bypass OAuth for E2E tests.
   - Never enable in production.
+- **DEMO_TOOLS**: `DEMO_TOOLS=1` enables “Prepare demo data” buttons.
+  - Never enable in production.
 - **Sentry**: Set `SENTRY_DSN` (and optionally `SENTRY_TRACES_SAMPLE_RATE`) in Vercel to capture errors.
 - **Slack**: Set `SLACK_WEBHOOK_URL` to enable Slack posting.
 - **OpenAI**: Set `OPENAI_API_KEY` to enable AI generation in Breakdown/Weekly. Keep `AI_DAILY_LIMIT` conservative.
+
+## Production deploy checklist
+
+1. Run `npm run preflight:prod` (fails if required env vars are missing or forbidden flags are enabled)
+2. Confirm Vercel env vars:
+   - Required: `DATABASE_URL`, `PRISMA_DATABASE_URL`, `AUTH_URL`, `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
+   - Optional: `SENTRY_DSN`, `SLACK_WEBHOOK_URL`, `OPENAI_API_KEY`
+3. Verify migration deploy runs (Vercel build uses `npm run vercel-build`)
+4. Smoke test:
+   - `/` loads
+   - `/inbox` can add/edit tasks
+   - `/weekly` can set Next step and save notes/report
 
 ## Local development
 

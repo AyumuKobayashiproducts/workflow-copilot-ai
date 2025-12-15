@@ -16,6 +16,7 @@ import { saveWeeklyNoteAction } from "@/app/actions/weekly";
 import { WeeklyShare } from "@/components/weekly-share";
 import { WeeklyDoneScopeToggle } from "@/components/weekly-done-scope-toggle";
 import { TaskTitleInlineEdit } from "@/components/task-title-inline-edit";
+import { ToastUrlCleaner } from "@/components/toast-url-cleaner";
 
 export default async function WeeklyPage(props: { searchParams?: Promise<Record<string, string | string[]>> }) {
   const locale = await getLocale();
@@ -236,6 +237,7 @@ export default async function WeeklyPage(props: { searchParams?: Promise<Record<
       {toastMessage ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {toastMessage}
+          <ToastUrlCleaner />
         </section>
       ) : null}
 
