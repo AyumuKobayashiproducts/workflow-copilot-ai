@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
@@ -22,6 +22,7 @@ export function WeeklyDoneScopeToggle(props: {
   labelWeekOnly: string;
   labelAll: string;
 }) {
+  const router = useRouter();
   const sp = useSearchParams();
   const doneScopeParam = normalizeScope(sp.get("doneScope"));
 
@@ -38,12 +39,12 @@ export function WeeklyDoneScopeToggle(props: {
       const qs = next.toString();
       const url = qs ? `/weekly?${qs}` : "/weekly";
 
-      // Use history.replaceState to avoid navigation flicker and keep it lightweight.
-      window.history.replaceState(null, "", url);
+      // Use router.replace so the server component re-renders with the applied preference.
+      router.replace(url);
     } catch {
       // ignore
     }
-  }, [doneScopeParam, props.weekStartIso, sp]);
+  }, [doneScopeParam, props.weekStartIso, router, sp]);
 
   function buildHref(scope: DoneScope) {
     const next = new URLSearchParams(sp.toString());

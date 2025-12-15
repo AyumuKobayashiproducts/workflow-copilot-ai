@@ -18,11 +18,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
-  // Reset all user-scoped data used by E2E flows.
-  await prisma.task.deleteMany({ where: { userId: TEST_USER_ID } });
-  await prisma.weeklyNote.deleteMany({ where: { userId: TEST_USER_ID } });
-  await prisma.weeklyReport.deleteMany({ where: { userId: TEST_USER_ID } });
-  await prisma.aiUsage.deleteMany({ where: { userId: TEST_USER_ID } });
+  try {
+    // Reset all user-scoped data used by E2E flows.
+    await prisma.task.deleteMany({ where: { userId: TEST_USER_ID } });
+    await prisma.weeklyNote.deleteMany({ where: { userId: TEST_USER_ID } });
+    await prisma.weeklyReport.deleteMany({ where: { userId: TEST_USER_ID } });
+    await prisma.aiUsage.deleteMany({ where: { userId: TEST_USER_ID } });
+  } catch {
+    // When DATABASE_URL isn't configured, Prisma throws before any test can run.
+    // Return a clear JSON error to make local debugging easier.
+    const dbConfigured = Boolean(process.env.DATABASE_URL);
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "db_not_configured",
+        message: dbConfigured ? "Database error (see server logs)" : "DATABASE_URL is not set",
+        hint: "Configure DATABASE_URL / PRISMA_DATABASE_URL in .env.local and restart the dev server."
+      },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

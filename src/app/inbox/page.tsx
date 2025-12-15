@@ -21,12 +21,26 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
   const statusRaw = searchParams.status;
   const status = (Array.isArray(statusRaw) ? statusRaw[0] : statusRaw) ?? "all";
   const statusFilter = status === "todo" || status === "done" ? status : "all";
+  const sortRaw = searchParams.sort;
+  const sort = (Array.isArray(sortRaw) ? sortRaw[0] : sortRaw) ?? "todoFirst";
+  const sortKey = sort === "createdDesc" || sort === "completedDesc" || sort === "todoFirst" ? sort : "todoFirst";
 
   const normalizedQuery = q.toLowerCase();
   const filteredTasks = tasks.filter((task) => {
     if (statusFilter !== "all" && task.status !== statusFilter) return false;
     if (normalizedQuery && !task.title.toLowerCase().includes(normalizedQuery)) return false;
     return true;
+  });
+  const visibleTasks = [...filteredTasks].sort((a, b) => {
+    if (sortKey === "createdDesc") return b.createdAt.getTime() - a.createdAt.getTime();
+    if (sortKey === "completedDesc") {
+      const at = (a.completedAt ?? new Date(0)).getTime();
+      const bt = (b.completedAt ?? new Date(0)).getTime();
+      return bt - at;
+    }
+    // todoFirst (default): todo above done, then by createdAt desc
+    if (a.status !== b.status) return a.status === "todo" ? -1 : 1;
+    return b.createdAt.getTime() - a.createdAt.getTime();
   });
 
   function inboxUrl(params: Record<string, string | undefined>) {
@@ -83,6 +97,7 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
                 className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
               />
               <input type="hidden" name="status" value={statusFilter} />
+              <input type="hidden" name="sort" value={sortKey} />
               <Button type="submit" variant="secondary" className="shrink-0" data-testid="inbox-search-submit">
                 {t("common.search")}
               </Button>
@@ -92,20 +107,58 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
           <div className="flex flex-wrap items-center gap-2">
             <div className="text-sm font-medium text-neutral-900">{t("common.filter")}</div>
             <Button asChild size="sm" variant={statusFilter === "all" ? "default" : "secondary"}>
-              <Link href={inboxUrl({ q: q || undefined, status: "all" })} data-testid="inbox-filter-all">
+              <Link
+                href={inboxUrl({ q: q || undefined, status: "all", sort: sortKey })}
+                data-testid="inbox-filter-all"
+              >
                 {t("inbox.filter.all")}
               </Link>
             </Button>
             <Button asChild size="sm" variant={statusFilter === "todo" ? "default" : "secondary"}>
-              <Link href={inboxUrl({ q: q || undefined, status: "todo" })} data-testid="inbox-filter-todo">
+              <Link
+                href={inboxUrl({ q: q || undefined, status: "todo", sort: sortKey })}
+                data-testid="inbox-filter-todo"
+              >
                 {t("inbox.filter.todo")}
               </Link>
             </Button>
             <Button asChild size="sm" variant={statusFilter === "done" ? "default" : "secondary"}>
-              <Link href={inboxUrl({ q: q || undefined, status: "done" })} data-testid="inbox-filter-done">
+              <Link
+                href={inboxUrl({ q: q || undefined, status: "done", sort: sortKey })}
+                data-testid="inbox-filter-done"
+              >
                 {t("inbox.filter.done")}
               </Link>
             </Button>
+
+            <div className="mx-1 h-5 w-px bg-neutral-200" aria-hidden="true" />
+
+            <div className="text-sm font-medium text-neutral-900">{t("inbox.sort.label")}</div>
+            <Button asChild size="sm" variant={sortKey === "todoFirst" ? "default" : "secondary"}>
+              <Link
+                href={inboxUrl({ q: q || undefined, status: statusFilter, sort: "todoFirst" })}
+                data-testid="inbox-sort-todo-first"
+              >
+                {t("inbox.sort.todoFirst")}
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant={sortKey === "createdDesc" ? "default" : "secondary"}>
+              <Link
+                href={inboxUrl({ q: q || undefined, status: statusFilter, sort: "createdDesc" })}
+                data-testid="inbox-sort-created-desc"
+              >
+                {t("inbox.sort.createdDesc")}
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant={sortKey === "completedDesc" ? "default" : "secondary"}>
+              <Link
+                href={inboxUrl({ q: q || undefined, status: statusFilter, sort: "completedDesc" })}
+                data-testid="inbox-sort-completed-desc"
+              >
+                {t("inbox.sort.completedDesc")}
+              </Link>
+            </Button>
+
             {(q || statusFilter !== "all") && (
               <Button asChild size="sm" variant="secondary">
                 <Link href="/inbox" data-testid="inbox-filter-clear">
@@ -147,13 +200,13 @@ export default async function InboxPage(props: { searchParams?: Promise<Record<s
               </Button>
             </div>
           </div>
-        ) : filteredTasks.length === 0 ? (
+        ) : visibleTasks.length === 0 ? (
           <div className="mt-3 space-y-2">
             <p className="text-sm text-neutral-700">{t("inbox.tasks.noResults")}</p>
           </div>
         ) : (
           <ul className="mt-3 space-y-2">
-            {filteredTasks.map((task) => {
+            {visibleTasks.map((task) => {
               const done = task.status === "done";
               const statusLabel = done ? t("inbox.filter.done") : t("inbox.filter.todo");
               return (

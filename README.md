@@ -119,6 +119,9 @@ CI runs Playwright with a Postgres service. For local E2E you need:
 Notes:
 
 - Playwright starts the dev server with `AUTH_BYPASS=1` by default (set `AUTH_BYPASS=0` to test real OAuth).
+- If you already have `npm run dev` running, Playwright will **reuse the existing server by default** to avoid port conflicts.
+  - Set `E2E_REUSE_SERVER=0` if you want Playwright to always start a fresh server.
+- You can change the dev server port for E2E with `E2E_PORT` (default: `3000`).
 - E2E tests reset the DB state via `POST /api/e2e/reset` (enabled only when `AUTH_BYPASS=1`).
   - Protect it with `E2E_TOKEN` (default: `e2e`).
 
