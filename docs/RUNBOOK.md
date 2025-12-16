@@ -63,6 +63,26 @@ GitHub Actions runs, in order:
 - `npm run build`
 - Playwright install + `npm run test:e2e` (with Postgres service)
 
+## Local dev & E2E (quickstart)
+
+This repo includes `docker-compose.yml` so you can start a local Postgres quickly (requires Docker).
+
+1. Create `.env.local` based on `docs/env.example`.
+2. Start Postgres:
+   - `npm run db:up`
+3. Apply migrations:
+   - `npm run db:migrate`
+4. Run the app:
+   - `npm run dev`
+5. Run E2E:
+   - `npx playwright install --with-deps chromium` (once)
+   - `npm run test:e2e`
+
+Notes:
+
+- `npm run test:e2e` runs an E2E preflight and fails fast if `DATABASE_URL` / `PRISMA_DATABASE_URL` are missing.
+- When you’re done, you can wipe the local DB volume with `npm run db:down`.
+
 ## Monitoring & alerting
 
 ### Sentry (optional)
