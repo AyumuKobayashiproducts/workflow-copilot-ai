@@ -212,6 +212,7 @@ npm run test:e2e
 
 Notes:
 
+- `npm run test:e2e` runs an E2E preflight and will fail fast if `DATABASE_URL` / `PRISMA_DATABASE_URL` are missing.
 - Playwright starts the dev server with `AUTH_BYPASS=1` by default (set `AUTH_BYPASS=0` to test real OAuth).
 - Playwright enables `DEMO_TOOLS=1` by default in E2E to test admin-only flows (do not use in prod).
 - If you already have `npm run dev` running, Playwright will **reuse the existing server by default** to avoid port conflicts.
