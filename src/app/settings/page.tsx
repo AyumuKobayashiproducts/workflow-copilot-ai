@@ -62,9 +62,26 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
     "workspace_invite_used",
     "workspace_invite_used_up"
   ];
-  const activityKind: "all" | TaskActivityKind = allowedActivityKinds.includes(activityKindValue as TaskActivityKind)
-    ? (activityKindValue as TaskActivityKind)
-    : "all";
+  const activityKind: "all" | TaskActivityKind | "group_invites" | "group_tasks" | "group_workspace" =
+    activityKindValue === "group_invites" ||
+    activityKindValue === "group_tasks" ||
+    activityKindValue === "group_workspace"
+      ? activityKindValue
+      : allowedActivityKinds.includes(activityKindValue as TaskActivityKind)
+        ? (activityKindValue as TaskActivityKind)
+        : "all";
+
+  const groupKinds: Record<"group_invites" | "group_tasks" | "group_workspace", TaskActivityKind[]> = {
+    group_invites: [
+      "workspace_invite_created",
+      "workspace_invite_revoked",
+      "workspace_invite_accepted",
+      "workspace_invite_used",
+      "workspace_invite_used_up"
+    ],
+    group_tasks: ["comment", "created", "title_updated", "status_toggled", "assigned", "focus_set", "focus_cleared", "deleted"],
+    group_workspace: ["workspace_member_joined", "workspace_member_role_updated"]
+  };
 
   const myMemberships = await prisma.workspaceMembership.findMany({
     where: { userId: ctx.userId },
@@ -102,7 +119,8 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
   const recentActivity = await listWorkspaceActivities({
     workspaceId: ctx.workspaceId,
     take: 20,
-    kind: activityKind === "all" ? undefined : activityKind
+    kind: typeof activityKind === "string" && activityKind.startsWith("group_") ? undefined : activityKind === "all" ? undefined : activityKind,
+    kinds: typeof activityKind === "string" && activityKind.startsWith("group_") ? groupKinds[activityKind as keyof typeof groupKinds] : undefined
   });
 
   return (
@@ -335,6 +353,9 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
             className="h-9 rounded-md border border-neutral-300 bg-white px-2 text-sm"
           >
             <option value="all">{t("settings.activity.filter.all")}</option>
+            <option value="group_invites">{t("settings.activity.filter.groupInvites")}</option>
+            <option value="group_workspace">{t("settings.activity.filter.groupWorkspace")}</option>
+            <option value="group_tasks">{t("settings.activity.filter.groupTasks")}</option>
             <option value="forbidden">{t("task.activity.kind.forbidden")}</option>
             <option value="workspace_invite_created">{t("task.activity.kind.workspaceInviteCreated")}</option>
             <option value="workspace_invite_revoked">{t("task.activity.kind.workspaceInviteRevoked")}</option>

@@ -27,6 +27,7 @@ Workflow Copilot は **Inbox → Breakdown → Weekly → Next step（1つに絞
   - **監査ログ**: 成功イベントだけでなく `forbidden`（拒否）も記録。Settingsに履歴フィルタあり
   - 招待リンクはrole指定/期限/回数上限つきで、使用/上限到達もログに残る
   - **招待トークンは平文保存しない**（`tokenHash`=SHA-256）。リンクは作成直後に一度だけ表示
+  - **レース耐性**: 招待受諾はDB行ロック（`FOR UPDATE`）で `maxUses` 超過を防止
 
 ## 4) 意図的に未実装の範囲（トレードオフ）
 

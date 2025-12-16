@@ -16,10 +16,20 @@ export async function listTaskActivities(input: {
   });
 }
 
-export async function listWorkspaceActivities(input: { workspaceId: string; take?: number; kind?: TaskActivityKind }) {
+export async function listWorkspaceActivities(input: {
+  workspaceId: string;
+  take?: number;
+  kind?: TaskActivityKind;
+  kinds?: TaskActivityKind[];
+}) {
   const take = Math.max(1, Math.min(100, input.take ?? 20));
+  const where: Prisma.TaskActivityWhereInput = {
+    workspaceId: input.workspaceId,
+    ...(input.kind ? { kind: input.kind } : {}),
+    ...(input.kinds?.length ? { kind: { in: input.kinds } } : {})
+  };
   return prisma.taskActivity.findMany({
-    where: { workspaceId: input.workspaceId, ...(input.kind ? { kind: input.kind } : {}) },
+    where,
     orderBy: { createdAt: "desc" },
     take,
     include: {

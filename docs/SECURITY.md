@@ -35,6 +35,7 @@ See also: `docs/RUNBOOK.md` for a deploy checklist and incident response steps.
 - Workspace invites do **not** store raw tokens in the database.
 - The app stores `WorkspaceInvite.tokenHash` (SHA-256) and compares by hashing the URL token at accept time.
 - The raw invite link is intentionally shown **only once** right after creation (to reduce accidental leakage).
+- Invite accept uses a DB row lock (`FOR UPDATE`) to avoid race conditions around `maxUses` / `usedCount`.
 
 ## RBAC policy (workspace roles)
 

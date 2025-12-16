@@ -27,6 +27,7 @@ Workflow Copilot tightens the loop: **Inbox → Breakdown → Weekly review → 
   - **Audit log** records both successful events and `forbidden` attempts; Settings has an activity filter
   - Invite links support role selection + expiry + max uses, with usage events logged
 - **Security-minded invites**: invite tokens are stored as **SHA-256 hashes** (`tokenHash`), not raw tokens; the raw link is shown only once after creation.
+- **Race-aware design**: invite acceptance uses a DB row lock (`FOR UPDATE`) so `maxUses` cannot be exceeded under concurrency.
 
 ## 4) What’s intentionally scoped (tradeoffs)
 

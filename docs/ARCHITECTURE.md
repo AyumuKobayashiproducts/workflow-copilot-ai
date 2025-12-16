@@ -42,5 +42,6 @@ Weekly page selects exactly one task → sets `Task.focusAt` → Inbox surfaces 
 
 - Invites are stored as `WorkspaceInvite.tokenHash` (SHA-256), not raw tokens.
 - Accept flow: `/invite/[token]` → hash token → lookup by `tokenHash` → create membership → audit events.
+- Race safety: invite acceptance locks the invite row (`FOR UPDATE`) so `maxUses` cannot be exceeded under concurrency.
 
 
