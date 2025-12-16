@@ -112,11 +112,18 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
     }
   });
 
+  const lastActive = await prisma.taskActivity.groupBy({
+    by: ["actorUserId"],
+    where: { workspaceId: ctx.workspaceId },
+    _max: { createdAt: true }
+  });
+  const lastActiveByUserId = new Map(lastActive.map((r) => [r.actorUserId, r._max.createdAt ?? null]));
+
   const invites = await prisma.workspaceInvite.findMany({
-    where: { workspaceId: ctx.workspaceId, revokedAt: null },
+    where: { workspaceId: ctx.workspaceId },
     orderBy: { createdAt: "desc" },
-    take: 3,
-    select: { id: true, expiresAt: true, usedCount: true, maxUses: true }
+    take: 10,
+    select: { id: true, role: true, createdAt: true, expiresAt: true, usedCount: true, maxUses: true, revokedAt: true }
   });
 
   const h = await headers();
@@ -292,9 +299,15 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
           <ul className="space-y-1 text-sm">
             {members.map((m) => (
               <li key={m.id} className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-neutral-900">
-                  {m.user.name || m.user.email || m.user.id}
-                </span>
+                <div className="min-w-0">
+                  <div className="text-neutral-900">{m.user.name || m.user.email || m.user.id}</div>
+                  <div className="text-xs text-neutral-600">
+                    {t("settings.workspace.members.lastActiveLabel")}:{" "}
+                    {lastActiveByUserId.get(m.user.id)
+                      ? lastActiveByUserId.get(m.user.id)!.toLocaleString(locale)
+                      : t("settings.workspace.members.lastActiveNever")}
+                  </div>
+                </div>
                 {ctx.role === "owner" && m.user.id !== ctx.userId ? (
                   <div className="flex flex-wrap items-center gap-2">
                     <form action={updateWorkspaceMemberRoleAction} className="flex items-center gap-2">
@@ -328,70 +341,94 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
           </ul>
         </div>
 
-        {ctx.role === "owner" ? (
-          <div className="space-y-2">
-            <div className="text-xs font-medium text-neutral-700">{t("settings.workspace.invite.title")}</div>
-            <form action={createWorkspaceInviteAction} className="flex flex-wrap items-center gap-2">
-              <input type="hidden" name="maxUses" value="5" />
-              <select
-                name="role"
-                defaultValue="member"
-                className="h-9 rounded-md border border-neutral-300 bg-white px-2 text-sm"
-              >
-                <option value="member">{t("settings.workspace.role.member")}</option>
-                <option value="owner">{t("settings.workspace.role.owner")}</option>
-              </select>
-              <Button type="submit" variant="secondary">
-                {t("settings.workspace.invite.create")}
-              </Button>
-            </form>
-            <p className="text-xs text-neutral-600">{t("settings.workspace.invite.oneTimeLinkNote")}</p>
+        <div className="space-y-2">
+          <div className="text-xs font-medium text-neutral-700">{t("settings.workspace.invite.title")}</div>
 
-            {newInviteToken ? (
-              <div className="space-y-2 rounded-md border border-neutral-200 bg-neutral-50 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="text-xs font-medium text-neutral-800">{t("settings.workspace.invite.newLinkTitle")}</div>
-                  <form action={clearNewInviteTokenAction}>
-                    <Button type="submit" size="sm" variant="secondary">
-                      {t("common.dismiss")}
-                    </Button>
-                  </form>
+          {ctx.role === "owner" ? (
+            <>
+              <form action={createWorkspaceInviteAction} className="flex flex-wrap items-center gap-2">
+                <input type="hidden" name="maxUses" value="5" />
+                <select
+                  name="role"
+                  defaultValue="member"
+                  className="h-9 rounded-md border border-neutral-300 bg-white px-2 text-sm"
+                >
+                  <option value="member">{t("settings.workspace.role.member")}</option>
+                  <option value="owner">{t("settings.workspace.role.owner")}</option>
+                </select>
+                <Button type="submit" variant="secondary">
+                  {t("settings.workspace.invite.create")}
+                </Button>
+              </form>
+              <p className="text-xs text-neutral-600">{t("settings.workspace.invite.oneTimeLinkNote")}</p>
+
+              {newInviteToken ? (
+                <div className="space-y-2 rounded-md border border-neutral-200 bg-neutral-50 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-xs font-medium text-neutral-800">{t("settings.workspace.invite.newLinkTitle")}</div>
+                    <form action={clearNewInviteTokenAction}>
+                      <Button type="submit" size="sm" variant="secondary">
+                        {t("common.dismiss")}
+                      </Button>
+                    </form>
+                  </div>
+                  <div className="break-all text-sm text-neutral-900">{`${origin}/invite/${newInviteToken}`}</div>
+                  <div className="text-xs text-neutral-600">{t("settings.workspace.invite.newLinkHint")}</div>
                 </div>
-                <div className="break-all text-sm text-neutral-900">{`${origin}/invite/${newInviteToken}`}</div>
-                <div className="text-xs text-neutral-600">{t("settings.workspace.invite.newLinkHint")}</div>
-              </div>
-            ) : null}
+              ) : null}
+            </>
+          ) : (
+            <p className="text-sm text-neutral-700">{t("settings.workspace.invite.ownerOnly")}</p>
+          )}
 
-            {invites.length > 0 ? (
-              <div className="space-y-2">
-                {invites.map((inv) => {
-                  return (
-                    <div key={inv.id} className="rounded-md border border-neutral-200 bg-neutral-50 p-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="text-xs text-neutral-700">
-                          {t("settings.workspace.invite.usage")}: {inv.usedCount}/{inv.maxUses}
-                        </div>
+          {invites.length > 0 ? (
+            <div className="space-y-2">
+              {invites.map((inv) => {
+                const now = Date.now();
+                const isRevoked = Boolean(inv.revokedAt);
+                const isExpired = Boolean(inv.expiresAt) && inv.expiresAt!.getTime() < now;
+                const isUsedUp = inv.usedCount >= inv.maxUses;
+                const status = isRevoked
+                  ? "revoked"
+                  : isUsedUp
+                    ? "used_up"
+                    : isExpired
+                      ? "expired"
+                      : "active";
+
+                return (
+                  <div key={inv.id} className="rounded-md border border-neutral-200 bg-neutral-50 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="text-xs text-neutral-700">
+                        {t("settings.workspace.invite.statusLabel")}: {t(`settings.workspace.invite.status.${status}`)}
+                        <span className="text-neutral-500"> · </span>
+                        {t("settings.workspace.invite.roleLabel")}:{" "}
+                        {inv.role === "owner" ? t("settings.workspace.role.owner") : t("settings.workspace.role.member")}
+                        <span className="text-neutral-500"> · </span>
+                        {t("settings.workspace.invite.usage")}: {inv.usedCount}/{inv.maxUses}
+                      </div>
+                      {ctx.role === "owner" && status === "active" ? (
                         <form action={revokeWorkspaceInviteAction}>
                           <input type="hidden" name="id" value={inv.id} />
                           <Button type="submit" size="sm" variant="secondary">
                             {t("settings.workspace.invite.revoke")}
                           </Button>
                         </form>
-                      </div>
-                      <div className="mt-1 text-xs text-neutral-500">
-                        {inv.expiresAt ? `${t("settings.workspace.invite.expiresAt")}: ${inv.expiresAt.toLocaleString(locale)}` : null}
-                      </div>
+                      ) : null}
                     </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-sm text-neutral-700">{t("settings.workspace.invite.none")}</p>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-neutral-700">{t("settings.workspace.invite.ownerOnly")}</p>
-        )}
+                    <div className="mt-1 text-xs text-neutral-500">
+                      {t("settings.workspace.invite.createdAtLabel")}: {inv.createdAt.toLocaleString(locale)}
+                      {inv.expiresAt ? ` · ${t("settings.workspace.invite.expiresAt")}: ${inv.expiresAt.toLocaleString(locale)}` : ""}
+                      {inv.revokedAt ? ` · ${t("settings.workspace.invite.revokedAtLabel")}: ${inv.revokedAt.toLocaleString(locale)}` : ""}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-neutral-700">{t("settings.workspace.invite.none")}</p>
+          )}
+        </div>
       </section>
 
       <section className="space-y-3 rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
