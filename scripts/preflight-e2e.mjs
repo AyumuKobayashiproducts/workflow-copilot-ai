@@ -14,6 +14,7 @@ if (missing.length) {
   console.error("");
   console.error("Fix:");
   console.error("- Start Postgres (local) or rely on CI Postgres service");
+  console.error("  - If you have Docker: `npm run db:up` (uses docker-compose.yml)");
   console.error("- Set DATABASE_URL and PRISMA_DATABASE_URL (see docs/env.example)");
   console.error("");
   console.error("Example (CI-like):");

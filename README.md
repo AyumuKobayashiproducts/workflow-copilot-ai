@@ -184,6 +184,7 @@ Create `.env.local` based on `docs/env.example`.
 ### 3) DB setup
 
 ```bash
+npm run db:up
 npm run db:generate
 npm run db:migrate
 ```
@@ -205,6 +206,7 @@ Local quickstart:
 
 ```bash
 # 1) DB ready
+npm run db:up
 npm run db:generate
 npm run db:migrate
 

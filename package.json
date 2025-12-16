@@ -13,6 +13,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down -v",
     "vercel-build": "node scripts/preflight-prod.mjs && prisma generate && prisma migrate deploy && next build",
     "test:e2e": "node scripts/preflight-e2e.mjs && env -u NO_COLOR playwright test",
     "screenshots": "playwright test --config playwright.screenshots.config.ts",

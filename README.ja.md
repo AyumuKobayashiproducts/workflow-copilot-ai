@@ -57,6 +57,8 @@ npm run build
 ## E2E（Playwright）
 
 - ローカル/CIのE2Eは **Postgresが必須**です（`DATABASE_URL` / `PRISMA_DATABASE_URL` が必要）。
+- ローカル用に `docker-compose.yml` を同梱しています（Dockerがある場合）:
+  - `npm run db:up` → `npm run db:migrate` → `npm run test:e2e` → `npm run db:down`
 - `npm run test:e2e` は実行前に **preflight** を走らせ、DBのenvが無い場合は分かりやすく即停止します（Prismaのスタックトレースで迷わないため）。
 
 詳細な手順は英語版READMEの「E2E (Playwright)」を参照してください。
