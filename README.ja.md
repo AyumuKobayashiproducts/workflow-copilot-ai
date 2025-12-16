@@ -26,6 +26,10 @@ Workflow Copilot は、**忙しい個人（IC）** と **小規模チーム**を
 - **フルスタック実装**: Next.js App Router + Server Actions、Auth、DB、E2E、i18n
 - **B2Bの土台**: ワークスペース（Membership）＋招待リンク（Invite）のプリミティブ
 - **運用のリアリティ**: Prisma migrations、CIでの migrate、Sentryフック、危険フラグの本番封じ（preflight）
+- **RBAC（サーバー強制）**: workspaceの `owner / member` をサーバー側で必ず検証（UIはゲートにしない）
+- **監査ログ（forbidden含む）**: 許可/拒否を含む操作ログをActivity Feedに記録
+- **招待リンクの安全設計**: 招待トークンはDBに平文で持たず、SHA-256ハッシュで保存（作成直後に一度だけ表示）
+- **E2Eで証明**: PlaywrightでRBACと監査ログをロール別に検証
 
 ## ドキュメント
 

@@ -41,7 +41,10 @@ The portfolio focus is to demonstrate **product thinking + full-stack execution 
 - **Operational defaults**: Prisma migrations committed + CI runs DB migrate + Playwright.
 - **Observability hooks**: server-side errors are captured with Sentry (configurable).
 - **i18n discipline without a library**: missing keys throw and CI enforces key parity.
+- **Server-enforced RBAC**: workspace roles (`owner` / `member`) are enforced in server actions (UI is not the gate).
+- **Audit trail (incl. forbidden)**: security-relevant actions are written to the workspace activity feed, including denied attempts.
 - **Security-minded invites**: workspace invite tokens are stored as **SHA-256 hashes** (no raw tokens in DB); the raw link is shown only once after creation.
+- **E2E proof**: Playwright tests cover RBAC enforcement + audit logging across roles (owner/member/outsider).
 
 ## Tech stack
 
@@ -90,6 +93,8 @@ This is stored as `Task.focusAt` and surfaced in both `/weekly` and `/inbox`.
 - **Simple task model**: minimal fields (title/status/source/focusAt) to keep the workflow tight.
 - **Server Actions first**: no complex client state/optimistic updates; correctness and observability take priority.
 - **Local dev requires DB**: E2E and persistence assume Postgres is available (CI uses a Postgres service).
+- **Coarse-grained roles**: only `owner` / `member` (no custom roles/permissions editor).
+- **Lightweight audit UX**: activity feed is intentionally simple (no export/retention controls or admin console).
 
 ## Architecture notes (what I’m intentionally showing)
 
