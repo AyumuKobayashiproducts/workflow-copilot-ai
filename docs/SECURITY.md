@@ -25,6 +25,11 @@ See also: `docs/RUNBOOK.md` for a deploy checklist and incident response steps.
 - It should only be enabled when explicitly running in E2E contexts (see route guard conditions).
 - It requires a token header (`x-e2e-token`) to reduce accidental abuse in development.
 
+## Error reporting (Sentry, optional)
+
+- Sentry is initialized via Next.js 15 instrumentation files (`src/instrumentation.ts` / `src/instrumentation-client.ts`).
+- A global error boundary (`src/app/global-error.tsx`) captures React render errors.
+
 ## Data protection
 
 - Data is stored in Postgres via Prisma.

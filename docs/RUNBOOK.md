@@ -58,6 +58,7 @@ If `SENTRY_DSN` is set:
 
 - Errors from server/edge should be captured.
 - (Optional) enable `SENTRY_TEST_ENABLED` in production to verify `/sentry-test` without re-deploying.
+- This repo uses **Next.js 15 instrumentation** (`src/instrumentation.ts` / `src/instrumentation-client.ts`) and a global error boundary (`src/app/global-error.tsx`) to ensure render errors are captured.
 
 ### Basic log-based debugging (Vercel)
 
