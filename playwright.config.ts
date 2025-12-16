@@ -6,7 +6,14 @@ const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${port}`;
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: false,
+  // CIはリソースが限られるので、並列度を抑えてフレークを減らす。
+  workers: process.env.CI ? 2 : undefined,
+  // CIは起動/DB/migrateで遅くなりがちなので少し余裕を持たせる。
+  timeout: process.env.CI ? 90_000 : 60_000,
   retries: process.env.CI ? 2 : 0,
+  expect: {
+    timeout: process.env.CI ? 10_000 : 5_000
+  },
   use: {
     baseURL,
     trace: "on-first-retry"
