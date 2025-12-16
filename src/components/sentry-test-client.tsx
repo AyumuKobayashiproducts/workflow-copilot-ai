@@ -11,7 +11,6 @@ export function SentryTestClient() {
   function onSend() {
     const err = new Error("Sentry test error (manual)");
     Sentry.captureException(err);
-    // eslint-disable-next-line no-console
     console.error(err);
     setSent(true);
   }
@@ -30,5 +29,6 @@ export function SentryTestClient() {
     </div>
   );
 }
+
 
 

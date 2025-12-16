@@ -24,7 +24,6 @@ export default function GlobalError(props: {
   const t = useT(messages);
 
   useEffect(() => {
-    // eslint-disable-next-line no-console
     console.error(props.error);
     Sentry.captureException(props.error);
   }, [props.error]);

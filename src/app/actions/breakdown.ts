@@ -94,7 +94,6 @@ export async function generateBreakdownSteps(goal: string): Promise<Result> {
 
       if (!res.ok) {
         const body = await res.text().catch(() => "");
-        // eslint-disable-next-line no-console
         console.error("OpenAI breakdown failed", { status: res.status, body: body.slice(0, 400) });
         Sentry.captureMessage("OpenAI breakdown failed", {
           level: "error",
@@ -111,7 +110,6 @@ export async function generateBreakdownSteps(goal: string): Promise<Result> {
       try {
         return parseSteps(content);
       } catch {
-        // eslint-disable-next-line no-console
         console.error("OpenAI breakdown parse failed", { content: content.slice(0, 400) });
         Sentry.captureMessage("OpenAI breakdown parse failed", {
           level: "error",
@@ -130,7 +128,6 @@ export async function generateBreakdownSteps(goal: string): Promise<Result> {
 
     return { ok: false, reason: "failed" };
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error("OpenAI breakdown exception");
     Sentry.captureException(err);
     return { ok: false, reason: "failed" };

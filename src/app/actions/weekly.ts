@@ -244,7 +244,6 @@ export async function generateWeeklyReportText(
       });
       if (!res.ok) {
         const body = await res.text().catch(() => "");
-        // eslint-disable-next-line no-console
         console.error("OpenAI weekly failed", { status: res.status, body: body.slice(0, 400) });
         Sentry.captureMessage("OpenAI weekly failed", {
           level: "error",
@@ -280,7 +279,6 @@ export async function generateWeeklyReportText(
     }
     return { ok: false, reason: "failed" };
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error("OpenAI weekly exception");
     Sentry.captureException(err);
     return { ok: false, reason: "failed" };
@@ -395,7 +393,6 @@ export async function postWeeklyToSlackAction(formData: FormData) {
       else if (lower.includes("invalid_token") || lower.includes("invalid_auth")) slackReason = "invalidToken";
       else if (res.status === 404 || res.status === 410 || lower.includes("no_service")) slackReason = "invalidWebhook";
 
-      // eslint-disable-next-line no-console
       console.error("Slack webhook failed", {
         status: res.status,
         body: bodyTrimmed.slice(0, 200),
