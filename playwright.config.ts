@@ -1,40 +1,27 @@
 import { defineConfig } from "@playwright/test";
 import * as net from "node:net";
 
-function isPortFree(port: number) {
-  // Synchronous-ish port check so the config can remain a plain object export.
-  // We rely on Atomics.wait to block briefly until the async net callbacks run.
-  const lock = new Int32Array(new SharedArrayBuffer(4));
-  let done = false;
-  let free = false;
-  const server = net
-    .createServer()
-    .once("error", () => {
-      done = true;
-      Atomics.store(lock, 0, 1);
-      Atomics.notify(lock, 0);
-    })
-    .once("listening", () => {
-      server.close(() => {
-        free = true;
-        done = true;
-        Atomics.store(lock, 0, 1);
-        Atomics.notify(lock, 0);
-      });
-    })
-    .listen(port, "127.0.0.1");
+async function isPortFree(port: number) {
+  return await new Promise<boolean>((resolve) => {
+    const server = net
+      .createServer()
+      .once("error", () => resolve(false))
+      .once("listening", () => server.close(() => resolve(true)))
+      .listen(port, "127.0.0.1");
+  });
+}
 
-  while (!done) Atomics.wait(lock, 0, 0, 25);
-  return free;
+async function pickPort(candidates: number[]) {
+  for (const p of candidates) {
+    if (await isPortFree(p)) return p;
+  }
+  return candidates[0] ?? 3001;
 }
 
 // Use a separate port by default to avoid clashing with an existing local dev server.
 // CI explicitly sets E2E_PORT=3000.
 const portFromEnv = process.env.E2E_PORT ? Number(process.env.E2E_PORT) : undefined;
-const port =
-  portFromEnv ??
-  [3001, 3002, 3003, 3100, 3200].find((p) => isPortFree(p)) ??
-  3001;
+const port = portFromEnv ?? (await pickPort([3001, 3002, 3003, 3100, 3200]));
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${port}`;
 const workers = Number(process.env.E2E_WORKERS ?? 1);
 

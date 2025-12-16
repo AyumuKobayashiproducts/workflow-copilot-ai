@@ -95,12 +95,17 @@ test("rbac+audit: member cannot edit someone else's task title; forbidden is log
   await page.goto("/inbox?scope=all");
   await page.getByTestId("new-task-input").fill(title);
   await page.getByTestId("new-task-submit").click();
-  await expect(page.getByTestId("task-item").filter({ hasText: title })).toBeVisible();
+  const createdRow = page.getByTestId("task-item").filter({ hasText: title }).first();
+  await expect(createdRow).toBeVisible();
+  const taskHref = await createdRow.getByRole("link", { name: /Details|詳細/ }).getAttribute("href");
+  expect(taskHref).toMatch(/^\/tasks\//);
 
   // Member tries to edit owner's task title -> forbidden.
   await setE2EUser(page, MEMBER_ID);
   await page.goto("/inbox?scope=all");
-  const row = page.getByTestId("task-item").filter({ hasText: title });
+  // Don't locate by title text here: clicking "edit" replaces the title text with an <input>,
+  // which would invalidate a hasText-based locator.
+  const row = page.getByTestId("task-item").filter({ has: page.locator(`a[href="${taskHref}"]`) });
   await expect(row).toBeVisible();
 
   await row.getByRole("button", { name: /edit|編集/i }).click();
