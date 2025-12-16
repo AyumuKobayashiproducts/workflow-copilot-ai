@@ -7,7 +7,9 @@ async function isPortFree(port: number) {
       .createServer()
       .once("error", () => resolve(false))
       .once("listening", () => server.close(() => resolve(true)))
-      .listen(port, "127.0.0.1");
+      // Match Next.js dev server defaults (binds on :: / all interfaces on many systems).
+      // If we only probe 127.0.0.1, we can miss an IPv6-only listener and still crash on start.
+      .listen(port);
   });
 }
 
@@ -21,7 +23,8 @@ async function pickPort(candidates: number[]) {
 // Use a separate port by default to avoid clashing with an existing local dev server.
 // CI explicitly sets E2E_PORT=3000.
 const portFromEnv = process.env.E2E_PORT ? Number(process.env.E2E_PORT) : undefined;
-const port = portFromEnv ?? (await pickPort([3001, 3002, 3003, 3100, 3200]));
+const defaultCandidates = [3001, 3002, 3003, 3100, 3200];
+const port = await pickPort(portFromEnv ? [portFromEnv, ...defaultCandidates.filter((p) => p !== portFromEnv)] : defaultCandidates);
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${port}`;
 const workers = Number(process.env.E2E_WORKERS ?? 1);
 
