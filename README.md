@@ -272,12 +272,15 @@ GitHub Actions runs:
 
 - `npm run lint`
 - `npm run check:i18n` (en/ja keys must match)
+- `npm run build`
 - `npm run test:e2e` (Playwright, with Postgres service)
 
 ## Scripts
 
 ```bash
 npm run check:i18n
+npm run db:up
+npm run db:down
 npm run db:generate
 npm run db:migrate
 npm run db:deploy
