@@ -37,7 +37,7 @@ jobs:
           node-version: 20
           cache: npm
       - name: Install
-        run: npm install
+        run: npm ci
       - name: Prisma generate
         run: npm run db:generate
       - name: Prisma migrate
@@ -46,6 +46,8 @@ jobs:
         run: npm run lint
       - name: i18n keys
         run: npm run check:i18n
+      - name: Build
+        run: npm run build
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
       - name: E2E
