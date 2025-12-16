@@ -14,7 +14,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "vercel-build": "node scripts/preflight-prod.mjs && prisma generate && prisma migrate deploy && next build",
-    "test:e2e": "node scripts/preflight-e2e.mjs && playwright test",
+    "test:e2e": "node scripts/preflight-e2e.mjs && env -u NO_COLOR playwright test",
     "screenshots": "playwright test --config playwright.screenshots.config.ts",
     "preflight:prod": "node scripts/preflight-prod.mjs"
   },
