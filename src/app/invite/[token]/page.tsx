@@ -123,6 +123,12 @@ export default async function InviteAcceptPage(props: { params: Promise<{ token:
         }
       });
       if (updatedInvite.usedCount >= updatedInvite.maxUses) {
+        // Auto revoke when used up (prevents further acceptance even if counts race).
+        await tx.workspaceInvite.updateMany({
+          where: { id: updatedInvite.id, revokedAt: null },
+          data: { revokedAt: new Date() }
+        });
+
         await tx.taskActivity.create({
           data: {
             workspaceId: invite.workspaceId,
@@ -133,6 +139,23 @@ export default async function InviteAcceptPage(props: { params: Promise<{ token:
             metadata: {
               action: "workspace_invite_used_up",
               inviteId: updatedInvite.id,
+              usedCount: updatedInvite.usedCount,
+              maxUses: updatedInvite.maxUses
+            }
+          }
+        });
+
+        await tx.taskActivity.create({
+          data: {
+            workspaceId: invite.workspaceId,
+            taskId: null,
+            actorUserId: userId,
+            kind: "workspace_invite_revoked",
+            message: "Invite auto-revoked (used up)",
+            metadata: {
+              action: "workspace_invite_auto_revoked",
+              inviteId: updatedInvite.id,
+              reason: "used_up",
               usedCount: updatedInvite.usedCount,
               maxUses: updatedInvite.maxUses
             }

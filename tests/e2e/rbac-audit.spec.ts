@@ -313,6 +313,7 @@ test("invite: usage is audited and used-up is logged when maxUses=1", async ({ p
   // Activity feed should show usage + used up.
   await expect(page.locator("text=/Invite used|招待リンク使用/")).toBeVisible();
   await expect(page.locator("text=/Invite used up|招待リンク上限到達/")).toBeVisible();
+  await expect(page.locator("text=/Invite revoked|招待リンク失効/")).toBeVisible();
 });
 
 
