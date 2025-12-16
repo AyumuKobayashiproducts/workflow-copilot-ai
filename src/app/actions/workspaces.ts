@@ -210,7 +210,7 @@ export async function switchWorkspaceAction(formData: FormData) {
       message: "Forbidden: switch workspace",
       metadata: { action: "switch_workspace", targetWorkspaceId: workspaceId }
     }).catch(() => {});
-    redirect(settingsUrl({ workspace: "forbidden" }));
+    redirect(settingsUrl({ workspace: "switch_forbidden" }));
   }
 
   await prisma.user.update({
@@ -222,6 +222,113 @@ export async function switchWorkspaceAction(formData: FormData) {
   revalidatePath("/weekly");
   revalidatePath("/settings");
   redirect("/inbox");
+}
+
+export async function updateWorkspaceNameAction(formData: FormData) {
+  const nameRaw = String(formData.get("name") ?? "");
+  const name = nameRaw.trim();
+  if (!name || name.length > 60) {
+    redirect(settingsUrl({ workspace: "rename_invalid" }));
+  }
+
+  const ctx = await requireWorkspaceContext();
+  if (ctx.role !== "owner") {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: update workspace name",
+      metadata: { action: "update_workspace_name" }
+    }).catch(() => {});
+    redirect(settingsUrl({ workspace: "rename_forbidden" }));
+  }
+
+  try {
+    await prisma.workspace.update({
+      where: { id: ctx.workspaceId },
+      data: { name }
+    });
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "workspace_updated",
+      message: `Workspace updated (name=${name})`,
+      metadata: { action: "update_workspace_name", name }
+    }).catch(() => {});
+  } catch (err) {
+    Sentry.captureException(err, { tags: { feature: "workspace", action: "updateName" } });
+    redirect(settingsUrl({ workspace: "rename_failed" }));
+  }
+
+  revalidatePath("/inbox");
+  revalidatePath("/weekly");
+  revalidatePath("/settings");
+  redirect(settingsUrl({ workspace: "renamed" }));
+}
+
+export async function removeWorkspaceMemberAction(formData: FormData) {
+  const targetUserId = String(formData.get("userId") ?? "");
+  if (!targetUserId) return;
+
+  const ctx = await requireWorkspaceContext();
+  if (ctx.role !== "owner") {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: remove member",
+      metadata: { action: "remove_workspace_member", targetUserId }
+    }).catch(() => {});
+    redirect(settingsUrl({ member: "forbidden" }));
+  }
+  // Prevent self removal (avoids accidental lock-out).
+  if (targetUserId === ctx.userId) {
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "forbidden",
+      message: "Forbidden: remove self",
+      metadata: { action: "remove_workspace_member", targetUserId, reason: "self_remove" }
+    }).catch(() => {});
+    redirect(settingsUrl({ member: "self_forbidden" }));
+  }
+
+  const membership = await prisma.workspaceMembership.findUnique({
+    where: { workspaceId_userId: { workspaceId: ctx.workspaceId, userId: targetUserId } },
+    select: { role: true }
+  });
+  if (!membership) {
+    redirect(settingsUrl({ member: "not_found" }));
+  }
+
+  // Prevent removing the last owner.
+  if (membership.role === "owner") {
+    const ownerCount = await prisma.workspaceMembership.count({
+      where: { workspaceId: ctx.workspaceId, role: "owner" }
+    });
+    if (ownerCount <= 1) {
+      redirect(settingsUrl({ member: "last_owner" }));
+    }
+  }
+
+  try {
+    await prisma.workspaceMembership.delete({
+      where: { workspaceId_userId: { workspaceId: ctx.workspaceId, userId: targetUserId } }
+    });
+    await logTaskActivity({
+      workspaceId: ctx.workspaceId,
+      actorUserId: ctx.userId,
+      kind: "workspace_member_removed",
+      message: `Member removed (userId=${targetUserId})`,
+      metadata: { action: "remove_workspace_member", targetUserId }
+    }).catch(() => {});
+  } catch (err) {
+    Sentry.captureException(err, { tags: { feature: "workspace", action: "removeMember" } });
+    redirect(settingsUrl({ member: "failed" }));
+  }
+
+  revalidatePath("/settings");
+  redirect(settingsUrl({ member: "removed" }));
 }
 
 

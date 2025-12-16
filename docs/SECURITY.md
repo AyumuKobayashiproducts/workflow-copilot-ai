@@ -65,7 +65,7 @@ Events (`TaskActivityKind`) currently include:
 
 - Task events: `created`, `title_updated`, `status_toggled`, `assigned`, `focus_set`, `focus_cleared`, `deleted`, `comment`
 - Access control: `forbidden`
-- Workspace events: `workspace_invite_created`, `workspace_invite_revoked`, `workspace_member_role_updated`
+- Workspace events: `workspace_updated`, `workspace_invite_created`, `workspace_invite_revoked`, `workspace_member_role_updated`, `workspace_member_removed`
 - Invite lifecycle: `workspace_invite_accepted`, `workspace_member_joined`, `workspace_invite_used`, `workspace_invite_used_up`
 
 ## What’s intentionally out of scope (portfolio tradeoffs)

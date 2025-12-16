@@ -9,8 +9,10 @@ import { clearMyDemoDataAction } from "@/app/actions/demo";
 import {
   clearNewInviteTokenAction,
   createWorkspaceInviteAction,
+  removeWorkspaceMemberAction,
   revokeWorkspaceInviteAction,
   switchWorkspaceAction,
+  updateWorkspaceNameAction,
   updateWorkspaceMemberRoleAction
 } from "@/app/actions/workspaces";
 import { prisma } from "@/lib/db";
@@ -54,9 +56,11 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
     "focus_cleared",
     "deleted",
     "forbidden",
+    "workspace_updated",
     "workspace_invite_created",
     "workspace_invite_revoked",
     "workspace_member_role_updated",
+    "workspace_member_removed",
     "workspace_invite_accepted",
     "workspace_member_joined",
     "workspace_invite_used",
@@ -80,7 +84,7 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
       "workspace_invite_used_up"
     ],
     group_tasks: ["comment", "created", "title_updated", "status_toggled", "assigned", "focus_set", "focus_cleared", "deleted"],
-    group_workspace: ["workspace_member_joined", "workspace_member_role_updated"]
+    group_workspace: ["workspace_updated", "workspace_member_joined", "workspace_member_role_updated", "workspace_member_removed"]
   };
 
   const isGroup = (v: typeof activityKind): v is keyof typeof groupKinds =>
@@ -174,13 +178,33 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {t("settings.workspace.invite.failed")}
         </section>
-      ) : workspaceStatus === "forbidden" ? (
+      ) : workspaceStatus === "switch_forbidden" ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {t("settings.workspace.switch.forbidden")}
+        </section>
+      ) : workspaceStatus === "renamed" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.workspace.rename.updated")}
+        </section>
+      ) : workspaceStatus === "rename_invalid" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.workspace.rename.invalid")}
+        </section>
+      ) : workspaceStatus === "rename_forbidden" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.workspace.rename.forbidden")}
+        </section>
+      ) : workspaceStatus === "rename_failed" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.workspace.rename.failed")}
         </section>
       ) : memberStatus === "updated" ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
           {t("settings.workspace.members.updated")}
+        </section>
+      ) : memberStatus === "removed" ? (
+        <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
+          {t("settings.workspace.members.removed")}
         </section>
       ) : memberStatus === "last_owner" ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-4 text-sm text-neutral-900 shadow-sm">
@@ -246,6 +270,23 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
           {t("settings.workspace.name")}: <span className="font-medium text-neutral-900">{ctx.workspaceName}</span>
         </div>
 
+        {ctx.role === "owner" ? (
+          <div className="space-y-2">
+            <div className="text-xs font-medium text-neutral-700">{t("settings.workspace.rename.title")}</div>
+            <form action={updateWorkspaceNameAction} className="flex flex-wrap items-center gap-2">
+              <input
+                name="name"
+                defaultValue={ctx.workspaceName}
+                placeholder={t("settings.workspace.rename.placeholder")}
+                className="h-9 min-w-64 flex-1 rounded-md border border-neutral-300 bg-white px-3 text-sm"
+              />
+              <Button type="submit" size="sm" variant="secondary">
+                {t("settings.workspace.rename.cta")}
+              </Button>
+            </form>
+          </div>
+        ) : null}
+
         <div className="space-y-2">
           <div className="text-xs font-medium text-neutral-700">{t("settings.workspace.members")}</div>
           <ul className="space-y-1 text-sm">
@@ -255,20 +296,28 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                   {m.user.name || m.user.email || m.user.id}
                 </span>
                 {ctx.role === "owner" && m.user.id !== ctx.userId ? (
-                  <form action={updateWorkspaceMemberRoleAction} className="flex items-center gap-2">
-                    <input type="hidden" name="userId" value={m.user.id} />
-                    <select
-                      name="role"
-                      defaultValue={m.role}
-                      className="h-9 rounded-md border border-neutral-300 bg-white px-2 text-sm"
-                    >
-                      <option value="member">{t("settings.workspace.role.member")}</option>
-                      <option value="owner">{t("settings.workspace.role.owner")}</option>
-                    </select>
-                    <Button type="submit" size="sm" variant="secondary">
-                      {t("settings.workspace.members.updateCta")}
-                    </Button>
-                  </form>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <form action={updateWorkspaceMemberRoleAction} className="flex items-center gap-2">
+                      <input type="hidden" name="userId" value={m.user.id} />
+                      <select
+                        name="role"
+                        defaultValue={m.role}
+                        className="h-9 rounded-md border border-neutral-300 bg-white px-2 text-sm"
+                      >
+                        <option value="member">{t("settings.workspace.role.member")}</option>
+                        <option value="owner">{t("settings.workspace.role.owner")}</option>
+                      </select>
+                      <Button type="submit" size="sm" variant="secondary">
+                        {t("settings.workspace.members.updateCta")}
+                      </Button>
+                    </form>
+                    <form action={removeWorkspaceMemberAction}>
+                      <input type="hidden" name="userId" value={m.user.id} />
+                      <Button type="submit" size="sm" variant="secondary">
+                        {t("settings.workspace.members.removeCta")}
+                      </Button>
+                    </form>
+                  </div>
                 ) : (
                   <span className="text-xs text-neutral-700">
                     {m.role === "owner" ? t("settings.workspace.role.owner") : t("settings.workspace.role.member")}
@@ -363,6 +412,7 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
             <option value="group_workspace">{t("settings.activity.filter.groupWorkspace")}</option>
             <option value="group_tasks">{t("settings.activity.filter.groupTasks")}</option>
             <option value="forbidden">{t("task.activity.kind.forbidden")}</option>
+            <option value="workspace_updated">{t("task.activity.kind.workspaceUpdated")}</option>
             <option value="workspace_invite_created">{t("task.activity.kind.workspaceInviteCreated")}</option>
             <option value="workspace_invite_revoked">{t("task.activity.kind.workspaceInviteRevoked")}</option>
             <option value="workspace_invite_accepted">{t("task.activity.kind.workspaceInviteAccepted")}</option>
@@ -370,6 +420,7 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
             <option value="workspace_invite_used_up">{t("task.activity.kind.workspaceInviteUsedUp")}</option>
             <option value="workspace_member_joined">{t("task.activity.kind.workspaceMemberJoined")}</option>
             <option value="workspace_member_role_updated">{t("task.activity.kind.workspaceMemberRoleUpdated")}</option>
+            <option value="workspace_member_removed">{t("task.activity.kind.workspaceMemberRemoved")}</option>
             <option value="created">{t("task.activity.kind.created")}</option>
             <option value="title_updated">{t("task.activity.kind.titleUpdated")}</option>
             <option value="status_toggled">{t("task.activity.kind.statusToggled")}</option>
@@ -409,12 +460,16 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
                     return t("task.activity.kind.deleted");
                   case "forbidden":
                     return t("task.activity.kind.forbidden");
+                  case "workspace_updated":
+                    return t("task.activity.kind.workspaceUpdated");
                   case "workspace_invite_created":
                     return t("task.activity.kind.workspaceInviteCreated");
                   case "workspace_invite_revoked":
                     return t("task.activity.kind.workspaceInviteRevoked");
                   case "workspace_member_role_updated":
                     return t("task.activity.kind.workspaceMemberRoleUpdated");
+                  case "workspace_member_removed":
+                    return t("task.activity.kind.workspaceMemberRemoved");
                   case "workspace_invite_accepted":
                     return t("task.activity.kind.workspaceInviteAccepted");
                   case "workspace_member_joined":
