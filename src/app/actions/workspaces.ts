@@ -56,7 +56,8 @@ export async function createWorkspaceInviteAction(formData: FormData) {
     });
     // Show the raw invite link only once (right after creation).
     // The raw token is NOT stored in DB.
-    cookies().set("new_invite_token", token, {
+    const cookieStore = await cookies();
+    cookieStore.set("new_invite_token", token, {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
@@ -80,7 +81,8 @@ export async function createWorkspaceInviteAction(formData: FormData) {
 }
 
 export async function clearNewInviteTokenAction() {
-  cookies().set("new_invite_token", "", { maxAge: 0, path: "/" });
+  const cookieStore = await cookies();
+  cookieStore.set("new_invite_token", "", { maxAge: 0, path: "/" });
   redirect("/settings");
 }
 

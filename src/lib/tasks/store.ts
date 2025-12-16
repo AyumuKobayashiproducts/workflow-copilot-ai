@@ -1,4 +1,4 @@
-import type { Task, TaskStatus } from "@prisma/client";
+import type { Prisma, Task, TaskStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
 
@@ -53,7 +53,7 @@ export async function listInboxTasks(
   const sort = input.sort;
   const scope = input.scope;
 
-  const where: Parameters<typeof prisma.task.findMany>[0]["where"] = {
+  const where: Prisma.TaskWhereInput = {
     workspaceId: ctx.workspaceId,
     ...(scope === "mine" ? { assignedToUserId: ctx.userId } : {}),
     ...(q ? { title: { contains: q, mode: "insensitive" } } : {}),

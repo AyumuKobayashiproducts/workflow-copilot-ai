@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   // Vercel Prisma Postgres provides a non-pooled URL as PRISMA_DATABASE_URL,
   // which is better suited for migrations than the pooled DATABASE_URL.
   directUrl = env("PRISMA_DATABASE_URL")
@@ -17,25 +17,27 @@ model User {
   emailVerified DateTime?
   image         String?
 
-  accounts      Account[]
-  sessions      Session[]
+  accounts Account[]
+  sessions Session[]
 
-  defaultWorkspaceId String?
-  defaultWorkspace   Workspace? @relation("UserDefaultWorkspace", fields: [defaultWorkspaceId], references: [id], onDelete: SetNull)
-  workspaceMemberships WorkspaceMembership[]
-  workspaceInvitesCreated WorkspaceInvite[] @relation("WorkspaceInviteCreatedBy")
+  defaultWorkspaceId      String?
+  defaultWorkspace        Workspace?            @relation("UserDefaultWorkspace", fields: [defaultWorkspaceId], references: [id], onDelete: SetNull)
+  workspaceMemberships    WorkspaceMembership[]
+  workspaceInvitesCreated WorkspaceInvite[]     @relation("WorkspaceInviteCreatedBy")
 
-  tasks         Task[]
-  weeklyNotes   WeeklyNote[]
-  weeklyReports WeeklyReport[]
-  aiUsage       AiUsage[]
+  tasks          Task[]
+  assignedTasks  Task[]         @relation("TaskAssignedTo")
+  weeklyNotes    WeeklyNote[]
+  weeklyReports  WeeklyReport[]
+  aiUsage        AiUsage[]
+  taskActivities TaskActivity[] @relation("TaskActivityActor")
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Account {
-  id                String   @id @default(cuid())
+  id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
@@ -105,11 +107,16 @@ enum WorkspaceRole {
 }
 
 model Workspace {
-  id        String   @id @default(cuid())
-  name      String
+  id   String @id @default(cuid())
+  name String
 
-  memberships WorkspaceMembership[]
-  invites     WorkspaceInvite[]
+  memberships    WorkspaceMembership[]
+  invites        WorkspaceInvite[]
+  tasks          Task[]
+  taskActivities TaskActivity[]
+  weeklyNotes    WeeklyNote[]
+  weeklyReports  WeeklyReport[]
+  aiUsage        AiUsage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -136,17 +143,17 @@ model WorkspaceMembership {
 
 model WorkspaceInvite {
   id              String        @id @default(cuid())
-  workspaceId      String
-  tokenHash        String        @unique
-  role             WorkspaceRole @default(member)
-  createdByUserId  String
-  expiresAt        DateTime?
-  maxUses          Int           @default(5)
-  usedCount        Int           @default(0)
-  revokedAt        DateTime?
+  workspaceId     String
+  tokenHash       String        @unique
+  role            WorkspaceRole @default(member)
+  createdByUserId String
+  expiresAt       DateTime?
+  maxUses         Int           @default(5)
+  usedCount       Int           @default(0)
+  revokedAt       DateTime?
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdBy User @relation("WorkspaceInviteCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  createdBy User      @relation("WorkspaceInviteCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -156,23 +163,23 @@ model WorkspaceInvite {
 }
 
 model Task {
-  id          String     @id @default(cuid())
-  userId      String
-  workspaceId String
+  id               String     @id @default(cuid())
+  userId           String
+  workspaceId      String
   assignedToUserId String
-  title       String
-  status      TaskStatus @default(todo)
-  source      String?
-  completedAt DateTime?
-  focusAt     DateTime?
+  title            String
+  status           TaskStatus @default(todo)
+  source           String?
+  completedAt      DateTime?
+  focusAt          DateTime?
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assignedToUser User @relation("TaskAssignedTo", fields: [assignedToUserId], references: [id], onDelete: Cascade)
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  activities TaskActivity[]
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedToUser User           @relation("TaskAssignedTo", fields: [assignedToUserId], references: [id], onDelete: Cascade)
+  workspace      Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  activities     TaskActivity[]
 
   @@index([workspaceId, assignedToUserId, status])
   @@index([workspaceId, assignedToUserId, createdAt])
@@ -185,30 +192,30 @@ model TaskActivity {
   taskId      String?
   actorUserId String
   kind        TaskActivityKind
-  message     String?          // optional human-readable note (comments use this)
+  message     String? // optional human-readable note (comments use this)
   metadata    Json?
 
-  createdAt   DateTime         @default(now())
+  createdAt DateTime @default(now())
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   task      Task?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  actor     User      @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
+  actor     User      @relation("TaskActivityActor", fields: [actorUserId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, taskId, createdAt])
   @@index([workspaceId, actorUserId, createdAt])
 }
 
 model WeeklyNote {
-  id        String   @id @default(cuid())
-  userId    String
+  id          String   @id @default(cuid())
+  userId      String
   workspaceId String
-  weekStart DateTime
-  note      String   @default("")
+  weekStart   DateTime
+  note        String   @default("")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, userId, weekStart])
@@ -216,16 +223,16 @@ model WeeklyNote {
 }
 
 model WeeklyReport {
-  id        String   @id @default(cuid())
-  userId    String
+  id          String   @id @default(cuid())
+  userId      String
   workspaceId String
-  weekStart DateTime
-  text      String   @default("")
+  weekStart   DateTime
+  text        String   @default("")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, userId, weekStart])
@@ -233,18 +240,16 @@ model WeeklyReport {
 }
 
 model AiUsage {
-  id     String      @id @default(cuid())
-  userId String
+  id          String      @id @default(cuid())
+  userId      String
   workspaceId String
-  date   String      // YYYY-MM-DD (UTC)
-  kind   AiUsageKind
-  count  Int         @default(0)
+  date        String // YYYY-MM-DD (UTC)
+  kind        AiUsageKind
+  count       Int         @default(0)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, userId, date, kind])
   @@index([workspaceId, userId, date])
 }
-
-

@@ -22,7 +22,8 @@ export async function getUserIdOrNull(): Promise<string | null> {
   if (AUTH_BYPASS_ENABLED) {
     // E2E: allow switching the acting user via a cookie.
     // This is only honored when AUTH_BYPASS=1 (never in production).
-    const override = cookies().get("e2e_user_id")?.value?.trim() ?? "";
+    const cookieStore = await cookies();
+    const override = cookieStore.get("e2e_user_id")?.value?.trim() ?? "";
     const id = override || TEST_USER_ID;
     const email = id === TEST_USER_ID ? TEST_USER_EMAIL : `${id}@example.com`;
     const name = id === TEST_USER_ID ? "Test User" : "Test Member";

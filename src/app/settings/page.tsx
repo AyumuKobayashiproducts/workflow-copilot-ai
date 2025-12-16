@@ -83,6 +83,11 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
     group_workspace: ["workspace_member_joined", "workspace_member_role_updated"]
   };
 
+  const isGroup = (v: typeof activityKind): v is keyof typeof groupKinds =>
+    v === "group_invites" || v === "group_tasks" || v === "group_workspace";
+  const kindFilter: TaskActivityKind | undefined = activityKind === "all" || isGroup(activityKind) ? undefined : activityKind;
+  const kindsFilter: TaskActivityKind[] | undefined = isGroup(activityKind) ? groupKinds[activityKind] : undefined;
+
   const myMemberships = await prisma.workspaceMembership.findMany({
     where: { userId: ctx.userId },
     orderBy: { createdAt: "asc" },
@@ -110,17 +115,18 @@ export default async function SettingsPage(props: { searchParams?: Promise<Recor
     select: { id: true, expiresAt: true, usedCount: true, maxUses: true }
   });
 
-  const h = headers();
+  const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "http";
   const origin = process.env.AUTH_URL ?? (host ? `${proto}://${host}` : "http://localhost:3000");
-  const newInviteToken = cookies().get("new_invite_token")?.value ?? "";
+  const cookieStore = await cookies();
+  const newInviteToken = cookieStore.get("new_invite_token")?.value ?? "";
 
   const recentActivity = await listWorkspaceActivities({
     workspaceId: ctx.workspaceId,
     take: 20,
-    kind: typeof activityKind === "string" && activityKind.startsWith("group_") ? undefined : activityKind === "all" ? undefined : activityKind,
-    kinds: typeof activityKind === "string" && activityKind.startsWith("group_") ? groupKinds[activityKind as keyof typeof groupKinds] : undefined
+    kind: kindFilter,
+    kinds: kindsFilter
   });
 
   return (
