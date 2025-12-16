@@ -40,7 +40,8 @@ test("rbac+audit: member cannot toggle someone else's task; forbidden is logged"
   const row = page.getByTestId("task-item").filter({ hasText: title });
   await expect(row).toBeVisible();
   await row.getByRole("button", { name: /mark done|完了/ }).click();
-  await expect(page).toHaveURL(/toast=forbidden/);
+  // URL param may be cleaned immediately; assert the actual toast text instead.
+  await expect(page.locator("text=/You do not have permission to do that\\.|権限がありません。/")).toBeVisible();
 
   // Activity feed should show a Forbidden event.
   await page.goto("/settings");
@@ -67,7 +68,8 @@ test("rbac+audit: member cannot delete someone else's task; forbidden is logged"
   const row = page.getByTestId("task-item").filter({ hasText: title });
   await expect(row).toBeVisible();
   await row.getByRole("button", { name: /delete|削除/i }).click();
-  await expect(page).toHaveURL(/toast=forbidden/);
+  // URL param may be cleaned immediately; assert the actual toast text instead.
+  await expect(page.locator("text=/You do not have permission to do that\\.|権限がありません。/")).toBeVisible();
 
   // Activity feed should show a Forbidden event.
   await page.goto("/settings");
@@ -98,7 +100,8 @@ test("rbac+audit: member cannot edit someone else's task title; forbidden is log
   const updated = `${title}-x`;
   await row.getByRole("textbox").fill(updated);
   await row.getByRole("button", { name: /save|保存/i }).click();
-  await expect(page).toHaveURL(/toast=forbidden/);
+  // URL param may be cleaned immediately; assert the actual toast text instead.
+  await expect(page.locator("text=/You do not have permission to do that\\.|権限がありません。/")).toBeVisible();
 
   // Activity feed should show a Forbidden event.
   await page.goto("/settings");
