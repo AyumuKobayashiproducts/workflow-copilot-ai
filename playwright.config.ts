@@ -1,15 +1,49 @@
 import { defineConfig } from "@playwright/test";
+import * as net from "node:net";
+
+function isPortFree(port: number) {
+  // Synchronous-ish port check so the config can remain a plain object export.
+  // We rely on Atomics.wait to block briefly until the async net callbacks run.
+  const lock = new Int32Array(new SharedArrayBuffer(4));
+  let done = false;
+  let free = false;
+  const server = net
+    .createServer()
+    .once("error", () => {
+      done = true;
+      Atomics.store(lock, 0, 1);
+      Atomics.notify(lock, 0);
+    })
+    .once("listening", () => {
+      server.close(() => {
+        free = true;
+        done = true;
+        Atomics.store(lock, 0, 1);
+        Atomics.notify(lock, 0);
+      });
+    })
+    .listen(port, "127.0.0.1");
+
+  while (!done) Atomics.wait(lock, 0, 0, 25);
+  return free;
+}
 
 // Use a separate port by default to avoid clashing with an existing local dev server.
 // CI explicitly sets E2E_PORT=3000.
-const port = Number(process.env.E2E_PORT ?? 3001);
+const portFromEnv = process.env.E2E_PORT ? Number(process.env.E2E_PORT) : undefined;
+const port =
+  portFromEnv ??
+  [3001, 3002, 3003, 3100, 3200].find((p) => isPortFree(p)) ??
+  3001;
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${port}`;
+const workers = Number(process.env.E2E_WORKERS ?? 1);
 
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: false,
-  // CIはリソースが限られるので、並列度を抑えてフレークを減らす。
-  workers: process.env.CI ? 2 : undefined,
+  // E2E uses a shared DB reset endpoint; parallel workers can interfere with each other.
+  // Override explicitly via E2E_WORKERS if you add per-worker isolation in the future.
+  workers,
   // CIは起動/DB/migrateで遅くなりがちなので少し余裕を持たせる。
   timeout: process.env.CI ? 90_000 : 60_000,
   retries: process.env.CI ? 2 : 0,

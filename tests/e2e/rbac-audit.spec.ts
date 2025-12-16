@@ -105,7 +105,9 @@ test("rbac+audit: member cannot edit someone else's task title; forbidden is log
 
   await row.getByRole("button", { name: /edit|編集/i }).click();
   const updated = `${title}-x`;
-  await row.getByRole("textbox").fill(updated);
+  const input = row.locator('input[name="title"]');
+  await expect(input).toBeVisible();
+  await input.fill(updated);
   await row.getByRole("button", { name: /save|保存/i }).click();
   // URL param may be cleaned immediately; assert the actual toast text instead.
   await expect(page.locator("text=/You do not have permission to do that\\.|権限がありません。/")).toBeVisible();
