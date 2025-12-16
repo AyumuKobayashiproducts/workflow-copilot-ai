@@ -51,6 +51,18 @@ Forbidden in production (must be unset or `"0"`):
 - `/settings`: integrations show correct status (Sentry/Slack/OpenAI)
 - Confirm `/api/e2e/*` is not reachable in production (`VERCEL_ENV=production` or `NODE_ENV=production`) (should return 404).
 
+## CI (what runs on every PR)
+
+GitHub Actions runs, in order:
+
+- `npm ci`
+- `npm run db:generate`
+- `npm run db:deploy`
+- `npm run lint`
+- `npm run check:i18n`
+- `npm run build`
+- Playwright install + `npm run test:e2e` (with Postgres service)
+
 ## Monitoring & alerting
 
 ### Sentry (optional)

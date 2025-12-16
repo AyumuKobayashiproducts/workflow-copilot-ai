@@ -26,6 +26,11 @@ See also: `docs/RUNBOOK.md` for a deploy checklist and incident response steps.
 - It requires a token header (`x-e2e-token`) to reduce accidental abuse in development.
 - In **production** (`VERCEL_ENV=production` or `NODE_ENV=production`), `/api/e2e/*` routes return 404 regardless of flags (defense in depth).
 
+## E2E execution preflight (dev/CI ergonomics)
+
+- `npm run test:e2e` runs `scripts/preflight-e2e.mjs` before Playwright.
+- If `DATABASE_URL` / `PRISMA_DATABASE_URL` are missing, it fails fast with a clear message (to avoid confusing Prisma initialization stack traces).
+
 ## Error reporting (Sentry, optional)
 
 - Sentry is initialized via Next.js 15 instrumentation files (`src/instrumentation.ts` / `src/instrumentation-client.ts`).

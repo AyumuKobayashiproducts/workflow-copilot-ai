@@ -44,4 +44,10 @@ Weekly page selects exactly one task → sets `Task.focusAt` → Inbox surfaces 
 - Accept flow: `/invite/[token]` → hash token → lookup by `tokenHash` → create membership → audit events.
 - Race safety: invite acceptance locks the invite row (`FOR UPDATE`) so `maxUses` cannot be exceeded under concurrency.
 
+### RBAC + audit trail
+
+- Workspaces have roles (`owner` / `member`).
+- Permissions are enforced in **server actions** (UI is not the gate).
+- Security-relevant events (including `forbidden`) are written to `TaskActivity` and shown in the Settings activity feed.
+
 
