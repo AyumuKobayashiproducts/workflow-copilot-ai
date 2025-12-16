@@ -20,6 +20,13 @@ async function setE2EUser(page: Parameters<typeof test>[1] extends (args: infer 
   ]);
 }
 
+async function expectActivityHas(page: Parameters<typeof test>[1] extends (args: infer A) => any ? A["page"] : any, re: RegExp) {
+  const activitySection = page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { name: /Recent activity|最近の履歴/ }) });
+  await expect(activitySection.locator("li").filter({ hasText: re }).first()).toBeVisible();
+}
+
 test("rbac+audit: member cannot toggle someone else's task; forbidden is logged", async ({ page }) => {
   await page.request.post("/api/e2e/reset", {
     headers: { "x-e2e-token": process.env.E2E_TOKEN ?? "e2e" }
@@ -39,13 +46,13 @@ test("rbac+audit: member cannot toggle someone else's task; forbidden is logged"
   await page.goto("/inbox?scope=all");
   const row = page.getByTestId("task-item").filter({ hasText: title });
   await expect(row).toBeVisible();
-  await row.getByRole("button", { name: /mark done|完了/ }).click();
+  await row.getByRole("button", { name: /Done|完了/ }).click();
   // URL param may be cleaned immediately; assert the actual toast text instead.
   await expect(page.locator("text=/You do not have permission to do that\\.|権限がありません。/")).toBeVisible();
 
   // Activity feed should show a Forbidden event.
   await page.goto("/settings");
-  await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+  await expectActivityHas(page, /Forbidden|権限拒否/);
 });
 
 test("rbac+audit: member cannot delete someone else's task; forbidden is logged", async ({ page }) => {
@@ -73,7 +80,7 @@ test("rbac+audit: member cannot delete someone else's task; forbidden is logged"
 
   // Activity feed should show a Forbidden event.
   await page.goto("/settings");
-  await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+  await expectActivityHas(page, /Forbidden|権限拒否/);
 });
 
 test("rbac+audit: member cannot edit someone else's task title; forbidden is logged", async ({ page }) => {
@@ -105,7 +112,7 @@ test("rbac+audit: member cannot edit someone else's task title; forbidden is log
 
   // Activity feed should show a Forbidden event.
   await page.goto("/settings");
-  await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+  await expectActivityHas(page, /Forbidden|権限拒否/);
 });
 
 test("rbac+audit: member cannot run demo tools; forbidden is logged (workspace event)", async ({ page }) => {
@@ -122,7 +129,7 @@ test("rbac+audit: member cannot run demo tools; forbidden is logged (workspace e
   await expect(page).toHaveURL(/demo=forbidden/);
 
   // Activity feed should show a Forbidden event.
-  await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+  await expectActivityHas(page, /Forbidden|権限拒否/);
 });
 
 test("rbac+audit: member cannot create invite; forbidden is logged (workspace event)", async ({ page }) => {
@@ -143,7 +150,7 @@ test("rbac+audit: member cannot create invite; forbidden is logged (workspace ev
   expect(json.error).toBe("forbidden");
 
   await page.goto("/settings");
-  await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+  await expectActivityHas(page, /Forbidden|権限拒否/);
 });
 
 test("rbac+audit: member cannot change member roles; forbidden is logged (workspace event)", async ({ page }) => {
@@ -164,7 +171,7 @@ test("rbac+audit: member cannot change member roles; forbidden is logged (worksp
   expect(json.error).toBe("forbidden");
 
   await page.goto("/settings");
-  await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+  await expectActivityHas(page, /Forbidden|権限拒否/);
 });
 
 test("rbac+audit: owner can create invite; event is logged", async ({ page }) => {
@@ -185,7 +192,7 @@ test("rbac+audit: owner can create invite; event is logged", async ({ page }) =>
   expect(typeof json.token).toBe("string");
 
   await page.goto("/settings");
-  await expect(page.locator("text=/Invite created|招待リンク作成/")).toBeVisible();
+  await expectActivityHas(page, /Invite created|招待リンク作成/);
 });
 
 test("rbac+audit: owner can update member role; event is logged", async ({ page }) => {
@@ -205,7 +212,7 @@ test("rbac+audit: owner can update member role; event is logged", async ({ page 
   expect(json.ok).toBe(true);
 
   await page.goto("/settings");
-  await expect(page.locator("text=/Member role updated|メンバー権限変更/")).toBeVisible();
+  await expectActivityHas(page, /Member role updated|メンバー権限変更/);
 });
 
 test("rbac+audit: owner can revoke invite; event is logged", async ({ page }) => {
@@ -226,7 +233,7 @@ test("rbac+audit: owner can revoke invite; event is logged", async ({ page }) =>
   await page.getByRole("button", { name: /revoke|失効/i }).first().click();
 
   await page.goto("/settings");
-  await expect(page.locator("text=/Invite revoked|招待リンク失効/")).toBeVisible();
+  await expectActivityHas(page, /Invite revoked|招待リンク失効/);
 });
 
 test("rbac+audit: member cannot revoke invite; forbidden is logged (workspace event)", async ({ page }) => {
@@ -259,7 +266,7 @@ test("rbac+audit: member cannot revoke invite; forbidden is logged (workspace ev
   expect(json.error).toBe("forbidden");
 
   await page.goto("/settings");
-  await expect(page.locator("text=/Forbidden|権限拒否/")).toBeVisible();
+  await expectActivityHas(page, /Forbidden|権限拒否/);
 });
 
 test("invite: outsider can accept invite; join events are logged", async ({ page }) => {
@@ -286,8 +293,8 @@ test("invite: outsider can accept invite; join events are logged", async ({ page
   await expect(page).toHaveURL(/\/settings\?invite=accepted/);
 
   // Activity feed should show invite accepted / member joined.
-  await expect(page.locator("text=/Invite accepted|招待リンク受諾/")).toBeVisible();
-  await expect(page.locator("text=/Member joined|メンバー参加/")).toBeVisible();
+  await expectActivityHas(page, /Invite accepted|招待リンク受諾/);
+  await expectActivityHas(page, /Member joined|メンバー参加/);
 });
 
 test("invite: usage is audited and used-up is logged when maxUses=1", async ({ page }) => {
@@ -314,9 +321,9 @@ test("invite: usage is audited and used-up is logged when maxUses=1", async ({ p
   await expect(page).toHaveURL(/\/settings\?invite=accepted/);
 
   // Activity feed should show usage + used up.
-  await expect(page.locator("text=/Invite used|招待リンク使用/")).toBeVisible();
-  await expect(page.locator("text=/Invite used up|招待リンク上限到達/")).toBeVisible();
-  await expect(page.locator("text=/Invite revoked|招待リンク失効/")).toBeVisible();
+  await expectActivityHas(page, /Invite used|招待リンク使用/);
+  await expectActivityHas(page, /Invite used up|招待リンク上限到達/);
+  await expectActivityHas(page, /Invite revoked|招待リンク失効/);
 });
 
 

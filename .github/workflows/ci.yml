@@ -30,6 +30,7 @@ jobs:
       AUTH_GITHUB_SECRET: dummy
       AUTH_BYPASS: "1"
       SLACK_WEBHOOK_URL: mock
+      E2E_PORT: "3000"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

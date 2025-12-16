@@ -1,6 +1,8 @@
 import { defineConfig } from "@playwright/test";
 
-const port = Number(process.env.E2E_PORT ?? 3000);
+// Use a separate port by default to avoid clashing with an existing local dev server.
+// CI explicitly sets E2E_PORT=3000.
+const port = Number(process.env.E2E_PORT ?? 3001);
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${port}`;
 
 export default defineConfig({
