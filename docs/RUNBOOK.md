@@ -49,6 +49,7 @@ Forbidden in production (must be unset or `"0"`):
 - `/inbox`: create/edit/complete/delete tasks works
 - `/weekly`: can set “Next step” and save weekly note/report
 - `/settings`: integrations show correct status (Sentry/Slack/OpenAI)
+- Confirm `/api/e2e/*` is not reachable in production (`VERCEL_ENV=production` or `NODE_ENV=production`) (should return 404).
 
 ## Monitoring & alerting
 

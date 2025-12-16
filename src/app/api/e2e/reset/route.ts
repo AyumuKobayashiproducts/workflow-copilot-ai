@@ -5,12 +5,17 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
 const AUTH_BYPASS_ENABLED = process.env.AUTH_BYPASS === "1";
+const IS_PROD = process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production";
 const TEST_OWNER_ID = "test-user";
 const TEST_MEMBER_ID = "test-member";
 const TEST_OUTSIDER_ID = "test-outsider";
 const TEST_WORKSPACE_ID = "e2e-workspace";
 
 export async function POST(req: Request) {
+  // Never expose E2E endpoints in production (defense in depth).
+  if (IS_PROD) {
+    return NextResponse.json({ ok: false, error: "disabled" }, { status: 404 });
+  }
   if (!AUTH_BYPASS_ENABLED) {
     return NextResponse.json({ ok: false, error: "disabled" }, { status: 404 });
   }
