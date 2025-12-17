@@ -313,25 +313,7 @@ npm run db:down
 npm run db:generate
 npm run db:migrate
 npm run db:deploy
-```
-
-## Screenshots (generate locally)
-
-Generate (English UI) screenshots locally:
-
-```bash
 npm run screenshots
 ```
-
-Outputs (written to `docs/screenshots/`):
-
-- `home.png`
-- `inbox.png`
-- `weekly.png`
-
-Notes:
-
-- See `docs/screenshots/README.md` for details.
-- If you publish a demo video, add it to “Quick links”.
 
 
