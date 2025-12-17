@@ -21,6 +21,14 @@ Japanese README: `README.ja.md`
 - Health: [`/api/health`](https://workflow-copilot-ai.vercel.app/api/health)
 - Docs hub: [`docs/INDEX.md`](docs/INDEX.md)
 
+## Screenshots (replace later if you want)
+
+![Home](docs/screenshots/home.png)
+![Inbox](docs/screenshots/inbox.png)
+![Weekly](docs/screenshots/weekly.png)
+
+> You can regenerate/replace these anytime: `npm run screenshots` (writes to `docs/screenshots/`).
+
 ## Problem → Solution
 
 **Problem:** Personal task systems often fail at the “what should I do next?” moment: tasks pile up, weekly reviews are disconnected from execution, and sharing progress is frictionful.
@@ -306,7 +314,7 @@ npm run db:migrate
 npm run db:deploy
 ```
 
-## Screenshots
+## Screenshots (generate locally)
 
 Generate (English UI) screenshots locally:
 
@@ -319,12 +327,6 @@ Outputs (written to `docs/screenshots/`):
 - `home.png`
 - `inbox.png`
 - `weekly.png`
-
-Preview:
-
-![Home](docs/screenshots/home.png)
-![Inbox](docs/screenshots/inbox.png)
-![Weekly](docs/screenshots/weekly.png)
 
 Notes:
 
