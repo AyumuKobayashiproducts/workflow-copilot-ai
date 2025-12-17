@@ -321,6 +321,12 @@ Outputs (written to `docs/screenshots/`):
 - `inbox.png`
 - `weekly.png`
 
+Preview:
+
+![Home](docs/screenshots/home.png)
+![Inbox](docs/screenshots/inbox.png)
+![Weekly](docs/screenshots/weekly.png)
+
 Notes:
 
 - See `docs/screenshots/README.md` for details.
