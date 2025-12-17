@@ -44,6 +44,7 @@ Forbidden in production (must be unset or `"0"`):
 
 ## Smoke tests (post-deploy)
 
+- `GET /api/health` returns `200` with `{ ok: true, db: "ok" }`
 - `/` loads (no auth bypass in production)
 - Sign in with GitHub works
 - `/inbox`: create/edit/complete/delete tasks works

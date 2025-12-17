@@ -111,9 +111,11 @@ This is stored as `Task.focusAt` and surfaced in both `/weekly` and `/inbox`.
 
 - Architecture: `docs/ARCHITECTURE.md`
 - Security notes: `docs/SECURITY.md`
+- Observability: `docs/OBSERVABILITY.md`
 - Runbook: `docs/RUNBOOK.md`
 - Roadmap: `docs/ROADMAP.md`
 - Changelog: `docs/CHANGELOG.md`
+- Recruiter notes (1-page): `docs/RECRUITER_NOTES.md`
 - Terms: `/terms` (in-app) + `docs/TERMS.md`
 - Privacy: `/privacy` (in-app) + `docs/PRIVACY.md`
 

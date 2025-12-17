@@ -64,4 +64,12 @@ Expected: **404** with JSON like `{"ok":false,"error":"disabled"}`.
 Note: If you open the URL in a browser (GET), you may see **405** depending on the deployed version and routing;
 POST is the security-relevant check.
 
+### Health check
+
+After deploy, confirm DB connectivity:
+
+```bash
+curl -i https://YOUR_DOMAIN/api/health
+```
+
 

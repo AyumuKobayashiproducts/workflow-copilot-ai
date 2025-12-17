@@ -1,3 +1,36 @@
+## Recruiter Notes (1-page)
+
+This repository is meant to demonstrate “full-stack SaaS execution” with production guardrails.
+
+### What this app does
+
+Workflow Copilot helps users run a tight loop:
+
+- Inbox capture
+- Break down goals into steps
+- Weekly review + “Next step” focus
+- (Optional) share a weekly report to Slack
+
+### What I’m intentionally showing (engineering)
+
+- **End-to-end ownership**: product flow, auth, DB, CI, and E2E are all included.
+- **Production-minded defaults**:
+  - CI gates: `lint` / `check:i18n` / `build` / `test:e2e`
+  - Postgres migrations run in CI/CD
+  - `/api/health` for DB-backed health checks
+- **Security**:
+  - Server-enforced workspace RBAC (`owner` / `member`)
+  - Audit logging including `forbidden` attempts
+  - Invite tokens stored as hashes (no raw tokens in DB)
+  - E2E-only endpoints disabled in production (defense-in-depth)
+- **Testability**:
+  - Stable Playwright E2E runs locally and in CI (DB preflight + deterministic behavior)
+
+### Tradeoffs (deliberate)
+
+- Keeps domain model minimal to focus on reliability and observability.
+- Roles are intentionally coarse (`owner` / `member`) to prioritize server-enforced correctness over complex UI permissions.
+
 # Recruiter notes (how to evaluate this repo in ~5 minutes)
 
 This repository is a portfolio project intentionally shaped to demonstrate **full-stack execution** with **production-minded guardrails**.
