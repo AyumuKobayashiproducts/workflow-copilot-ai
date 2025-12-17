@@ -2,6 +2,23 @@
 
 [![CI](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml)
 
+## クイックリンク
+
+- デモ: `https://workflow-copilot-ai.vercel.app`
+- リリース: `v1.0.0`（GitHub Releases）
+- CI: GitHub Actions（`ci.yml`）
+- ヘルスチェック: `GET /api/health`（DB疎通OKなら 200）
+- ドキュメント一覧: `docs/INDEX.md`
+- 英語README: `README.md`
+
+## スクリーンショット（差し替え可）
+
+![Home](docs/screenshots/home.png)
+![Inbox](docs/screenshots/inbox.png)
+![Weekly](docs/screenshots/weekly.png)
+
+> 更新したい場合: `npm run screenshots`（`docs/screenshots/` に出力）
+
 ## 1. プロダクト概要（3行以内）
 
 タスクが溜まりがちな開発・業務で「次に何をやるか」を決めやすくする、個人〜小規模チーム向けの実行支援アプリです。  
@@ -53,4 +70,62 @@ Inboxで集め、Breakdownで“次の一歩”に落とし、Weeklyで振り返
 - 書き込み系エンドポイントの基本的なレート制限・悪用対策
 - オンボーディング改善（初回体験のガイド、サンプルデータの扱い）
 
+---
+
+## 動作確認（30秒）
+
+1. `/`（Home）→ 画面遷移ができる
+2. `/api/health` → `{"ok":true,"db":"ok"}` が返る（DB接続できている）
+3. `/breakdown` → 目標入力 → ステップ生成 → Inboxへ保存
+4. `/inbox` → タスク編集/完了
+5. `/weekly` → Next step を1つ選択 → 週次メモ/レポートを保存
+
+## ローカル開発（最小）
+
+前提: Node.js / npm
+
+```bash
+npm install
+```
+
+### 1) Postgres を起動（Dockerがある場合）
+
+```bash
+npm run db:up
+```
+
+`.env.local` を作り、`docs/env.example` を参考に `DATABASE_URL` / `PRISMA_DATABASE_URL` を設定します。  
+（例: Docker Compose の場合は `postgresql://postgres:postgres@localhost:5432/app?schema=public`）
+
+### 2) マイグレーション & seed
+
+```bash
+npm run db:migrate
+npm run db:seed
+```
+
+### 3) 起動
+
+```bash
+npm run dev
+```
+
+## E2E（Playwright）
+
+E2Eは **Postgres必須**です（`DATABASE_URL` / `PRISMA_DATABASE_URL`）。
+
+```bash
+npm run test:e2e
+```
+
+`test:e2e` は実行前に preflight で環境を検査し、DBのenvが無い場合は分かりやすく停止します。
+
+## 環境変数（要点）
+
+`docs/env.example` に一覧があります。よく触るものだけ抜粋します。
+
+- **DB（必須）**: `DATABASE_URL`, `PRISMA_DATABASE_URL`
+- **認証（ローカルでログインを使う場合）**: `AUTH_SECRET`, `AUTH_URL`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
+- **Slack（任意）**: `SLACK_WEBHOOK_URL`
+- **AI（任意）**: `OPENAI_API_KEY`（未設定でもBreakdownはテンプレで動作）
 
