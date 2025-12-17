@@ -15,11 +15,11 @@ Japanese README: `README.ja.md`
 
 ## Quick links
 
-- Demo: https://workflow-copilot-ai.vercel.app/
-- Release: https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/releases/tag/v1.0.0
-- CI: https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml
-- Health: https://workflow-copilot-ai.vercel.app/api/health
-- Docs hub: https://github.com/AyumuKobayashiproducts/workflow-copilot-ai#documentation
+- Demo: [workflow-copilot-ai.vercel.app](https://workflow-copilot-ai.vercel.app/)
+- Release: [v1.0.0](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/releases/tag/v1.0.0)
+- CI: [Actions workflow](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml)
+- Health: [`/api/health`](https://workflow-copilot-ai.vercel.app/api/health)
+- Docs hub: [`docs/INDEX.md`](docs/INDEX.md)
 
 ## Problem → Solution
 
