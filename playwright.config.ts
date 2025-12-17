@@ -59,6 +59,9 @@ export default defineConfig({
         timeout: 120_000,
         env: {
           ...process.env,
+          // Next.js dev server can occasionally log webpack file-system cache warnings during E2E.
+          // Disable FS cache for cleaner, more deterministic test output.
+          NEXT_DISABLE_FILE_SYSTEM_CACHE: process.env.NEXT_DISABLE_FILE_SYSTEM_CACHE ?? "1",
           // E2E focuses on product flows; real OAuth is out of scope for Playwright here.
           // Set AUTH_BYPASS=0 explicitly if you want to test the real login flow.
           AUTH_BYPASS: process.env.AUTH_BYPASS ?? "1",

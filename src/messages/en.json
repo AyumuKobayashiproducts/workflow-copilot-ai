@@ -98,6 +98,12 @@
   "home.whatYouCanDo.item1": "Add / complete / delete tasks in Inbox",
   "home.whatYouCanDo.item2": "Turn a goal into steps and save to Inbox",
   "home.whatYouCanDo.item3": "Weekly review (report + optional Slack sharing)",
+  "home.links.title": "Links (ops & docs)",
+  "home.links.health": "Health check",
+  "home.links.docs": "Docs",
+  "home.links.repo": "GitHub repo",
+  "home.links.release": "Latest release",
+  "home.links.note": "Tip: In production, E2E endpoints are disabled; /api/health is safe to share for DB connectivity checks.",
 
   "languageSwitcher.label": "Language",
   "languageSwitcher.english": "English",

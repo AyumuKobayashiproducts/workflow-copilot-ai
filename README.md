@@ -13,6 +13,14 @@ Health check: `GET /api/health` (returns 200 when DB is reachable)
 
 Japanese README: `README.ja.md`
 
+## Quick links
+
+- Demo: https://workflow-copilot-ai.vercel.app/
+- Release: https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/releases/tag/v1.0.0
+- CI: https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml
+- Health: https://workflow-copilot-ai.vercel.app/api/health
+- Docs hub: https://github.com/AyumuKobayashiproducts/workflow-copilot-ai#documentation
+
 ## Problem → Solution
 
 **Problem:** Personal task systems often fail at the “what should I do next?” moment: tasks pile up, weekly reviews are disconnected from execution, and sharing progress is frictionful.

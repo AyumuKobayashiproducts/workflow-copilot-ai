@@ -17,6 +17,10 @@ export default async function HomePage(props: { searchParams?: Promise<Record<st
   const demoRaw = searchParams.demo;
   const demo = (Array.isArray(demoRaw) ? demoRaw[0] : demoRaw) ?? "";
 
+  const demoUrl = "https://workflow-copilot-ai.vercel.app/";
+  const releaseUrl = "https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/releases/tag/v1.0.0";
+  const repoUrl = "https://github.com/AyumuKobayashiproducts/workflow-copilot-ai";
+
   return (
     <div className="space-y-6">
       <header className="space-y-1">
@@ -97,6 +101,38 @@ export default async function HomePage(props: { searchParams?: Promise<Record<st
           <li>{t("home.whatYouCanDo.item2")}</li>
           <li>{t("home.whatYouCanDo.item3")}</li>
         </ul>
+      </section>
+
+      <section className="rounded-lg border border-neutral-300 bg-white p-6 shadow-sm">
+        <h2 className="text-sm font-medium">{t("home.links.title")}</h2>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <Button asChild variant="secondary" size="sm">
+            <a href="/api/health" target="_blank" rel="noreferrer">
+              {t("home.links.health")}
+            </a>
+          </Button>
+          <Button asChild variant="secondary" size="sm">
+            <a href={demoUrl} target="_blank" rel="noreferrer">
+              Demo
+            </a>
+          </Button>
+          <Button asChild variant="secondary" size="sm">
+            <a href={repoUrl} target="_blank" rel="noreferrer">
+              {t("home.links.repo")}
+            </a>
+          </Button>
+          <Button asChild variant="secondary" size="sm">
+            <a href={releaseUrl} target="_blank" rel="noreferrer">
+              {t("home.links.release")}
+            </a>
+          </Button>
+          <Button asChild variant="secondary" size="sm">
+            <a href={`${repoUrl}#documentation`} target="_blank" rel="noreferrer">
+              {t("home.links.docs")}
+            </a>
+          </Button>
+        </div>
+        <p className="mt-3 text-xs text-neutral-600">{t("home.links.note")}</p>
       </section>
     </div>
   );

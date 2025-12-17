@@ -98,6 +98,12 @@
   "home.whatYouCanDo.item1": "受信箱でタスクを追加・完了・削除",
   "home.whatYouCanDo.item2": "分解で目標をステップにして受信箱へ保存",
   "home.whatYouCanDo.item3": "週間で振り返り（週報/Slack共有）",
+  "home.links.title": "リンク（運用・ドキュメント）",
+  "home.links.health": "ヘルスチェック",
+  "home.links.docs": "ドキュメント",
+  "home.links.repo": "GitHubリポジトリ",
+  "home.links.release": "最新リリース",
+  "home.links.note": "メモ：本番ではE2E用エンドポイントは無効化されています。/api/health はDB疎通確認として共有してOKです。",
 
   "languageSwitcher.label": "言語",
   "languageSwitcher.english": "English",
