@@ -20,6 +20,7 @@ Japanese README: `README.ja.md`
 - CI: [Actions workflow](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml)
 - Health: [`/api/health`](https://workflow-copilot-ai.vercel.app/api/health)
 - Docs hub: [`docs/INDEX.md`](docs/INDEX.md)
+- Demo video: (TODO) `docs/DEMO_VIDEO.md`
 
 ## Problem → Solution
 
@@ -319,5 +320,10 @@ Outputs (written to `docs/screenshots/`):
 - `home.png`
 - `inbox.png`
 - `weekly.png`
+
+Notes:
+
+- See `docs/screenshots/README.md` for details.
+- If you publish a demo video, add it to “Quick links” (see `docs/DEMO_VIDEO.md`).
 
 
