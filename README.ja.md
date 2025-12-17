@@ -9,6 +9,7 @@
 - **CI**: [Actions（ci.yml）](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml)
 - **ヘルスチェック**: `GET /api/health`（DB疎通OKなら 200）→ [`/api/health`](https://workflow-copilot-ai.vercel.app/api/health)
 - **ドキュメント一覧**: [`docs/INDEX.md`](docs/INDEX.md)
+- **公開前チェックリスト**: [`docs/PUBLIC_RELEASE_CHECKLIST.ja.md`](docs/PUBLIC_RELEASE_CHECKLIST.ja.md)
 - **採用担当向けメモ**: [`docs/RECRUITER_NOTES.ja.md`](docs/RECRUITER_NOTES.ja.md)
 - **英語README**: [`README.md`](README.md)
 
