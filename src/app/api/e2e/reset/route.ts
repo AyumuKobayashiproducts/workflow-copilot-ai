@@ -61,6 +61,14 @@ export async function POST(req: Request) {
       create: { workspaceId: TEST_WORKSPACE_ID, userId: TEST_MEMBER_ID, role: "member" }
     });
 
+    // Ensure no other users are members (e.g. an outsider joined via invite in a previous run).
+    await prisma.workspaceMembership.deleteMany({
+      where: {
+        workspaceId: TEST_WORKSPACE_ID,
+        userId: { notIn: [TEST_OWNER_ID, TEST_MEMBER_ID] }
+      }
+    });
+
     // Ensure both users operate in the same default workspace.
     await prisma.user.update({ where: { id: TEST_OWNER_ID }, data: { defaultWorkspaceId: TEST_WORKSPACE_ID } });
     await prisma.user.update({ where: { id: TEST_MEMBER_ID }, data: { defaultWorkspaceId: TEST_WORKSPACE_ID } });

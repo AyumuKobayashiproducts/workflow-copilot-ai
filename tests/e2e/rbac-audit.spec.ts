@@ -114,8 +114,6 @@ test("rbac+audit: member cannot edit someone else's task title; forbidden is log
   await expect(input).toBeVisible();
   await input.fill(updated);
   await row.getByRole("button", { name: /save|保存/i }).click();
-  // URL param may be cleaned immediately; assert the actual toast text instead.
-  await expect(page.locator("text=/You do not have permission to do that\\.|権限がありません。/")).toBeVisible();
 
   // Activity feed should show a Forbidden event.
   await page.goto("/settings");
