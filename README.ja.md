@@ -4,12 +4,13 @@
 
 ## クイックリンク
 
-- デモ: `https://workflow-copilot-ai.vercel.app`
-- リリース: `v1.0.0`（GitHub Releases）
-- CI: GitHub Actions（`ci.yml`）
-- ヘルスチェック: `GET /api/health`（DB疎通OKなら 200）
-- ドキュメント一覧: `docs/INDEX.md`
-- 英語README: `README.md`
+- **デモ**: [workflow-copilot-ai.vercel.app](https://workflow-copilot-ai.vercel.app/)
+- **リリース**: [v1.0.0](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/releases/tag/v1.0.0)
+- **CI**: [Actions（ci.yml）](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml)
+- **ヘルスチェック**: `GET /api/health`（DB疎通OKなら 200）→ [`/api/health`](https://workflow-copilot-ai.vercel.app/api/health)
+- **ドキュメント一覧**: [`docs/INDEX.md`](docs/INDEX.md)
+- **採用担当向けメモ**: [`docs/RECRUITER_NOTES.ja.md`](docs/RECRUITER_NOTES.ja.md)
+- **英語README**: [`README.md`](README.md)
 
 ## スクリーンショット（差し替え可）
 
@@ -18,6 +19,12 @@
 ![Weekly](docs/screenshots/weekly.png)
 
 > 更新したい場合: `npm run screenshots`（`docs/screenshots/` に出力）
+
+## 画面の用語（最初にここだけ）
+
+- **受信箱（Inbox）**: 思いついたタスクを集める場所
+- **分解（Breakdown）**: 目標を実行ステップ案に落とす場所
+- **週間（Weekly）**: 週次で振り返り、**Next step（次の一手）を1つ**決める場所
 
 ## 採用担当の方へ（評価ポイントと“証拠”の場所）
 
@@ -43,8 +50,8 @@
 ## 1. プロダクト概要（3行以内）
 
 タスクが溜まりがちな開発・業務で「次に何をやるか」を決めやすくする、個人〜小規模チーム向けの実行支援アプリです。  
-Inboxで集め、Breakdownで“次の一歩”に落とし、Weeklyで振り返ってNext stepを1つに絞る流れを支援します。  
-デモ: `https://workflow-copilot-ai.vercel.app`（DB疎通の確認: `GET /api/health`）
+受信箱で集め、分解で“次の一歩”に落とし、週間で振り返ってNext stepを1つに絞る流れを支援します。  
+動作確認は「動作確認（30秒）」の手順どおりに辿れます。
 
 ## 2. 解決する課題
 
@@ -54,15 +61,15 @@ Inboxで集め、Breakdownで“次の一歩”に落とし、Weeklyで振り返
 
 ## 3. 主な機能（箇条書き）
 
-- **Inbox**: タスクの追加 / 編集 / 完了切替 / 削除
-- **Breakdown**: 目標を入力し、実行ステップ案を生成してInboxへ一括保存
-- **Weekly**: 週次のメモ/レポートを生成・保存し、Next step（1件）を選択
+- **受信箱（Inbox）**: タスクの追加 / 編集 / 完了切替 / 削除
+- **分解（Breakdown）**: 目標 → 実行ステップ案の生成 → 受信箱へ一括保存
+- **週間（Weekly）**: 週次メモ/レポートの生成・保存、Next step（1件）の選択
 - **Slack共有（任意）**: 週報をIncoming Webhookで投稿
-- **ログイン**: GitHub OAuth（ログイン必須の画面を保護）
+- **ログイン**: GitHub OAuth（ログイン必須ページの保護）
 
 ## 4. 想定ユースケース
 
-- **個人の開発タスク整理**: 思いついたタスクをInboxに集め、週次でNext stepを1つ決めて迷いを減らす
+- **個人の開発タスク整理**: 思いついたタスクを受信箱に集め、週次でNext stepを1つ決めて迷いを減らす
 - **小さなチームの週報共有**: 週報をアプリで作成し、Slackに投稿して非同期の共有を軽くする
 - **個人開発の運用練習**: DBあり・E2Eあり・CIありの構成で「動くことの証拠」を残す
 
@@ -71,7 +78,7 @@ Inboxで集め、Breakdownで“次の一歩”に落とし、Weeklyで振り返
 - **フロント/サーバ**: Next.js（App Router）, TypeScript
 - **認証**: Auth.js / NextAuth v5（GitHub OAuth）
 - **DB/ORM**: PostgreSQL, Prisma
-- **AI（任意）**: OpenAI API（`OPENAI_API_KEY` がある場合のみステップ生成に利用。未設定時はテンプレのフォールバック）
+- **AI（任意）**: OpenAI API（`OPENAI_API_KEY` がある場合のみステップ生成に利用。未設定時はテンプレで動作）
 - **E2E**: Playwright
 - **CI**: GitHub Actions
 - **その他**: Slack Incoming Webhook（任意）, Sentry（任意）
@@ -97,7 +104,7 @@ Inboxで集め、Breakdownで“次の一歩”に落とし、Weeklyで振り返
 
 1. `/`（Home）→ 画面遷移ができる
 2. `/api/health` → `{"ok":true,"db":"ok"}` が返る（DB接続できている）
-3. `/breakdown` → 目標入力 → ステップ生成 → Inboxへ保存
+3. `/breakdown` → 目標入力 → ステップ生成 → 受信箱へ保存
 4. `/inbox` → タスク編集/完了
 5. `/weekly` → Next step を1つ選択 → 週次メモ/レポートを保存
 
@@ -148,5 +155,5 @@ npm run test:e2e
 - **DB（必須）**: `DATABASE_URL`, `PRISMA_DATABASE_URL`
 - **認証（ローカルでログインを使う場合）**: `AUTH_SECRET`, `AUTH_URL`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
 - **Slack（任意）**: `SLACK_WEBHOOK_URL`
-- **AI（任意）**: `OPENAI_API_KEY`（未設定でもBreakdownはテンプレで動作）
+- **AI（任意）**: `OPENAI_API_KEY`（未設定でも分解はテンプレで動作）
 
