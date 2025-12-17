@@ -11,7 +11,7 @@ Release: [v1.0.0](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/
 
 Health check: `GET /api/health` (returns 200 when DB is reachable)
 
-Japanese README: `README.ja.md`
+For Japanese recruiters / hiring teams: **`README.ja.md`**
 
 ## Quick links
 
@@ -20,6 +20,7 @@ Japanese README: `README.ja.md`
 - CI: [Actions workflow](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml)
 - Health: [`/api/health`](https://workflow-copilot-ai.vercel.app/api/health)
 - Docs hub: [`docs/INDEX.md`](docs/INDEX.md)
+- Japanese README (JP hiring): `README.ja.md`
 
 ## Screenshots (replace later if you want)
 
