@@ -2,75 +2,55 @@
 
 [![CI](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml)
 
-「受信箱 → 分解 → 週間レビュー →（任意）Slack共有」までを一気通貫で回す、**production-minded** な Next.js アプリです。
+## 1. プロダクト概要（3行以内）
 
-デモURL: [workflow-copilot-ai.vercel.app](https://workflow-copilot-ai.vercel.app/)
+タスクが溜まりがちな開発・業務で「次に何をやるか」を決めやすくする、個人〜小規模チーム向けの実行支援アプリです。  
+Inboxで集め、Breakdownで“次の一歩”に落とし、Weeklyで振り返ってNext stepを1つに絞る流れを支援します。  
+デモ: `https://workflow-copilot-ai.vercel.app`（DB疎通の確認: `GET /api/health`）
 
-リリース: [v1.0.0](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/releases/tag/v1.0.0)
+## 2. 解決する課題
 
-ヘルスチェック: `GET /api/health`（DB疎通OKなら 200）
+- **タスクが受信箱に溜まって終わる**: 収集はできるが、分解・実行に移れない
+- **週次レビューが“振り返りだけ”で終わる**: 次の行動に繋がらない
+- **共有が重い**: 週報を作る/整形する/投稿するのが面倒で継続しにくい
 
-> 採用担当者向けの狙い：UIだけでなく、**設計・運用・ガードレール**まで含めて「売り物を作れるフルスタック」を見せる。
+## 3. 主な機能（箇条書き）
 
-## 何のプロダクトか（売り方の前提）
+- **Inbox**: タスクの追加 / 編集 / 完了切替 / 削除
+- **Breakdown**: 目標を入力し、実行ステップ案を生成してInboxへ一括保存
+- **Weekly**: 週次のメモ/レポートを生成・保存し、Next step（1件）を選択
+- **Slack共有（任意）**: 週報をIncoming Webhookで投稿
+- **ログイン**: GitHub OAuth（ログイン必須の画面を保護）
 
-Workflow Copilot は、**忙しい個人（IC）** と **小規模チーム**を想定した「実行ループ最適化」ツールです。
+## 4. 想定ユースケース
 
-- 受信箱（Inbox）で集める
-- 分解（Breakdown）で“次の一歩”に落とす
-- 週間（Weekly）で振り返り、**Next step を1つ**に絞る
-- 任意で Slack に週報を共有して、非同期の透明性を上げる
+- **個人の開発タスク整理**: 思いついたタスクをInboxに集め、週次でNext stepを1つ決めて迷いを減らす
+- **小さなチームの週報共有**: 週報をアプリで作成し、Slackに投稿して非同期の共有を軽くする
+- **個人開発の運用練習**: DBあり・E2Eあり・CIありの構成で「動くことの証拠」を残す
 
-## 30秒デモ（最短）
+## 5. 技術スタック
 
-1. `/settings` →（任意）デモデータを準備（有効な環境のみ）
-2. `/breakdown` → 目標を入力 → ステップ生成 → 受信箱へ保存
-3. `/inbox` → タスク追加/編集/完了
-4. `/weekly` → Next step を1つ選ぶ → 週報生成/保存 →（任意）Slack投稿
+- **フロント/サーバ**: Next.js（App Router）, TypeScript
+- **認証**: Auth.js / NextAuth v5（GitHub OAuth）
+- **DB/ORM**: PostgreSQL, Prisma
+- **AI（任意）**: OpenAI API（`OPENAI_API_KEY` がある場合のみステップ生成に利用。未設定時はテンプレのフォールバック）
+- **E2E**: Playwright
+- **CI**: GitHub Actions
+- **その他**: Slack Incoming Webhook（任意）, Sentry（任意）
 
-## このリポジトリで意図的に見せている強み
+## 6. 開発の工夫・設計方針
 
-- **プロダクト思考**: 「振り返り→実行」への断絶を **Next step 1つ**で埋める設計
-- **フルスタック実装**: Next.js App Router + Server Actions、Auth、DB、E2E、i18n
-- **B2Bの土台**: ワークスペース（Membership）＋招待リンク（Invite）のプリミティブ
-- **運用のリアリティ**: Prisma migrations、CIでの migrate、Sentryフック、危険フラグの本番封じ（preflight）
-- **RBAC（サーバー強制）**: workspaceの `owner / member` をサーバー側で必ず検証（UIはゲートにしない）
-- **監査ログ（forbidden含む）**: 許可/拒否を含む操作ログをActivity Feedに記録
-- **招待リンクの安全設計**: 招待トークンはDBに平文で持たず、SHA-256ハッシュで保存（作成直後に一度だけ表示）
-- **E2Eで証明**: PlaywrightでRBACと監査ログをロール別に検証
+- **要件を小さく切って前進**: まずInbox/Weeklyの最小ループを作り、Breakdownや共有を段階的に追加
+- **AIは“補助”**: ステップ生成は提案に留め、最終的な判断・編集はユーザーが行う前提
+- **実務で困りがちなところを先に潰す**:
+  - DB/E2Eの前提が崩れたときに迷わないよう、E2E実行前に環境チェック（preflight）を実施
+  - CIで `lint / i18nキー整合 / build / E2E` まで回し、再現性を優先
+  - `/api/health` で「アプリ＋DBが生きている」ことを短い手順で確認可能
 
-## ドキュメント
+## 7. 今後の拡張予定（簡潔でOK）
 
-- アーキテクチャ: `docs/ARCHITECTURE.md`
-- セキュリティ: `docs/SECURITY.md`
-- Observability: `docs/OBSERVABILITY.md`
-- Runbook（運用手順）: `docs/RUNBOOK.md`
-- ロードマップ: `docs/ROADMAP.md`
-- 変更履歴: `docs/CHANGELOG.md`
-- 採用担当者向けメモ: `docs/RECRUITER_NOTES.ja.md`
-- Recruiter notes (EN, 1-page): `docs/RECRUITER_NOTES.md`
-- 利用規約: `/terms`（アプリ内） + `docs/TERMS.md`
-- プライバシー: `/privacy`（アプリ内） + `docs/PRIVACY.md`
-
-## デプロイ（Vercel）
-
-README（英語版）の「Deploy (Vercel)」と `docs/DEPLOY.md` を参照してください。
-
-## ローカル開発（最小）
-
-```bash
-npm install
-npm run lint
-npm run build
-```
-
-## E2E（Playwright）
-
-- ローカル/CIのE2Eは **Postgresが必須**です（`DATABASE_URL` / `PRISMA_DATABASE_URL` が必要）。
-- ローカル用に `docker-compose.yml` を同梱しています（Dockerがある場合）:
-  - `npm run db:up` → `npm run db:migrate` → `npm run test:e2e` → `npm run db:down`
-- `npm run test:e2e` は実行前に **preflight** を走らせ、DBのenvが無い場合は分かりやすく即停止します（Prismaのスタックトレースで迷わないため）。
-
-詳細な手順は英語版READMEの「E2E (Playwright)」を参照してください。
+- 設定画面からのデータ削除（タスク/週次/アカウント）
+- 書き込み系エンドポイントの基本的なレート制限・悪用対策
+- オンボーディング改善（初回体験のガイド、サンプルデータの扱い）
 
 
