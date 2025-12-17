@@ -39,10 +39,12 @@ Workflow Copilot は、**忙しい個人（IC）** と **小規模チーム**を
 
 - アーキテクチャ: `docs/ARCHITECTURE.md`
 - セキュリティ: `docs/SECURITY.md`
+- Observability: `docs/OBSERVABILITY.md`
 - Runbook（運用手順）: `docs/RUNBOOK.md`
 - ロードマップ: `docs/ROADMAP.md`
 - 変更履歴: `docs/CHANGELOG.md`
 - 採用担当者向けメモ: `docs/RECRUITER_NOTES.ja.md`
+- Recruiter notes (EN, 1-page): `docs/RECRUITER_NOTES.md`
 - 利用規約: `/terms`（アプリ内） + `docs/TERMS.md`
 - プライバシー: `/privacy`（アプリ内） + `docs/PRIVACY.md`
 
