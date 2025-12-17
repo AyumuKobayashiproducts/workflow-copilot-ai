@@ -1,5 +1,7 @@
 # Workflow Copilot AI
 
+[![CI](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml)
+
 A small but production-minded Next.js app for an end-to-end personal workflow:
 **Inbox → Breakdown → Weekly review → (optional) post to Slack**.
 
