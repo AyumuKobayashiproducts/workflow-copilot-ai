@@ -232,6 +232,8 @@ Notes:
 
 ## Deploy (Vercel)
 
+See also: `docs/DEPLOY.md`
+
 ### 1) Import repo
 
 Import this repository into Vercel.

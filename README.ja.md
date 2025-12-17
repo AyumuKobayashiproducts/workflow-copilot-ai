@@ -46,7 +46,7 @@ Workflow Copilot は、**忙しい個人（IC）** と **小規模チーム**を
 
 ## デプロイ（Vercel）
 
-README（英語版）の「Deploy (Vercel)」と「Production deploy checklist」を参照してください。
+README（英語版）の「Deploy (Vercel)」と `docs/DEPLOY.md` を参照してください。
 
 ## ローカル開発（最小）
 
