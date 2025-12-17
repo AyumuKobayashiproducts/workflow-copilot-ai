@@ -19,6 +19,27 @@
 
 > 更新したい場合: `npm run screenshots`（`docs/screenshots/` に出力）
 
+## 採用担当の方へ（評価ポイントと“証拠”の場所）
+
+このリポジトリは「UIが動く」だけでなく、**実務で必要になりがちな運用・安全・再現性**まで含めて見られるように作っています。
+
+- **品質ゲート（CIで毎回担保）**: `.github/workflows/ci.yml`（lint / i18n / build / E2E）
+- **本番で危険フラグを止める**: `scripts/preflight-prod.mjs`（`AUTH_BYPASS` / `DEMO_TOOLS` / `E2E_TOKEN` をブロック）
+- **E2Eを決定的にする仕組み**: `src/app/api/e2e/reset/route.ts`（本番404 + トークンガード）
+- **DB疎通の“証明”**: `src/app/api/health/route.ts`（`GET /api/health`）
+- **設計の全体像**: `docs/ARCHITECTURE.md`
+- **運用チェックリスト**: `docs/RUNBOOK.md`
+- **セキュリティ観点**: `docs/SECURITY.md`
+- **E2Eの中身**: `tests/e2e/`（例: `tests/e2e/rbac-audit.spec.ts`）
+
+## まず何を見ると早い？（5分の順番）
+
+1. この `README.ja.md`（プロダクト/再現手順）
+2. `docs/RECRUITER_NOTES.ja.md`（採用担当向けの要点）
+3. `docs/ARCHITECTURE.md`（全体設計）
+4. `docs/RUNBOOK.md`（運用の考え方）
+5. `tests/e2e/`（動作の証拠）
+
 ## 1. プロダクト概要（3行以内）
 
 タスクが溜まりがちな開発・業務で「次に何をやるか」を決めやすくする、個人〜小規模チーム向けの実行支援アプリです。  
