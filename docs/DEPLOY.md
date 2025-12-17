@@ -49,6 +49,19 @@ Make sure:
   - App loads
   - Auth works
   - DB migrations were applied
-  - `/api/e2e/*` endpoints return 404 in production (defense-in-depth)
+  - `/api/e2e/*` endpoints are not reachable in production (defense-in-depth)
+
+### Production safety check (E2E endpoints)
+
+E2E endpoints must be disabled in production. The most reliable check is a **POST**:
+
+```bash
+curl -i -X POST https://YOUR_DOMAIN/api/e2e/reset
+```
+
+Expected: **404** with JSON like `{"ok":false,"error":"disabled"}`.
+
+Note: If you open the URL in a browser (GET), you may see **405** depending on the deployed version and routing;
+POST is the security-relevant check.
 
 
