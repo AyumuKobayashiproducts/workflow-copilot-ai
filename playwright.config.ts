@@ -25,7 +25,9 @@ async function pickPort(candidates: number[]) {
 const portFromEnv = process.env.E2E_PORT ? Number(process.env.E2E_PORT) : undefined;
 const defaultCandidates = [3001, 3002, 3003, 3100, 3200];
 const port = await pickPort(portFromEnv ? [portFromEnv, ...defaultCandidates.filter((p) => p !== portFromEnv)] : defaultCandidates);
-const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${port}`;
+// Use 127.0.0.1 (not localhost) to avoid IPv6 ::1 resolution issues on some Macs,
+// which can cause ECONNREFUSED when the dev server only listens on IPv4.
+const baseURL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`;
 const workers = Number(process.env.E2E_WORKERS ?? 1);
 
 export default defineConfig({
