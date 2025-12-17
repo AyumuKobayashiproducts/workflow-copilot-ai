@@ -14,7 +14,6 @@ This folder is the “paper trail” for a small production-minded SaaS.
 
 - **Recruiter notes (EN, 1-page)**: `docs/RECRUITER_NOTES.md`
 - **Recruiter notes (JA)**: `docs/RECRUITER_NOTES.ja.md`
-- **Demo video**: `docs/DEMO_VIDEO.md`
 - **Screenshots**: `docs/screenshots/`
 - **Changelog**: `docs/CHANGELOG.md`
 - **Roadmap**: `docs/ROADMAP.md`
