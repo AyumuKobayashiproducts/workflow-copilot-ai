@@ -5,7 +5,11 @@
 A small but production-minded Next.js app for an end-to-end personal workflow:
 **Inbox → Breakdown → Weekly review → (optional) post to Slack**.
 
-Live demo: https://workflow-copilot-ai.vercel.app/
+Live demo: [workflow-copilot-ai.vercel.app](https://workflow-copilot-ai.vercel.app/)
+
+Release: [v1.0.0](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/releases/tag/v1.0.0)
+
+Health check: `GET /api/health` (returns 200 when DB is reachable)
 
 Japanese README: `README.ja.md`
 

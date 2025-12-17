@@ -4,7 +4,11 @@
 
 「受信箱 → 分解 → 週間レビュー →（任意）Slack共有」までを一気通貫で回す、**production-minded** な Next.js アプリです。
 
-デモURL: https://workflow-copilot-ai.vercel.app/
+デモURL: [workflow-copilot-ai.vercel.app](https://workflow-copilot-ai.vercel.app/)
+
+リリース: [v1.0.0](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/releases/tag/v1.0.0)
+
+ヘルスチェック: `GET /api/health`（DB疎通OKなら 200）
 
 > 採用担当者向けの狙い：UIだけでなく、**設計・運用・ガードレール**まで含めて「売り物を作れるフルスタック」を見せる。
 
