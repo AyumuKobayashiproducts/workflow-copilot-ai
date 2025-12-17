@@ -29,16 +29,15 @@
 
 ## 採用担当の方へ（評価ポイントと“証拠”の場所）
 
-このリポジトリは「UIが動く」だけでなく、**実務で必要になりがちな運用・安全・再現性**まで含めて見られるように作っています。
+このリポジトリは「UIが動く」だけでなく、**運用・安全・再現性**まで含めて見られるように作っています。
 
-- **品質ゲート（CIで毎回担保）**: `.github/workflows/ci.yml`（lint / i18n / build / E2E）
-- **本番で危険フラグを止める**: `scripts/preflight-prod.mjs`（`AUTH_BYPASS` / `DEMO_TOOLS` / `E2E_TOKEN` をブロック）
-- **E2Eを決定的にする仕組み**: `src/app/api/e2e/reset/route.ts`（本番404 + トークンガード）
-- **DB疎通の“証明”**: `src/app/api/health/route.ts`（`GET /api/health`）
-- **設計の全体像**: `docs/ARCHITECTURE.md`
-- **運用チェックリスト**: `docs/RUNBOOK.md`
-- **セキュリティ観点**: `docs/SECURITY.md`
-- **E2Eの中身**: `tests/e2e/`（例: `tests/e2e/rbac-audit.spec.ts`）
+まず押さえるポイント（証拠リンク）:
+
+- **品質ゲート**: `.github/workflows/ci.yml`（lint / i18n / build / E2E）
+- **本番安全ガード**: `scripts/preflight-prod.mjs` / `src/app/api/e2e/reset/route.ts`
+- **DB疎通の証明**: `GET /api/health`（`src/app/api/health/route.ts`）
+
+読む順番は `docs/RECRUITER_NOTES.ja.md` と `docs/PUBLIC_RELEASE_CHECKLIST.ja.md` にまとめています。
 
 ## まず何を見ると早い？（5分の順番）
 

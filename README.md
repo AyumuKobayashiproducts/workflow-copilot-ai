@@ -13,6 +13,15 @@ Health check: `GET /api/health` (returns 200 when DB is reachable)
 
 For Japanese recruiters / hiring teams: **`README.ja.md`**
 
+## Start here (pick your path)
+
+- **JP hiring / Findy**: `README.ja.md` → `docs/RECRUITER_NOTES.ja.md` → `docs/PUBLIC_RELEASE_CHECKLIST.ja.md`
+- **Developers**: `docs/INDEX.md` → `docs/ARCHITECTURE.md` → `docs/RUNBOOK.md`
+- **Proof (CI / E2E / health)**:
+  - CI: [Actions workflow](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml)
+  - Health: [`/api/health`](https://workflow-copilot-ai.vercel.app/api/health)
+  - E2E: `tests/e2e/`
+
 ## Quick links
 
 - Demo: [workflow-copilot-ai.vercel.app](https://workflow-copilot-ai.vercel.app/)
