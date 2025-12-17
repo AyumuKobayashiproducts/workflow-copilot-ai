@@ -1,0 +1,26 @@
+name: Deploy (Vercel)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Only run on the canonical repo (avoid forks).
+    if: github.repository == 'AyumuKobayashiproducts/workflow-copilot-ai'
+    steps:
+      - name: Trigger Vercel deploy hook
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$VERCEL_DEPLOY_HOOK_URL" ]; then
+            echo "Missing GitHub secret: VERCEL_DEPLOY_HOOK_URL"
+            echo "Add a Vercel Deploy Hook URL as a GitHub Actions secret to enable automatic production deploys."
+            exit 1
+          fi
+          curl -fsSL "$VERCEL_DEPLOY_HOOK_URL"
+
+

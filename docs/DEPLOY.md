@@ -51,6 +51,23 @@ Make sure:
   - DB migrations were applied
   - `/api/e2e/*` endpoints are not reachable in production (defense-in-depth)
 
+### Optional: automatic production deploys (GitHub → Vercel Deploy Hook)
+
+If you want “push to `main` = deploy”, you can use a Vercel Deploy Hook.
+
+1) In Vercel: Project → Settings → Git → Deploy Hooks → Create Hook
+
+- Name: `github-main`
+- Branch: `main`
+
+2) In GitHub: Repo → Settings → Secrets and variables → Actions → New repository secret
+
+- Name: `VERCEL_DEPLOY_HOOK_URL`
+- Value: (the Deploy Hook URL from Vercel)
+
+This repo includes `.github/workflows/deploy-vercel.yml` which will trigger the hook on every push to `main`
+and also supports manual runs via `workflow_dispatch`.
+
 ### Production safety check (E2E endpoints)
 
 E2E endpoints must be disabled in production. The most reliable check is a **POST**:
