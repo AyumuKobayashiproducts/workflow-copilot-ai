@@ -17,7 +17,7 @@
     "db:down": "docker compose down -v",
     "vercel-build": "node scripts/preflight-prod.mjs && prisma generate && prisma migrate deploy && next build",
     "test:e2e": "bash -lc 'set -a; [ -f .env.local ] && source .env.local; set +a; node scripts/preflight-e2e.mjs && env -u NO_COLOR playwright test'",
-    "screenshots": "playwright test --config playwright.screenshots.config.ts",
+    "screenshots": "env -u NO_COLOR playwright test --config playwright.screenshots.config.ts",
     "preflight:prod": "node scripts/preflight-prod.mjs"
   },
   "dependencies": {

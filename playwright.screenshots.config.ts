@@ -1,8 +1,28 @@
 import { defineConfig } from "@playwright/test";
+import * as net from "node:net";
+
+async function isPortFree(port: number) {
+  return await new Promise<boolean>((resolve) => {
+    const server = net
+      .createServer()
+      .once("error", () => resolve(false))
+      .once("listening", () => server.close(() => resolve(true)))
+      .listen(port);
+  });
+}
+
+async function pickPort(candidates: number[]) {
+  for (const p of candidates) {
+    if (await isPortFree(p)) return p;
+  }
+  return candidates[0] ?? 3001;
+}
 
 // Use a separate port by default to avoid clashing with an existing local dev server.
-const port = Number(process.env.SCREENSHOTS_PORT ?? process.env.E2E_PORT ?? 3001);
-const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${port}`;
+const portFromEnv = process.env.SCREENSHOTS_PORT ? Number(process.env.SCREENSHOTS_PORT) : process.env.E2E_PORT ? Number(process.env.E2E_PORT) : undefined;
+const candidates = [3001, 3002, 3003, 3004, 3005, 3100, 3200];
+const port = await pickPort(portFromEnv ? [portFromEnv, ...candidates.filter((p) => p !== portFromEnv)] : candidates);
+const baseURL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: "tests/screenshots",
@@ -16,11 +36,12 @@ export default defineConfig({
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {
-        command: `npm run dev -- --port ${port}`,
+        // Force IPv4 bind so 127.0.0.1 baseURL works reliably on Macs.
+        command: `npm run dev -- --port ${port} --hostname 127.0.0.1`,
         url: baseURL,
         // Screenshots should be deterministic (DEMO_TOOLS/locale/auth env must apply),
         // so default to a fresh server.
-        reuseExistingServer: process.env.E2E_REUSE_SERVER === "1",
+        reuseExistingServer: process.env.SCREENSHOTS_REUSE_SERVER === "1",
         timeout: 120_000,
         env: {
           ...process.env,
