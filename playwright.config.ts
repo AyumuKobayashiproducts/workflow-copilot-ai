@@ -49,7 +49,9 @@ export default defineConfig({
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {
-        command: `npm run dev -- --port ${port}`,
+        // Force IPv4 bind so requests to 127.0.0.1 don't get ECONNREFUSED
+        // on environments where "localhost" prefers IPv6 (::1).
+        command: `npm run dev -- --port ${port} --hostname 127.0.0.1`,
         url: baseURL,
         // Local dev often already has a server running (avoid EADDRINUSE).
         // If you need a fresh server to ensure env vars are applied, set E2E_REUSE_SERVER=0.
