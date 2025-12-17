@@ -11,6 +11,12 @@ const TEST_MEMBER_ID = "test-member";
 const TEST_OUTSIDER_ID = "test-outsider";
 const TEST_WORKSPACE_ID = "e2e-workspace";
 
+export async function GET() {
+  // This endpoint is only meant for Playwright (POST). For humans/browsers, always return 404.
+  // Keeping it 404 (not 405) makes it obvious it isn't available and avoids leaking behavior.
+  return NextResponse.json({ ok: false, error: "disabled" }, { status: 404 });
+}
+
 export async function POST(req: Request) {
   // Never expose E2E endpoints in production (defense in depth).
   if (IS_PROD) {
