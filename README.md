@@ -168,6 +168,8 @@ Optional:
 - `OPENAI_API_KEY` (enables AI step generation in Breakdown)
 - `OPENAI_MODEL` (default: gpt-4o-mini)
 - `AI_DAILY_LIMIT` (default: 20, per user per day)
+- `AI_ALLOW_EMAILS` (optional allowlist; comma-separated emails. If not set, AI is disabled by default)
+- `AI_ALLOW_USER_IDS` (optional allowlist; comma-separated user ids. If not set, AI is disabled by default)
 - `SENTRY_DSN` (enables Sentry error reporting)
 - `SENTRY_TRACES_SAMPLE_RATE` (default: 0.0)
 - `SENTRY_TEST_ENABLED` (optional; enables /sentry-test in production for verification)
@@ -183,7 +185,7 @@ Optional:
   - Never set in production.
 - **Sentry**: Set `SENTRY_DSN` (and optionally `SENTRY_TRACES_SAMPLE_RATE`) in Vercel to capture errors.
 - **Slack**: Set `SLACK_WEBHOOK_URL` to enable Slack posting.
-- **OpenAI**: Set `OPENAI_API_KEY` to enable AI generation in Breakdown/Weekly. Keep `AI_DAILY_LIMIT` conservative.
+- **OpenAI**: Set `OPENAI_API_KEY` + (`AI_ALLOW_EMAILS` or `AI_ALLOW_USER_IDS`) to enable AI generation in Breakdown/Weekly. Keep `AI_DAILY_LIMIT` conservative.
 
 ## For recruiters (what to look at first)
 

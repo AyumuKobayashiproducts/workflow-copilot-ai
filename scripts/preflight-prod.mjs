@@ -65,7 +65,7 @@ const aiAllowUserIds = String(process.env.AI_ALLOW_USER_IDS ?? "").trim();
 if (openaiKey && !aiAllowEmails && !aiAllowUserIds) {
   console.warn(
     "[preflight] OPENAI_API_KEY is set but AI_ALLOW_EMAILS / AI_ALLOW_USER_IDS is not set. " +
-      "AI may be available to all users and increase API costs. Consider setting an allowlist."
+      "AI will be disabled by default. Set an allowlist to enable AI safely."
   );
 }
 

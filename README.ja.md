@@ -5,7 +5,7 @@
 ## クイックリンク
 
 - **デモ**: [workflow-copilot-ai.vercel.app](https://workflow-copilot-ai.vercel.app/)
-- **リポジトリ**: `https://github.com/AyumuKobayashiproducts/workflow-copilot-ai`
+- **リポジトリ**: [GitHub](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai)
 - **リリース**: [v1.0.0](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/releases/tag/v1.0.0)
 - **CI**: [Actions（ci.yml）](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml)
 - **ヘルスチェック**: `GET /api/health`（DB疎通OKなら 200）→ [`/api/health`](https://workflow-copilot-ai.vercel.app/api/health)
