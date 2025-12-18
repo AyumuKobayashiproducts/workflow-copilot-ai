@@ -5,6 +5,7 @@
 ## クイックリンク
 
 - **デモ**: [workflow-copilot-ai.vercel.app](https://workflow-copilot-ai.vercel.app/)
+- **リポジトリ**: `https://github.com/AyumuKobayashiproducts/workflow-copilot-ai`
 - **リリース**: [v1.0.0](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/releases/tag/v1.0.0)
 - **CI**: [Actions（ci.yml）](https://github.com/AyumuKobayashiproducts/workflow-copilot-ai/actions/workflows/ci.yml)
 - **ヘルスチェック**: `GET /api/health`（DB疎通OKなら 200）→ [`/api/health`](https://workflow-copilot-ai.vercel.app/api/health)
@@ -20,6 +21,16 @@
 ![Weekly](docs/screenshots/weekly.png)
 
 > 更新したい場合: `npm run screenshots`（`docs/screenshots/` に出力）
+
+## 動作確認（30秒）
+
+以下を上から辿るだけで、主要フローが確認できます（デモ環境のURL例）。
+
+1. Home: [ `/` ](https://workflow-copilot-ai.vercel.app/)
+2. DB疎通: [ `/api/health` ](https://workflow-copilot-ai.vercel.app/api/health) → `{"ok":true,"db":"ok"}`
+3. 分解: [ `/breakdown` ](https://workflow-copilot-ai.vercel.app/breakdown) → 目標入力 → ステップ生成 → 受信箱へ保存
+4. 受信箱: [ `/inbox` ](https://workflow-copilot-ai.vercel.app/inbox) → タスク編集/完了
+5. 週間: [ `/weekly` ](https://workflow-copilot-ai.vercel.app/weekly) → Next step を1つ選択 → 週次メモ/レポートを保存
 
 ## 画面の用語（最初にここだけ）
 
@@ -100,14 +111,6 @@
 
 ---
 
-## 動作確認（30秒）
-
-1. `/`（Home）→ 画面遷移ができる
-2. `/api/health` → `{"ok":true,"db":"ok"}` が返る（DB接続できている）
-3. `/breakdown` → 目標入力 → ステップ生成 → 受信箱へ保存
-4. `/inbox` → タスク編集/完了
-5. `/weekly` → Next step を1つ選択 → 週次メモ/レポートを保存
-
 ## ローカル開発（最小）
 
 前提: Node.js / npm
@@ -156,4 +159,8 @@ npm run test:e2e
 - **認証（ローカルでログインを使う場合）**: `AUTH_SECRET`, `AUTH_URL`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
 - **Slack（任意）**: `SLACK_WEBHOOK_URL`
 - **AI（任意）**: `OPENAI_API_KEY`（未設定でも分解はテンプレで動作）
+
+## ライセンス
+
+MIT（`LICENSE`）
 
