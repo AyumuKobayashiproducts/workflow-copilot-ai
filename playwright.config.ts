@@ -24,7 +24,10 @@ async function pickPort(candidates: number[]) {
 // CI explicitly sets E2E_PORT=3000.
 const portFromEnv = process.env.E2E_PORT ? Number(process.env.E2E_PORT) : undefined;
 const defaultCandidates = [3001, 3002, 3003, 3100, 3200];
-const port = await pickPort(portFromEnv ? [portFromEnv, ...defaultCandidates.filter((p) => p !== portFromEnv)] : defaultCandidates);
+// IMPORTANT:
+// - If E2E_PORT is explicitly set (CI), always use it to avoid baseURL drift (e.g. CI expecting 3000).
+// - If it's not set (local), pick a free port to avoid conflicts with an existing dev server.
+const port = portFromEnv ?? (await pickPort(defaultCandidates));
 // Use 127.0.0.1 (not localhost) to avoid IPv6 ::1 resolution issues on some Macs,
 // which can cause ECONNREFUSED when the dev server only listens on IPv4.
 const baseURL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`;
