@@ -69,7 +69,10 @@ export default defineConfig({
           // Demo tools are useful in E2E to validate admin-only operations and audit logs.
           DEMO_TOOLS: process.env.DEMO_TOOLS ?? "1",
           SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL ?? "mock",
-          AUTH_URL: process.env.AUTH_URL ?? baseURL,
+          // IMPORTANT: Keep AUTH_URL consistent with Playwright baseURL host.
+          // CI sometimes sets AUTH_URL=http://localhost:3000 while baseURL is 127.0.0.1,
+          // which can break auth cookies/redirects due to host mismatch.
+          AUTH_URL: baseURL,
           AUTH_SECRET: process.env.AUTH_SECRET ?? "e2e-secret",
           AUTH_GITHUB_ID: process.env.AUTH_GITHUB_ID ?? "dummy",
           AUTH_GITHUB_SECRET: process.env.AUTH_GITHUB_SECRET ?? "dummy"

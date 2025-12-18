@@ -24,7 +24,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
       PRISMA_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
-      AUTH_URL: http://localhost:3000
+      # Keep host consistent with Playwright baseURL (127.0.0.1) to avoid auth cookie/redirect mismatch.
+      AUTH_URL: http://127.0.0.1:3000
       AUTH_SECRET: ci-secret
       AUTH_GITHUB_ID: dummy
       AUTH_GITHUB_SECRET: dummy
