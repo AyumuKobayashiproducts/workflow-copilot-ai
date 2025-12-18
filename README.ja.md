@@ -159,6 +159,7 @@ npm run test:e2e
 - **認証（ローカルでログインを使う場合）**: `AUTH_SECRET`, `AUTH_URL`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
 - **Slack（任意）**: `SLACK_WEBHOOK_URL`
 - **AI（任意）**: `OPENAI_API_KEY`（未設定でも分解はテンプレで動作）
+  - 公開時にコストを抑えるなら **`AI_ALLOW_EMAILS` / `AI_ALLOW_USER_IDS`** を設定して「許可ユーザーだけAI」を推奨
 
 ## ライセンス
 

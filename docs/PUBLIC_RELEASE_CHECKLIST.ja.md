@@ -24,6 +24,15 @@
   - `DEMO_TOOLS=1`
   - `E2E_TOKEN=e2e`
 
+### 2.5) APIコスト（OpenAI等）の暴騰を防ぐ
+
+- 本番でAIを一般公開しないなら:
+  - **`OPENAI_API_KEY` を本番に入れない**（テンプレで動作し、課金は発生しません）
+- 本番でAIを“限定ユーザーだけ”に使わせるなら:
+  - `AI_ALLOW_EMAILS`（または `AI_ALLOW_USER_IDS`）を設定して **ホワイトリスト制**にする
+  - `AI_DAILY_LIMIT` を小さめにする（例: 5〜20）
+  - OpenAI側のダッシュボードで **月額ハード上限**を設定する（最後の安全装置）
+
 ### 3) リポジトリ表示（採用担当が迷わない）
 
 - GitHubの `README.md` / `README.ja.md` を確認

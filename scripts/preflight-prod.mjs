@@ -59,6 +59,16 @@ if (!process.env.SENTRY_DSN) {
   console.warn("[preflight] SENTRY_DSN is not set (optional). Errors will not be reported to Sentry.");
 }
 
+const openaiKey = String(process.env.OPENAI_API_KEY ?? "").trim();
+const aiAllowEmails = String(process.env.AI_ALLOW_EMAILS ?? "").trim();
+const aiAllowUserIds = String(process.env.AI_ALLOW_USER_IDS ?? "").trim();
+if (openaiKey && !aiAllowEmails && !aiAllowUserIds) {
+  console.warn(
+    "[preflight] OPENAI_API_KEY is set but AI_ALLOW_EMAILS / AI_ALLOW_USER_IDS is not set. " +
+      "AI may be available to all users and increase API costs. Consider setting an allowlist."
+  );
+}
+
 if (missing.length || forbidden.length) process.exit(1);
 console.log("[preflight] OK");
 

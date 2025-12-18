@@ -10,6 +10,7 @@ import { requireWorkspaceContext } from "@/lib/workspaces/context";
 import { listTasks } from "@/lib/tasks/store";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { consumeAiUsage } from "@/lib/ai/usage";
+import { isAiAllowedUser } from "@/lib/ai/allowlist";
 
 const WEEKLY_NOTE_MAX_CHARS = 500;
 const WEEKLY_REPORT_MAX_CHARS = 2000;
@@ -170,7 +171,8 @@ export async function generateWeeklyReportText(
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
   // If AI is not configured, return a deterministic text (still useful).
-  if (!apiKey) {
+  const aiAllowed = await isAiAllowedUser({ userId: ctx.userId });
+  if (!apiKey || !aiAllowed) {
     const text = [
       `Weekly report (${startLabel} - ${endLabel})`,
       `Completed: ${doneCount}`,

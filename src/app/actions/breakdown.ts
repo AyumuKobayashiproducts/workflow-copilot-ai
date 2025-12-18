@@ -5,6 +5,7 @@ import * as Sentry from "@sentry/nextjs";
 import { createT, getLocale, getMessages } from "@/lib/i18n/server";
 import { requireWorkspaceContext } from "@/lib/workspaces/context";
 import { consumeAiUsage } from "@/lib/ai/usage";
+import { isAiAllowedUser } from "@/lib/ai/allowlist";
 
 type Result =
   | { ok: true; steps: string[] }
@@ -43,7 +44,8 @@ export async function generateBreakdownSteps(goal: string): Promise<Result> {
   const t = createT(messages);
 
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
+  const aiAllowed = await isAiAllowedUser({ userId: ctx.userId });
+  if (!apiKey || !aiAllowed) {
     // Fallback steps so the feature remains useful without AI configured.
     return {
       ok: true,
