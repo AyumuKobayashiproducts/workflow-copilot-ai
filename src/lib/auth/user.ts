@@ -2,6 +2,13 @@ import { auth } from "@/auth";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 
+export class UnauthorizedError extends Error {
+  constructor(message = "Unauthorized") {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
+
 const AUTH_BYPASS_ENABLED = process.env.AUTH_BYPASS === "1";
 const TEST_USER_ID = "test-user";
 const TEST_USER_EMAIL = "test-user@example.com";
@@ -37,7 +44,7 @@ export async function getUserIdOrNull(): Promise<string | null> {
 
 export async function requireUserId(): Promise<string> {
   const userId = await getUserIdOrNull();
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) throw new UnauthorizedError();
   return userId;
 }
 
