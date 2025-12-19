@@ -4,7 +4,8 @@ This folder is the “paper trail” for a small production-minded SaaS.
 
 ### Japanese entry points (for hiring teams)
 
-- **Japanese README**: `README.ja.md`
+- **Japanese README (main)**: `README.md`
+- **Japanese README (detailed)**: `README.ja.md`
 - **Recruiter notes (JA)**: `docs/RECRUITER_NOTES.ja.md`
 - **Public release checklist (JA)**: `docs/PUBLIC_RELEASE_CHECKLIST.ja.md`
 

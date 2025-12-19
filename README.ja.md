@@ -12,7 +12,7 @@
 - **ドキュメント一覧**: [`docs/INDEX.md`](docs/INDEX.md)
 - **公開前チェックリスト**: [`docs/PUBLIC_RELEASE_CHECKLIST.ja.md`](docs/PUBLIC_RELEASE_CHECKLIST.ja.md)
 - **採用担当向けメモ**: [`docs/RECRUITER_NOTES.ja.md`](docs/RECRUITER_NOTES.ja.md)
-- **英語メモ（参考）**: [`README.md`](README.md)
+- **英語メモ（参考）**: [`README.en.md`](README.en.md)
 
 ## スクリーンショット（差し替え可）
 
