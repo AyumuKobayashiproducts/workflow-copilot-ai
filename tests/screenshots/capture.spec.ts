@@ -10,11 +10,15 @@ test("capture english screenshots (home/inbox/weekly)", async ({ page, baseURL }
   const origin = baseURL ?? "http://localhost:3000";
   const url = new URL(origin);
 
-  // Force English UI.
+  // Default to Japanese UI for portfolio screenshots.
+  // You can override locally with: SCREENSHOTS_LOCALE=en npm run screenshots
+  const uiLocale = (process.env.SCREENSHOTS_LOCALE ?? "ja") === "en" ? "en" : "ja";
+
+  // Force locale via cookie (server reads cookie `locale=en|ja`).
   await page.context().addCookies([
     {
       name: "locale",
-      value: "en",
+      value: uiLocale,
       domain: url.hostname,
       path: "/"
     }
@@ -32,7 +36,7 @@ test("capture english screenshots (home/inbox/weekly)", async ({ page, baseURL }
   // Seed demo data (gives "next step" + weekly data).
   await page.goto("/");
   await page.getByTestId("home-seed-demo").click();
-  await expect(page.getByText("Demo data is ready.", { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/demo=seeded/);
 
   const outDir = path.join(process.cwd(), "docs", "screenshots");
   ensureDir(outDir);
@@ -42,11 +46,11 @@ test("capture english screenshots (home/inbox/weekly)", async ({ page, baseURL }
   await page.screenshot({ path: path.join(outDir, "home.png"), fullPage: true });
 
   await page.goto("/inbox");
-  await expect(page.getByText("Top priority (next step)", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("task-item").first()).toBeVisible();
   await page.screenshot({ path: path.join(outDir, "inbox.png"), fullPage: true });
 
   await page.goto("/weekly");
-  await expect(page.getByText("Top priority (next step)", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("weekly-count-inprogress")).toBeVisible();
   await page.screenshot({ path: path.join(outDir, "weekly.png"), fullPage: true });
 });
 

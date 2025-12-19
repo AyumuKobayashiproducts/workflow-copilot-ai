@@ -2,10 +2,16 @@
 
 This directory is the target output for the Playwright screenshots config.
 
-Generate (English UI) screenshots locally:
+Generate screenshots locally (defaults to Japanese UI):
 
 ```bash
 npm run screenshots
+```
+
+Optional (force English UI):
+
+```bash
+SCREENSHOTS_LOCALE=en npm run screenshots
 ```
 
 Expected outputs:
